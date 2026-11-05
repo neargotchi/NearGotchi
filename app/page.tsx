@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
 
 export default function Home() {
@@ -45,6 +46,7 @@ export default function Home() {
       </section>
 
       <PetGallery />
+      <HowItWorks />
     </main>
   );
 }
