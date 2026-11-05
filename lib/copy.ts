@@ -49,3 +49,25 @@ export const tokenomics = {
   ],
   closing: { lead: "every snack ", accent: "burns." },
 };
+
+export const faq = {
+  header: "faq",
+  items: [
+    {
+      question: "what is neargotchi?",
+      answer: "an ai pet on near. every pet is an nft that eats tokens to think.",
+    },
+    {
+      question: "why does my pet need tokens?",
+      answer: "talking runs on near ai. tokens = energy. no energy, no words.",
+    },
+    {
+      question: "what if i don't feed it?",
+      answer: "it gets sad and slowly loses energy. it won't die. it will just sulk. dramatically.",
+    },
+    {
+      question: "where do the fees go?",
+      answer: "half is burned. half goes back to the community.",
+    },
+  ],
+};

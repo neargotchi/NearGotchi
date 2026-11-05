@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Faq from "./faq";
 import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
 import Tokenomics from "./tokenomics";
@@ -51,6 +52,7 @@ export default function Home() {
       <HowItWorks />
       <Wardrobe />
       <Tokenomics />
+      <Faq />
     </main>
   );
 }
