@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import PetGallery from "./pet-gallery";
 
 export default function Home() {
   return (
@@ -42,6 +43,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PetGallery />
     </main>
   );
 }

@@ -3,3 +3,6 @@ node_modules
 .vercel
 *.log
 .DS_Store
+.gstack/
+__pycache__/
+*.tsbuildinfo
