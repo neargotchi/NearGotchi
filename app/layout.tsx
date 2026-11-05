@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Press_Start_2P, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import SiteFooter from "./site-footer";
+import SiteHeader from "./site-header";
 
 const pressStart = Press_Start_2P({
   subsets: ["latin"],
@@ -23,7 +25,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${pressStart.variable} ${spaceGrotesk.variable}`}>
-      <body>{children}</body>
+      <body>
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }

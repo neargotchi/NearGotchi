@@ -61,7 +61,7 @@ function LockedCard() {
 
 export default function PetGallery() {
   return (
-    <section className="pets-section" aria-labelledby="pets-title">
+    <section id="pets" className="pets-section" aria-labelledby="pets-title">
       <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <header className="pets-heading">

@@ -71,3 +71,28 @@ export const faq = {
     },
   ],
 };
+
+export const header = {
+  brand: "neargotchi",
+  nav: [
+    { label: "pets", href: "#pets" },
+    { label: "how it works", href: "#how-it-works" },
+    { label: "wardrobe", href: "#wardrobe" },
+    { label: "tokenomics", href: "#tokenomics" },
+    { label: "faq", href: "#faq" },
+  ],
+  wallet: { label: "connect wallet", tag: "demo", note: "demo only, no wallet connected" },
+  cta: { label: "mint your pet", href: "/mint" },
+};
+
+export type SocialLink = { label: string; url: string | null };
+
+export const footer = {
+  disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value.",
+  copyright: "© 2026 neargotchi",
+  // URLs not approved yet (copy v1 §7 has [URL]); null links are not rendered.
+  socials: [
+    { label: "X", url: null },
+    { label: "telegram", url: null },
+  ] as SocialLink[],
+};
