@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
+import Wardrobe from "./wardrobe";
 
 export default function Home() {
   return (
@@ -47,6 +48,7 @@ export default function Home() {
 
       <PetGallery />
       <HowItWorks />
+      <Wardrobe />
     </main>
   );
 }

@@ -31,3 +31,9 @@ export const howItWorks = {
     },
   ] satisfies HowItWorksStep[],
 };
+
+export const wardrobe = {
+  header: "dress to impress",
+  sub: "crowns, caps, capes, gold chains. buy the fit, flex the fit.",
+  cta: { label: "open wardrobe", href: "/pet" },
+};
