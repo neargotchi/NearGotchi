@@ -11,7 +11,7 @@ export default function Faq() {
           <h2 id="faq-title" className="faq-title">
             {faq.header}
           </h2>
-          <Mascot {...mascots.faq} className="mascot-heading" />
+          <Mascot {...mascots.faq} />
         </div>
         <div className="faq-list">
           {faq.items.map((item, index) => (

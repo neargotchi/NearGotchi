@@ -36,7 +36,7 @@ export default function Home() {
                     { x: [60, 72], y: [100, 112] },
                   ]}
                   seed="hero-near"
-                  size={18}
+                  size={25}
                 />
               </span>
             </h1>
@@ -91,7 +91,7 @@ export default function Home() {
                 { x: [70, 80], y: [0, 6] },
               ]}
               seed="hero-egg"
-              size={15}
+              size={25}
               duration={[2.2, 3.4]}
             />
           </div>

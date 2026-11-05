@@ -16,7 +16,7 @@ export default function Wardrobe() {
           <Link className="button button-primary" href={wardrobe.cta.href}>
             {wardrobe.cta.label}
           </Link>
-          <Mascot {...mascots.wardrobe} className="mascot-under" />
+          <Mascot {...mascots.wardrobe} />
         </header>
         <div className="wardrobe-groups">
           {slots.map((slot) => {

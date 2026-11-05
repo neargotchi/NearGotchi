@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Press_Start_2P, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import BackgroundSparkles from "../components/BackgroundSparkles";
 import SiteFooter from "./site-footer";
 import SiteHeader from "./site-header";
 
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${pressStart.variable} ${spaceGrotesk.variable}`}>
       <body>
+        <BackgroundSparkles />
         <SiteHeader />
         {children}
         <SiteFooter />

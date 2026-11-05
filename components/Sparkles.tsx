@@ -12,10 +12,15 @@ type SparklesProps = {
   area: SparkleZone | SparkleZone[];
   /** Stable seed so positions are deterministic (same render on server and client). */
   seed: string;
-  /** Sparkle size in px (multiple of 3 keeps the plus shape on whole pixels). */
+  /** Sparkle size in px (multiple of 5 keeps the 5-unit plus shape on whole pixels). */
   size?: number;
-  /** "loop" twinkles forever; "burst" plays once when the host is hovered/activated. */
-  mode?: "loop" | "burst";
+  /**
+   * "loop" twinkles forever; "ambient" twinkles forever but is visible only ~15% of each
+   * cycle (page background); "burst" plays once when the host is hovered/activated.
+   */
+  mode?: "loop" | "ambient" | "burst";
+  /** Optional opacity range; each sparkle gets a fixed value inside it. */
+  opacity?: [number, number];
   /** Loop duration range in seconds. */
   duration?: [number, number];
 };
@@ -45,6 +50,7 @@ export default function Sparkles({
   size = 15,
   mode = "loop",
   duration = [1.6, 3],
+  opacity,
 }: SparklesProps) {
   const zones = Array.isArray(area) ? area : [area];
   const random = seededRandom(seed);
@@ -54,15 +60,17 @@ export default function Sparkles({
       {Array.from({ length: count }, (_, index) => {
         const zone = zones[index % zones.length];
         const loopDuration = between(random, duration);
+        const loops = mode !== "burst";
         const style: CSSProperties = {
           left: `${between(random, zone.x).toFixed(1)}%`,
           top: `${between(random, zone.y).toFixed(1)}%`,
           width: size,
           height: size,
           background: colors[index % colors.length],
-          animationDuration: mode === "loop" ? `${loopDuration.toFixed(2)}s` : "0.6s",
+          opacity: opacity ? Number(between(random, opacity).toFixed(2)) : undefined,
+          animationDuration: loops ? `${loopDuration.toFixed(2)}s` : "0.6s",
           animationDelay:
-            mode === "loop"
+            loops
               ? `${(random() * loopDuration).toFixed(2)}s`
               : `${(index * 0.06).toFixed(2)}s`,
         };

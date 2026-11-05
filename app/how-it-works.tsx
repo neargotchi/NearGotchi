@@ -12,7 +12,7 @@ export default function HowItWorks() {
           <h2 id="steps-title" className="steps-title">
             {howItWorks.header}
           </h2>
-          <Mascot {...mascots.howItWorks} className="mascot-heading" />
+          <Mascot {...mascots.howItWorks} />
         </div>
         <ol className="steps-list">
           {howItWorks.steps.map((step) => (

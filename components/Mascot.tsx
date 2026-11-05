@@ -46,8 +46,8 @@ export default function Mascot({ name, line, spriteFolder, className }: MascotPr
             className="mascot-sprite"
             src={`/pets/${spriteFolder}/${active ? "happy" : "normal"}.png`}
             alt=""
-            width={489}
-            height={431}
+            width={127}
+            height={112}
           />
           <Sparkles
             count={5}

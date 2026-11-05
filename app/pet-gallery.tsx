@@ -82,7 +82,7 @@ export default function PetGallery() {
         <header className="pets-heading">
           <h2 id="pets-title">pick your gotchi</h2>
           <p>6 pets. 4 moods each. one of them is a real dog.</p>
-          <Mascot {...mascots.pets} className="mascot-heading" />
+          <Mascot {...mascots.pets} />
         </header>
         <div className="pets-list">
           {pets.map((pet) => (

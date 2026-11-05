@@ -11,7 +11,7 @@ export default function Tokenomics() {
           <h2 id="tokenomics-title" className="tokenomics-title">
             {tokenomics.header}
           </h2>
-          <Mascot {...mascots.tokenomics} className="mascot-heading" />
+          <Mascot {...mascots.tokenomics} />
         </div>
         <dl className="stat-list">
           {tokenomics.stats.map((stat) => (
@@ -38,6 +38,7 @@ export default function Tokenomics() {
                 { x: [78, 86], y: [6, 18] },
               ]}
               seed="burns-on"
+              size={25}
               duration={[1.6, 2.6]}
             />
             <Sparkles
@@ -51,6 +52,7 @@ export default function Tokenomics() {
                 { x: [-10, -4], y: [80, 94] },
               ]}
               seed="burns-around"
+              size={25}
               duration={[2, 3]}
             />
           </strong>
