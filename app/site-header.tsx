@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { header } from "../lib/copy";
 import Sparkles from "../components/Sparkles";
+import MobileMenu from "./mobile-menu";
 import WalletButton from "./wallet-button";
 
 export default function SiteHeader() {
@@ -39,6 +40,7 @@ export default function SiteHeader() {
             />
           </Link>
         </div>
+        <MobileMenu />
       </div>
     </header>
   );

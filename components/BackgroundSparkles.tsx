@@ -18,6 +18,13 @@ const MIDDLE: SparkleZone[] = [
   { x: [60, 72], y: [82, 94] },
 ];
 
+// Mobile (≤1023px, see globals.css): about half as many, smaller, and only in the 20px side
+// gutters (px from each edge) so they never sit behind text.
+const GUTTERS: SparkleZone[] = BANDS.flatMap((y) => [
+  { x: [3, 6], y, unit: "px" as const },
+  { x: [2, 4], y, unit: "px" as const, from: "right" as const },
+]);
+
 /** Page-wide, fixed, subtle sparkle layer behind all sections. */
 export default function BackgroundSparkles() {
   return (
@@ -25,6 +32,8 @@ export default function BackgroundSparkles() {
       <Sparkles count={18} colors={GREENS} area={MARGINS} seed="bg-margins-a" size={20} mode="ambient" duration={[3, 6]} opacity={[0.4, 0.6]} />
       <Sparkles count={18} colors={GREENS} area={MARGINS} seed="bg-margins-b" size={15} mode="ambient" duration={[3, 6]} opacity={[0.3, 0.55]} />
       <Sparkles count={6} colors={GREENS} area={MIDDLE} seed="bg-middle" size={15} mode="ambient" duration={[4, 6]} opacity={[0.3, 0.3]} />
+      <Sparkles count={12} colors={GREENS} area={GUTTERS} seed="bg-mobile-a" size={10} mode="ambient" duration={[3, 6]} opacity={[0.4, 0.6]} className="bg-sparkles-mobile" />
+      <Sparkles count={9} colors={GREENS} area={GUTTERS} seed="bg-mobile-b" size={10} mode="ambient" duration={[3, 6]} opacity={[0.3, 0.55]} className="bg-sparkles-mobile" />
     </div>
   );
 }

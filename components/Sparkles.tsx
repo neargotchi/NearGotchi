@@ -31,6 +31,8 @@ type SparklesProps = {
   opacity?: [number, number];
   /** Loop duration range in seconds. */
   duration?: [number, number];
+  /** Extra class on the wrapper (e.g. to show a set only on mobile). */
+  className?: string;
 };
 
 function seededRandom(seed: string) {
@@ -59,12 +61,13 @@ export default function Sparkles({
   mode = "loop",
   duration = [1.6, 3],
   opacity,
+  className,
 }: SparklesProps) {
   const zones = Array.isArray(area) ? area : [area];
   const random = seededRandom(seed);
 
   return (
-    <span className={`sparkles sparkles-${mode}`} aria-hidden="true">
+    <span className={`sparkles sparkles-${mode}${className ? ` ${className}` : ""}`} aria-hidden="true">
       {Array.from({ length: count }, (_, index) => {
         const zone = zones[index % zones.length];
         const loopDuration = between(random, duration);
