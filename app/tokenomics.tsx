@@ -1,5 +1,6 @@
 import Sparkles from "../components/Sparkles";
 import Mascot from "../components/Mascot";
+import TitleSparkles from "../components/TitleSparkles";
 import { tokenomics, mascots } from "../lib/copy";
 
 export default function Tokenomics() {
@@ -8,8 +9,9 @@ export default function Tokenomics() {
       <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <div className="section-head">
-          <h2 id="tokenomics-title" className="tokenomics-title">
+          <h2 id="tokenomics-title" className="tokenomics-title section-title-host">
             {tokenomics.header}
+            <TitleSparkles seed="title-numbers" below />
           </h2>
           <Mascot {...mascots.tokenomics} />
         </div>

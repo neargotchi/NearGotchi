@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import Mascot from "../components/Mascot";
+import TitleSparkles from "../components/TitleSparkles";
 import { howItWorks, mascots } from "../lib/copy";
 
 export default function HowItWorks() {
@@ -9,8 +10,9 @@ export default function HowItWorks() {
       <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <div className="section-head">
-          <h2 id="steps-title" className="steps-title">
+          <h2 id="steps-title" className="steps-title section-title-host">
             {howItWorks.header}
+            <TitleSparkles seed="title-steps" below />
           </h2>
           <Mascot {...mascots.howItWorks} />
         </div>

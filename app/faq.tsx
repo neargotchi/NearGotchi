@@ -1,4 +1,5 @@
 import Mascot from "../components/Mascot";
+import TitleSparkles from "../components/TitleSparkles";
 import FaqMotion from "./faq-motion";
 import { faq, mascots } from "../lib/copy";
 
@@ -8,8 +9,9 @@ export default function Faq() {
       <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <div className="section-head">
-          <h2 id="faq-title" className="faq-title">
+          <h2 id="faq-title" className="faq-title section-title-host">
             {faq.header}
+            <TitleSparkles seed="title-faq" below />
           </h2>
           <Mascot {...mascots.faq} />
         </div>

@@ -40,7 +40,6 @@ a { color: inherit; }
   opacity: 0.33;
   background-image: linear-gradient(to right, #d7cfbf 1px, transparent 1px), linear-gradient(to bottom, #d7cfbf 1px, transparent 1px);
   background-size: 96px 96px;
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 74%);
 }
 
 .hero-content {
@@ -91,11 +90,12 @@ h1 {
   align-items: center;
   justify-content: center;
   min-height: 64px;
-  padding: 0 28px;
+  padding: 0 34px;
   border: 2px solid var(--ink);
   font-family: var(--font-pixel), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.84375rem;
   line-height: 1;
+  white-space: nowrap;
   text-decoration: none;
 }
 
@@ -254,14 +254,15 @@ h1 {
 }
 
 .pet-mood {
-  min-height: 33px;
+  min-height: 38px;
   padding: 0 4px;
   border: 2px solid var(--ink);
   border-radius: 0;
   color: var(--ink);
   background: var(--cream);
   font-family: var(--font-pixel), monospace;
-  font-size: 11px;
+  font-size: 13.5px;
+  white-space: nowrap;
   line-height: 1;
   cursor: pointer;
 }
@@ -687,7 +688,7 @@ section[id] { scroll-margin-top: 79px; }
   justify-self: end;
 }
 
-.site-actions .button { min-height: 44px; padding: 0 18px; font-size: 0.625rem; }
+.site-actions .button { min-height: 48px; padding: 0 20px; font-size: 0.78125rem; }
 .site-actions .button-primary { box-shadow: 4px 4px 0 var(--ink); }
 
 .site-actions .wallet-tag {
@@ -762,6 +763,8 @@ section[id] { scroll-margin-top: 79px; }
 
 .button .sparkles,
 .button .sparkle { margin: 0; font-size: 0; }
+
+.section-title-host { position: relative; }
 
 .bg-sparkles {
   position: fixed;

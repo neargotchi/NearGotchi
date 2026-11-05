@@ -1,7 +1,15 @@
 import type { CSSProperties } from "react";
 
-/** A rectangle in % of the host box. Values outside 0–100 place sparkles around the host. */
-export type SparkleZone = { x: [number, number]; y: [number, number] };
+/**
+ * A rectangle in % of the host box (values outside 0–100 place sparkles around the host).
+ * `unit: "px"` makes x absolute pixels; `from: "right"` measures x from the host's right edge.
+ */
+export type SparkleZone = {
+  x: [number, number];
+  y: [number, number];
+  unit?: "%" | "px";
+  from?: "left" | "right";
+};
 
 type SparklesProps = {
   /** Number of sparkles. */
@@ -62,7 +70,7 @@ export default function Sparkles({
         const loopDuration = between(random, duration);
         const loops = mode !== "burst";
         const style: CSSProperties = {
-          left: `${between(random, zone.x).toFixed(1)}%`,
+          [zone.from === "right" ? "right" : "left"]: `${between(random, zone.x).toFixed(1)}${zone.unit === "px" ? "px" : "%"}`,
           top: `${between(random, zone.y).toFixed(1)}%`,
           width: size,
           height: size,

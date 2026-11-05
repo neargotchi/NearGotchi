@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Mascot from "../components/Mascot";
+import TitleSparkles from "../components/TitleSparkles";
 import Sparkles from "../components/Sparkles";
 import { mascots } from "../lib/copy";
 import { useState } from "react";
@@ -80,7 +81,10 @@ export default function PetGallery() {
       <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <header className="pets-heading">
-          <h2 id="pets-title">pick your gotchi</h2>
+          <h2 id="pets-title" className="section-title-host">
+            pick your gotchi
+            <TitleSparkles seed="title-pets" belowRight />
+          </h2>
           <p>6 pets. 4 moods each. one of them is a real dog.</p>
           <Mascot {...mascots.pets} />
         </header>

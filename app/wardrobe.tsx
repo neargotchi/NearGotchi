@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Mascot from "../components/Mascot";
+import TitleSparkles from "../components/TitleSparkles";
 import { mascots, wardrobe } from "../lib/copy";
 import { items, slots } from "../lib/mocks";
 
@@ -11,7 +12,10 @@ export default function Wardrobe() {
       <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <header className="wardrobe-heading">
-          <h2 id="wardrobe-title">{wardrobe.header}</h2>
+          <h2 id="wardrobe-title" className="section-title-host">
+            {wardrobe.header}
+            <TitleSparkles seed="title-wardrobe" />
+          </h2>
           <p>{wardrobe.sub}</p>
           <Link className="button button-primary" href={wardrobe.cta.href}>
             {wardrobe.cta.label}
