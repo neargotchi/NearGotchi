@@ -37,3 +37,15 @@ export const wardrobe = {
   sub: "crowns, caps, capes, gold chains. buy the fit, flex the fit.",
   cta: { label: "open wardrobe", href: "/pet" },
 };
+
+export const tokenomics = {
+  header: "the numbers",
+  stats: [
+    { label: "ticker", value: ["$NEARGotchi"] },
+    { label: "chain", value: ["near"] },
+    // Placeholder until the owner decides: always "tba".
+    { label: "supply", value: ["tba"] },
+    { label: "platform fees", value: ["50% burned /", "50% to the community"] },
+  ],
+  closing: { lead: "every snack ", accent: "burns." },
+};

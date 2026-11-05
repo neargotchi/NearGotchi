@@ -446,6 +446,72 @@ h1 {
   image-rendering: pixelated;
 }
 
+.tokenomics-section {
+  position: relative;
+  isolation: isolate;
+  padding: 140px 0;
+  overflow: hidden;
+  background: var(--cream);
+  border-top: 2px solid var(--ink);
+}
+
+.tokenomics-title {
+  margin: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 2.2rem;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.055em;
+}
+
+.stat-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 2fr;
+  gap: 24px;
+  margin: 74px 0 0;
+}
+
+.stat-card {
+  display: flex;
+  min-width: 0;
+  padding: 28px 28px 32px;
+  flex-direction: column;
+  gap: 22px;
+  border: 2px solid var(--ink);
+  background: var(--cream);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.stat-card dt {
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.stat-card dd {
+  margin: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.stat-card dd span { display: block; }
+
+.tokenomics-closing {
+  margin: 96px 0 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.055em;
+}
+
+.tokenomics-closing strong {
+  padding: 0 0.18em;
+  font-weight: 400;
+  background: var(--green);
+}
+
 @media (max-width: 1280px) {
   .pets-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
