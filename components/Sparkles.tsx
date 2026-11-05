@@ -70,10 +70,13 @@ export default function Sparkles({
         const loopDuration = between(random, duration);
         const loops = mode !== "burst";
         const style: CSSProperties = {
-          [zone.from === "right" ? "right" : "left"]: `${between(random, zone.x).toFixed(1)}${zone.unit === "px" ? "px" : "%"}`,
+          [zone.from === "right" ? "right" : "left"]:
+            zone.unit === "px"
+              ? `calc(${between(random, zone.x).toFixed(1)}px * var(--ui-scale, 1))`
+              : `${between(random, zone.x).toFixed(1)}%`,
           top: `${between(random, zone.y).toFixed(1)}%`,
-          width: size,
-          height: size,
+          width: `calc(${size}px * var(--ui-scale, 1))`,
+          height: `calc(${size}px * var(--ui-scale, 1))`,
           background: colors[index % colors.length],
           opacity: opacity ? Number(between(random, opacity).toFixed(2)) : undefined,
           animationDuration: loops ? `${loopDuration.toFixed(2)}s` : "0.6s",

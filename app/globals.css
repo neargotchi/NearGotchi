@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 :root {
+  /* Wide-screen UI scale: 1 up to 2199px (approved sizes), 1.2 from 2200px, 1.35 from 3000px.
+     Every px length below is multiplied by it (integers rounded to whole pixels); rem text
+     scales through the root font size. */
+  --ui-scale: 1;
   --cream: #fff6e5;
   --ink: #141414;
   --green: #00ec97;
@@ -12,7 +16,10 @@
 
 * { box-sizing: border-box; }
 
-html { background: var(--cream); }
+html { background: var(--cream); font-size: calc(100% * var(--ui-scale)); }
+
+@media (min-width: 2200px) { :root { --ui-scale: 1.2; } }
+@media (min-width: 3000px) { :root { --ui-scale: 1.35; } }
 
 body {
   margin: 0;
@@ -29,7 +36,7 @@ a { color: inherit; }
 .hero {
   position: relative;
   isolation: isolate;
-  min-height: 1080px;
+  min-height: round(calc(1080px * var(--ui-scale)), 1px);
   background: var(--cream);
 }
 
@@ -38,23 +45,23 @@ a { color: inherit; }
   z-index: -1;
   inset: 0;
   opacity: 0.33;
-  background-image: linear-gradient(to right, #d7cfbf 1px, transparent 1px), linear-gradient(to bottom, #d7cfbf 1px, transparent 1px);
-  background-size: 96px 96px;
+  background-image: linear-gradient(to right, #d7cfbf round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px)), linear-gradient(to bottom, #d7cfbf round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px));
+  background-size: round(calc(96px * var(--ui-scale)), 1px) round(calc(96px * var(--ui-scale)), 1px);
 }
 
 .hero-content {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 120px;
-  width: min(1460px, calc(100% - 144px));
-  min-height: 1080px;
+  gap: round(calc(120px * var(--ui-scale)), 1px);
+  width: min(round(calc(1460px * var(--ui-scale)), 1px), calc(100% - round(calc(144px * var(--ui-scale)), 1px)));
+  min-height: round(calc(1080px * var(--ui-scale)), 1px);
   margin: 0 auto;
 }
 
 .hero-copy {
-  flex: 0 0 640px;
-  width: 640px;
+  flex: 0 0 round(calc(640px * var(--ui-scale)), 1px);
+  width: round(calc(640px * var(--ui-scale)), 1px);
 }
 
 h1 {
@@ -71,7 +78,7 @@ h1 {
 
 .hero-lede {
   max-width: 35ch;
-  margin: 46px 0 0;
+  margin: round(calc(46px * var(--ui-scale)), 1px) 0 0;
   font-size: 1.5125rem;
   font-weight: 500;
   line-height: 1.45;
@@ -81,17 +88,17 @@ h1 {
 
 .hero-actions {
   display: flex;
-  gap: 18px;
-  margin-top: 57px;
+  gap: round(calc(18px * var(--ui-scale)), 1px);
+  margin-top: round(calc(57px * var(--ui-scale)), 1px);
 }
 
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 64px;
-  padding: 0 34px;
-  border: 2px solid var(--ink);
+  min-height: round(calc(64px * var(--ui-scale)), 1px);
+  padding: 0 round(calc(34px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   font-family: var(--font-pixel), monospace;
   font-size: 0.84375rem;
   line-height: 1;
@@ -99,17 +106,17 @@ h1 {
   text-decoration: none;
 }
 
-.button span { margin-left: 13px; font-family: Arial, sans-serif; font-size: 1.375rem; }
-.button-primary { background: var(--green); box-shadow: 6px 6px 0 var(--ink); }
+.button span { margin-left: round(calc(13px * var(--ui-scale)), 1px); font-family: Arial, sans-serif; font-size: 1.375rem; }
+.button-primary { background: var(--green); box-shadow: round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) 0 var(--ink); }
 .button-secondary { background: var(--cream); }
-.button:focus-visible { outline: 4px solid var(--pink); outline-offset: 5px; }
+.button:focus-visible { outline: round(calc(4px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(5px * var(--ui-scale)), 1px); }
 
 .device-wrap {
   position: relative;
   display: grid;
   place-items: center start;
-  flex: 0 0 520px;
-  transform: translateX(258px);
+  flex: 0 0 round(calc(520px * var(--ui-scale)), 1px);
+  transform: translateX(round(calc(258px * var(--ui-scale)), 1px));
 }
 
 /* Light sweep over the black N strokes only: the layer covers the whole logo and is
@@ -145,7 +152,7 @@ h1 {
 
 .device-logo {
   position: relative;
-  width: 520px;
+  width: round(calc(520px * var(--ui-scale)), 1px);
   height: auto;
   image-rendering: pixelated;
 }
@@ -153,10 +160,10 @@ h1 {
 .pets-section {
   position: relative;
   isolation: isolate;
-  padding: 140px 0;
+  padding: round(calc(140px * var(--ui-scale)), 1px) 0;
   overflow: hidden;
   background: var(--cream);
-  border-top: 2px solid var(--ink);
+  border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
 }
 
 .pets-grid {
@@ -164,19 +171,19 @@ h1 {
   z-index: -1;
   inset: 0;
   opacity: 0.33;
-  background-image: linear-gradient(to right, #d7cfbf 1px, transparent 1px), linear-gradient(to bottom, #d7cfbf 1px, transparent 1px);
-  background-size: 96px 96px;
+  background-image: linear-gradient(to right, #d7cfbf round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px)), linear-gradient(to bottom, #d7cfbf round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px));
+  background-size: round(calc(96px * var(--ui-scale)), 1px) round(calc(96px * var(--ui-scale)), 1px);
 }
 
 .pets-content {
-  width: min(1460px, calc(100% - 144px));
+  width: min(round(calc(1460px * var(--ui-scale)), 1px), calc(100% - round(calc(144px * var(--ui-scale)), 1px)));
   margin: 0 auto;
 }
 
 .pets-heading {
   display: grid;
   grid-template-columns: max-content 1fr;
-  column-gap: 32px;
+  column-gap: round(calc(32px * var(--ui-scale)), 1px);
   align-items: center;
 }
 
@@ -201,26 +208,26 @@ h1 {
 .pets-list {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 74px;
+  gap: round(calc(16px * var(--ui-scale)), 1px);
+  margin-top: round(calc(74px * var(--ui-scale)), 1px);
 }
 
 .pet-card {
   display: flex;
   min-width: 0;
-  padding: 12px 12px 18px;
+  padding: round(calc(12px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px) round(calc(18px * var(--ui-scale)), 1px);
   flex-direction: column;
-  border: 2px solid var(--ink);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--ink);
 }
 
 .pet-sprite-wrap {
   display: grid;
-  height: 188px;
+  height: round(calc(188px * var(--ui-scale)), 1px);
   place-items: center;
   overflow: hidden;
-  border: 2px solid var(--ink);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--lcd);
 }
 
@@ -231,7 +238,7 @@ h1 {
 }
 
 .pet-card h3 {
-  margin: 20px 0 12px;
+  margin: round(calc(20px * var(--ui-scale)), 1px) 0 round(calc(12px * var(--ui-scale)), 1px);
   font-family: var(--font-pixel), monospace;
   font-size: 0.75rem;
   font-weight: 400;
@@ -239,7 +246,7 @@ h1 {
 }
 
 .pet-card p {
-  margin: 0 0 18px;
+  margin: 0 0 round(calc(18px * var(--ui-scale)), 1px);
   font-size: 0.95rem;
   font-weight: 500;
   line-height: 1.42;
@@ -249,26 +256,26 @@ h1 {
 .pet-moods {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
+  gap: round(calc(7px * var(--ui-scale)), 1px);
   margin-top: auto;
 }
 
 .pet-mood {
-  min-height: 38px;
-  padding: 0 4px;
-  border: 2px solid var(--ink);
+  min-height: round(calc(38px * var(--ui-scale)), 1px);
+  padding: 0 round(calc(4px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   border-radius: 0;
   color: var(--ink);
   background: var(--cream);
   font-family: var(--font-pixel), monospace;
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--ui-scale));
   white-space: nowrap;
   line-height: 1;
   cursor: pointer;
 }
 
 .pet-mood.is-active { background: var(--green); }
-.pet-mood:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+.pet-mood:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
 
 .pet-card-locked { justify-content: flex-start; }
 
@@ -281,8 +288,8 @@ h1 {
 
 .locked-mark {
   display: grid;
-  width: 70px;
-  height: 88px;
+  width: round(calc(70px * var(--ui-scale)), 1px);
+  height: round(calc(88px * var(--ui-scale)), 1px);
   place-items: center;
   color: var(--locked-box);
   background: var(--locked-shape);
@@ -297,10 +304,10 @@ h1 {
 .steps-section {
   position: relative;
   isolation: isolate;
-  padding: 140px 0;
+  padding: round(calc(140px * var(--ui-scale)), 1px) 0;
   overflow: hidden;
   background: var(--cream);
-  border-top: 2px solid var(--ink);
+  border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
 }
 
 .steps-title {
@@ -315,8 +322,8 @@ h1 {
 .steps-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
-  margin: 74px 0 0;
+  gap: round(calc(24px * var(--ui-scale)), 1px);
+  margin: round(calc(74px * var(--ui-scale)), 1px) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -324,33 +331,33 @@ h1 {
 .step-card {
   display: flex;
   min-width: 0;
-  padding: 12px 12px 24px;
+  padding: round(calc(12px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px);
   flex-direction: column;
-  border: 2px solid var(--ink);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--ink);
 }
 
 .step-sprite-wrap {
   display: grid;
-  height: 220px;
+  height: round(calc(220px * var(--ui-scale)), 1px);
   place-items: center;
   overflow: hidden;
-  border: 2px solid var(--ink);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--lcd);
 }
 
 .step-sprite {
   width: auto;
-  height: 196px;
+  height: round(calc(196px * var(--ui-scale)), 1px);
   image-rendering: pixelated;
 }
 
 .step-heading {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin: 24px 0 14px;
+  gap: round(calc(14px * var(--ui-scale)), 1px);
+  margin: round(calc(24px * var(--ui-scale)), 1px) 0 round(calc(14px * var(--ui-scale)), 1px);
   font-family: var(--font-pixel), monospace;
   font-size: 1rem;
   font-weight: 400;
@@ -359,10 +366,10 @@ h1 {
 
 .step-number {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: round(calc(36px * var(--ui-scale)), 1px);
+  height: round(calc(36px * var(--ui-scale)), 1px);
   place-items: center;
-  border: 2px solid var(--ink);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--green);
   font-size: 0.875rem;
 }
@@ -383,8 +390,8 @@ h1 {
 
 .step-soon {
   margin-left: auto;
-  padding: 6px 8px;
-  border: 2px solid #6f6c66;
+  padding: round(calc(6px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid #6f6c66;
   font-size: 0.6875rem;
   line-height: 1;
 }
@@ -392,16 +399,16 @@ h1 {
 .wardrobe-section {
   position: relative;
   isolation: isolate;
-  padding: 140px 0;
+  padding: round(calc(140px * var(--ui-scale)), 1px) 0;
   overflow: hidden;
   background: var(--cream);
-  border-top: 2px solid var(--ink);
+  border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
 }
 
 .wardrobe-heading {
   display: grid;
   grid-template-columns: max-content max-content 1fr;
-  column-gap: 32px;
+  column-gap: round(calc(32px * var(--ui-scale)), 1px);
   align-items: center;
 }
 
@@ -425,12 +432,12 @@ h1 {
 .wardrobe-groups {
   display: flex;
   flex-wrap: wrap;
-  gap: 40px 16px;
-  margin-top: 74px;
+  gap: round(calc(40px * var(--ui-scale)), 1px) round(calc(16px * var(--ui-scale)), 1px);
+  margin-top: round(calc(74px * var(--ui-scale)), 1px);
 }
 
 .wardrobe-group h3 {
-  margin: 0 0 16px;
+  margin: 0 0 round(calc(16px * var(--ui-scale)), 1px);
   font-family: var(--font-pixel), monospace;
   font-size: 0.75rem;
   font-weight: 400;
@@ -439,44 +446,44 @@ h1 {
 
 .wardrobe-group ul {
   display: grid;
-  grid-auto-columns: 188px;
+  grid-auto-columns: round(calc(188px * var(--ui-scale)), 1px);
   grid-auto-flow: column;
-  gap: 16px;
+  gap: round(calc(16px * var(--ui-scale)), 1px);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .item-card {
-  padding: 10px;
-  border: 2px solid var(--ink);
+  padding: round(calc(10px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--ink);
 }
 
 .item-sprite-wrap {
   display: grid;
-  height: 150px;
+  height: round(calc(150px * var(--ui-scale)), 1px);
   place-items: center;
-  border: 2px solid var(--ink);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--lcd);
 }
 
 .item-sprite {
   width: auto;
   height: auto;
-  max-width: 120px;
-  max-height: 110px;
+  max-width: round(calc(120px * var(--ui-scale)), 1px);
+  max-height: round(calc(110px * var(--ui-scale)), 1px);
   image-rendering: pixelated;
 }
 
 .tokenomics-section {
   position: relative;
   isolation: isolate;
-  padding: 140px 0;
+  padding: round(calc(140px * var(--ui-scale)), 1px) 0;
   overflow: hidden;
   background: var(--cream);
-  border-top: 2px solid var(--ink);
+  border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
 }
 
 .tokenomics-title {
@@ -491,19 +498,19 @@ h1 {
 .stat-list {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 2fr;
-  gap: 24px;
-  margin: 74px 0 0;
+  gap: round(calc(24px * var(--ui-scale)), 1px);
+  margin: round(calc(74px * var(--ui-scale)), 1px) 0 0;
 }
 
 .stat-card {
   display: flex;
   min-width: 0;
-  padding: 28px 28px 32px;
+  padding: round(calc(28px * var(--ui-scale)), 1px) round(calc(28px * var(--ui-scale)), 1px) round(calc(32px * var(--ui-scale)), 1px);
   flex-direction: column;
-  gap: 22px;
-  border: 2px solid var(--ink);
+  gap: round(calc(22px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--ink);
 }
 
 .stat-card dt {
@@ -522,7 +529,7 @@ h1 {
 .stat-card dd span { display: block; }
 
 .tokenomics-closing {
-  margin: 96px 0 0;
+  margin: round(calc(96px * var(--ui-scale)), 1px) 0 0;
   font-family: var(--font-pixel), monospace;
   font-size: 3rem;
   font-weight: 400;
@@ -539,10 +546,10 @@ h1 {
 .faq-section {
   position: relative;
   isolation: isolate;
-  padding: 140px 0;
+  padding: round(calc(140px * var(--ui-scale)), 1px) 0;
   overflow: hidden;
   background: var(--cream);
-  border-top: 2px solid var(--ink);
+  border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
 }
 
 .faq-title {
@@ -556,23 +563,23 @@ h1 {
 
 .faq-list {
   display: grid;
-  max-width: 960px;
-  gap: 20px;
-  margin-top: 74px;
+  max-width: round(calc(960px * var(--ui-scale)), 1px);
+  gap: round(calc(20px * var(--ui-scale)), 1px);
+  margin-top: round(calc(74px * var(--ui-scale)), 1px);
 }
 
 .faq-item {
-  border: 2px solid var(--ink);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--ink);
 }
 
 .faq-item summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 26px 28px;
+  gap: round(calc(24px * var(--ui-scale)), 1px);
+  padding: round(calc(26px * var(--ui-scale)), 1px) round(calc(28px * var(--ui-scale)), 1px);
   font-family: var(--font-pixel), monospace;
   font-size: 0.9375rem;
   line-height: 1.5;
@@ -590,27 +597,27 @@ h1 {
 }
 
 .faq-item[open] summary::after { content: "-"; }
-.faq-item summary:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px; }
+.faq-item summary:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(4px * var(--ui-scale)), 1px); }
 
-.faq-item[open] summary { border-bottom: 2px solid var(--ink); background: var(--lcd); }
+.faq-item[open] summary { border-bottom: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink); background: var(--lcd); }
 
 .faq-item p {
   margin: 0;
-  padding: 22px 28px 26px;
+  padding: round(calc(22px * var(--ui-scale)), 1px) round(calc(28px * var(--ui-scale)), 1px) round(calc(26px * var(--ui-scale)), 1px);
   font-size: 1.1875rem;
   font-weight: 500;
   line-height: 1.5;
   letter-spacing: -0.015em;
 }
 
-section[id] { scroll-margin-top: 79px; }
+section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
 
 .site-header {
   position: sticky;
   z-index: 20;
   top: 0;
-  border-top: 6px solid var(--green);
-  border-bottom: 1px solid var(--ink);
+  border-top: round(calc(6px * var(--ui-scale)), 1px) solid var(--green);
+  border-bottom: round(calc(1px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
 }
 
@@ -618,27 +625,27 @@ section[id] { scroll-margin-top: 79px; }
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 32px;
-  width: min(1460px, calc(100% - 144px));
-  height: 72px;
+  gap: round(calc(32px * var(--ui-scale)), 1px);
+  width: min(round(calc(1460px * var(--ui-scale)), 1px), calc(100% - round(calc(144px * var(--ui-scale)), 1px)));
+  height: round(calc(72px * var(--ui-scale)), 1px);
   margin: 0 auto;
 }
 
 .site-brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: round(calc(12px * var(--ui-scale)), 1px);
   justify-self: start;
   font-family: var(--font-pixel), monospace;
   font-size: 0.875rem;
   text-decoration: none;
 }
 
-.site-brand img { width: 40px; height: 40px; image-rendering: pixelated; }
+.site-brand img { width: round(calc(40px * var(--ui-scale)), 1px); height: round(calc(40px * var(--ui-scale)), 1px); image-rendering: pixelated; }
 
 .site-nav ul {
   display: flex;
-  gap: 36px;
+  gap: round(calc(36px * var(--ui-scale)), 1px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -648,7 +655,7 @@ section[id] { scroll-margin-top: 79px; }
   position: relative;
   white-space: nowrap;
   margin: -4px;
-  padding: 4px;
+  padding: round(calc(4px * var(--ui-scale)), 1px);
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
@@ -666,14 +673,14 @@ section[id] { scroll-margin-top: 79px; }
 .site-nav a::before {
   inset: 0;
   background: var(--green);
-  clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+  clip-path: polygon(0 round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px) 0, calc(100% - round(calc(2px * var(--ui-scale)), 1px)) 0, calc(100% - round(calc(2px * var(--ui-scale)), 1px)) round(calc(2px * var(--ui-scale)), 1px), 100% round(calc(2px * var(--ui-scale)), 1px), 100% calc(100% - round(calc(2px * var(--ui-scale)), 1px)), calc(100% - round(calc(2px * var(--ui-scale)), 1px)) calc(100% - round(calc(2px * var(--ui-scale)), 1px)), calc(100% - round(calc(2px * var(--ui-scale)), 1px)) 100%, round(calc(2px * var(--ui-scale)), 1px) 100%, round(calc(2px * var(--ui-scale)), 1px) calc(100% - round(calc(2px * var(--ui-scale)), 1px)), 0 calc(100% - round(calc(2px * var(--ui-scale)), 1px)));
 }
 
 .site-nav a::after {
-  right: 2px;
+  right: round(calc(2px * var(--ui-scale)), 1px);
   bottom: -4px;
-  left: 2px;
-  height: 2px;
+  left: round(calc(2px * var(--ui-scale)), 1px);
+  height: round(calc(2px * var(--ui-scale)), 1px);
   background: var(--green-deep);
 }
 
@@ -685,17 +692,17 @@ section[id] { scroll-margin-top: 79px; }
   position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: round(calc(14px * var(--ui-scale)), 1px);
   justify-self: end;
 }
 
-.site-actions .button { min-height: 48px; padding: 0 20px; font-size: 0.78125rem; }
-.site-actions .button-primary { box-shadow: 4px 4px 0 var(--ink); }
+.site-actions .button { min-height: round(calc(48px * var(--ui-scale)), 1px); padding: 0 round(calc(20px * var(--ui-scale)), 1px); font-size: 0.78125rem; }
+.site-actions .button-primary { box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--ink); }
 
 .site-actions .wallet-tag {
-  margin-left: 10px;
-  padding: 4px 5px;
-  border: 1px solid var(--ink);
+  margin-left: round(calc(10px * var(--ui-scale)), 1px);
+  padding: round(calc(4px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px);
+  border: round(calc(1px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--lcd);
   font-family: var(--font-pixel), monospace;
   font-size: 0.5rem;
@@ -704,11 +711,11 @@ section[id] { scroll-margin-top: 79px; }
 
 .wallet-note {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + round(calc(10px * var(--ui-scale)), 1px));
   left: 0;
   margin: 0;
-  padding: 8px 12px;
-  border: 2px solid var(--ink);
+  padding: round(calc(8px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
   font-size: 0.875rem;
   font-weight: 500;
@@ -717,10 +724,10 @@ section[id] { scroll-margin-top: 79px; }
 
 .site-brand:focus-visible,
 .site-nav a:focus-visible,
-.site-footer a:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px; }
+.site-footer a:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(4px * var(--ui-scale)), 1px); }
 
 .site-footer {
-  padding: 42px 0;
+  padding: round(calc(42px * var(--ui-scale)), 1px) 0;
   color: var(--cream);
   background: var(--ink);
 }
@@ -729,25 +736,25 @@ section[id] { scroll-margin-top: 79px; }
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 40px;
-  width: min(1460px, calc(100% - 144px));
+  gap: round(calc(40px * var(--ui-scale)), 1px);
+  width: min(round(calc(1460px * var(--ui-scale)), 1px), calc(100% - round(calc(144px * var(--ui-scale)), 1px)));
   margin: 0 auto;
 }
 
 .site-footer p { margin: 0; font-size: 1rem; font-weight: 500; line-height: 1.5; }
-.site-footer-meta { display: flex; gap: 24px; }
+.site-footer-meta { display: flex; gap: round(calc(24px * var(--ui-scale)), 1px); }
 
 @media (max-width: 1280px) {
   .pets-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
-  .pets-section { min-height: auto; padding: 84px 0; }
-  .pets-content { width: min(100% - 40px, 560px); }
+  .pets-section { min-height: auto; padding: round(calc(84px * var(--ui-scale)), 1px) 0; }
+  .pets-content { width: min(100% - round(calc(40px * var(--ui-scale)), 1px), round(calc(560px * var(--ui-scale)), 1px)); }
   .pets-heading { display: block; }
   .pets-heading h2 { font-size: 1.45rem; }
-  .pets-heading > p { margin-top: 22px; font-size: 1.05rem; }
-  .pets-list { grid-template-columns: 1fr; margin-top: 48px; }
+  .pets-heading > p { margin-top: round(calc(22px * var(--ui-scale)), 1px); font-size: 1.05rem; }
+  .pets-list { grid-template-columns: 1fr; margin-top: round(calc(48px * var(--ui-scale)), 1px); }
 }
 
 /* Shared NEAR sparkles (components/Sparkles.tsx). Hidden (scale 0) when motion is reduced. */
@@ -792,7 +799,7 @@ main > section[class] { background: transparent; }
 .section-head {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: round(calc(32px * var(--ui-scale)), 1px);
 }
 
 .pets-heading > h2,
@@ -800,7 +807,7 @@ main > section[class] { background: transparent; }
 .pets-heading > .mascot,
 .wardrobe-heading > .mascot { grid-row: 1; grid-column: 2; }
 .pets-heading > p,
-.wardrobe-heading > p { grid-row: 2; grid-column: 1 / -1; margin-top: 18px; }
+.wardrobe-heading > p { grid-row: 2; grid-column: 1 / -1; margin-top: round(calc(18px * var(--ui-scale)), 1px); }
 .wardrobe-heading > a { grid-row: 1; grid-column: 3; justify-self: end; }
 
 .mascot {
@@ -814,13 +821,13 @@ main > section[class] { background: transparent; }
 .mascot-bubble {
   position: absolute;
   right: 46%;
-  bottom: calc(100% + 14px);
+  bottom: calc(100% + round(calc(14px * var(--ui-scale)), 1px));
   margin: 0;
-  padding: 9px 14px;
-  border: 2px solid var(--ink);
+  padding: round(calc(9px * var(--ui-scale)), 1px) round(calc(14px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
   background: var(--cream);
-  box-shadow: 3px 3px 0 var(--ink);
-  font-size: 17px;
+  box-shadow: round(calc(3px * var(--ui-scale)), 1px) round(calc(3px * var(--ui-scale)), 1px) 0 var(--ink);
+  font-size: round(calc(17px * var(--ui-scale)), 1px);
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: -0.01em;
@@ -835,8 +842,8 @@ main > section[class] { background: transparent; }
   clip-path: polygon(0 0, 100% 0, 100% 34%, 84% 34%, 84% 67%, 67% 67%, 67% 100%, 34% 100%, 34% 67%, 17% 67%, 17% 34%, 0 34%);
 }
 
-.mascot-bubble::before { right: 14px; bottom: -14px; width: 18px; height: 12px; background: var(--ink); }
-.mascot-bubble::after { right: 17px; bottom: -9px; width: 12px; height: 8px; background: var(--cream); }
+.mascot-bubble::before { right: round(calc(14px * var(--ui-scale)), 1px); bottom: -14px; width: round(calc(18px * var(--ui-scale)), 1px); height: round(calc(12px * var(--ui-scale)), 1px); background: var(--ink); }
+.mascot-bubble::after { right: round(calc(17px * var(--ui-scale)), 1px); bottom: -9px; width: round(calc(12px * var(--ui-scale)), 1px); height: round(calc(8px * var(--ui-scale)), 1px); background: var(--cream); }
 
 .mascot-button {
   display: block;
@@ -846,24 +853,24 @@ main > section[class] { background: transparent; }
   cursor: pointer;
 }
 
-.mascot-button:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px; }
+.mascot-button:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(4px * var(--ui-scale)), 1px); }
 
 .mascot-figure { position: relative; display: block; }
 
 .mascot-sprite {
   display: block;
   width: auto;
-  height: 112px;
+  height: round(calc(112px * var(--ui-scale)), 1px);
   image-rendering: pixelated;
 }
 
 /* ---------- Stage 4: desktop sizes ----------
-   The approved 1920 layout lives in the 1801–2199px band and is unchanged there; the
+   The approved 1920 layout lives in the 1801–round(calc(2199px * var(--ui-scale)), 1px) band and is unchanged there; the
    fluid rules below compute to the exact 1920 values at that width. */
 
 /* Wardrobe: cells shrink with the container so a slot row always fits 7 columns. */
 .wardrobe-section .pets-content { container-type: inline-size; }
-.wardrobe-group ul { grid-auto-columns: min(var(--item-cell-max, 188px), calc((100cqi - 96px) / 7)); }
+.wardrobe-group ul { grid-auto-columns: min(var(--item-cell-max, round(calc(188px * var(--ui-scale)), 1px)), calc((100cqi - round(calc(96px * var(--ui-scale)), 1px)) / 7)); }
 
 /* Tokenomics: values scale down with the tile row so "$NEARGotchi" never overflows. */
 .stat-list { container-type: inline-size; }
@@ -876,24 +883,24 @@ main > section[class] { background: transparent; }
 
   /* Hero fills the first screen below the 79px header, so copy + egg center in view. */
   .hero,
-  .hero-content { min-height: max(640px, calc(100svh - 79px)); }
+  .hero-content { min-height: max(round(calc(640px * var(--ui-scale)), 1px), calc(100svh - round(calc(79px * var(--ui-scale)), 1px))); }
 }
 
 /* Small desktops: a smaller egg and gap keep copy + egg side by side without cropping. */
 @media (max-width: 1365px) {
   /* Header: brand | nav | actions sized to content; gaps shrink so it stays one line. */
-  .site-header-inner { grid-template-columns: auto 1fr auto; gap: 24px; }
+  .site-header-inner { grid-template-columns: auto 1fr auto; gap: round(calc(24px * var(--ui-scale)), 1px); }
   .site-nav { justify-self: center; }
-  .site-nav ul { gap: 20px; }
+  .site-nav ul { gap: round(calc(20px * var(--ui-scale)), 1px); }
 
-  .hero-content { gap: 48px; }
-  .device-wrap { flex-basis: 440px; }
-  .device-logo { width: 440px; }
+  .hero-content { gap: round(calc(48px * var(--ui-scale)), 1px); }
+  .device-wrap { flex-basis: round(calc(440px * var(--ui-scale)), 1px); }
+  .device-logo { width: round(calc(440px * var(--ui-scale)), 1px); }
 }
 
 /* 3×2 pets grid: sprites fit the 188px LCD box instead of filling the wider card. */
 @media (max-width: 1280px) {
-  .pet-sprite { width: auto; height: 184px; }
+  .pet-sprite { width: auto; height: round(calc(184px * var(--ui-scale)), 1px); }
 }
 
 /* Large screens: content column caps at 1600px, centered; backgrounds stay full width. */
@@ -901,9 +908,14 @@ main > section[class] { background: transparent; }
   .hero-content,
   .pets-content,
   .site-header-inner,
-  .site-footer-inner { width: min(1600px, calc(100% - 144px)); }
+  .site-footer-inner { width: min(round(calc(1600px * var(--ui-scale)), 1px), calc(100% - round(calc(144px * var(--ui-scale)), 1px))); }
 
-  .wardrobe-section { --item-cell-max: 212px; }
+  .wardrobe-section { --item-cell-max: round(calc(212px * var(--ui-scale)), 1px); }
+
+  .stat-card dd { font-size: min(1.125rem, calc((100cqi - 372px * var(--ui-scale)) / 56)); }
+
+  /* Wider scaled cards: sprite fits the LCD box height instead of the card width. */
+  .pet-sprite { width: auto; height: round(calc(184px * var(--ui-scale)), 1px); }
 }
 
 /* ---------- animations v1: everything below runs only without reduced motion ---------- */
@@ -920,15 +932,15 @@ main > section[class] { background: transparent; }
   /* Buttons: pixel lift on hover, press into the shadow on active. Instant. */
   .button:hover,
   .pet-mood:hover { transform: translate(-2px, -2px); }
-  .button-primary:hover { box-shadow: 8px 8px 0 var(--ink); }
-  .site-actions .button-primary:hover { box-shadow: 6px 6px 0 var(--ink); }
+  .button-primary:hover { box-shadow: round(calc(8px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px) 0 var(--ink); }
+  .site-actions .button-primary:hover { box-shadow: round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) 0 var(--ink); }
   .button-secondary:hover,
-  .pet-mood:hover { box-shadow: 2px 2px 0 var(--ink); }
+  .pet-mood:hover { box-shadow: round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px) 0 var(--ink); }
 
-  .button-primary:active { transform: translate(6px, 6px); box-shadow: none; }
-  .site-actions .button-primary:active { transform: translate(4px, 4px); box-shadow: none; }
+  .button-primary:active { transform: translate(round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px)); box-shadow: none; }
+  .site-actions .button-primary:active { transform: translate(round(calc(4px * var(--ui-scale)), 1px), round(calc(4px * var(--ui-scale)), 1px)); box-shadow: none; }
   .button-secondary:active,
-  .pet-mood:active { transform: translate(2px, 2px); box-shadow: none; }
+  .pet-mood:active { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); box-shadow: none; }
 
   /* Pets: 2-frame idle bob, offset per card; one pixel hop on card hover. */
   .pet-sprite { animation: pet-bob 1.2s steps(1, end) infinite; }
