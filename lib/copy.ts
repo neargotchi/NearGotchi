@@ -96,3 +96,12 @@ export const footer = {
     { label: "telegram", url: null },
   ] as SocialLink[],
 };
+
+/** Section mascots: pet sprite folder (lib/mocks.ts) + speech bubble line, keyed by section. */
+export const mascots = {
+  pets: { name: "batman", spriteFolder: "pet1", line: "pick me. i'm the real one." },
+  howItWorks: { name: "merk", spriteFolder: "pet3", line: "it's easy. i watched." },
+  wardrobe: { name: "nightshade", spriteFolder: "pet2", line: "i look good in a crown." },
+  tokenomics: { name: "batman", spriteFolder: "pet1", line: "every snack burns. feed me." },
+  faq: { name: "merk", spriteFolder: "pet3", line: "ask away. i never sleep." },
+};

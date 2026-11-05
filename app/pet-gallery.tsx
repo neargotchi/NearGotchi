@@ -1,6 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Mascot from "../components/Mascot";
+import Sparkles from "../components/Sparkles";
+import { mascots } from "../lib/copy";
 import { useState } from "react";
 
 import { PETS_4_6_ENABLED } from "../lib/features";
@@ -48,11 +51,23 @@ function PetCard({ pet }: { pet: PetProfile }) {
   );
 }
 
-function LockedCard() {
+function LockedCard({ slot }: { slot: string }) {
   return (
     <article className="pet-card pet-card-locked" aria-label="locked pet, soon">
       <div className="pet-sprite-wrap locked-sprite" aria-hidden="true">
-        <span>?</span>
+        <span className="locked-mark">?</span>
+        <Sparkles
+          count={3}
+          colors={["var(--green)", "#ffffff"]}
+          area={[
+            { x: [8, 26], y: [10, 40] },
+            { x: [72, 90], y: [14, 44] },
+            { x: [60, 86], y: [66, 86] },
+          ]}
+          seed={`locked-${slot}`}
+          size={12}
+          duration={[3, 4.5]}
+        />
       </div>
       <h3>soon</h3>
     </article>
@@ -67,6 +82,7 @@ export default function PetGallery() {
         <header className="pets-heading">
           <h2 id="pets-title">pick your gotchi</h2>
           <p>6 pets. 4 moods each. one of them is a real dog.</p>
+          <Mascot {...mascots.pets} className="mascot-heading" />
         </header>
         <div className="pets-list">
           {pets.map((pet) => (
@@ -74,7 +90,7 @@ export default function PetGallery() {
           ))}
           {PETS_4_6_ENABLED
             ? upcomingPets.map((pet) => <PetCard key={pet.id} pet={pet} />)
-            : upcomingPetSlots.map((slot) => <LockedCard key={slot} />)}
+            : upcomingPetSlots.map((slot) => <LockedCard key={slot} slot={slot} />)}
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { header } from "../lib/copy";
+import Sparkles from "../components/Sparkles";
 import WalletButton from "./wallet-button";
 
 export default function SiteHeader() {
@@ -25,6 +26,17 @@ export default function SiteHeader() {
           <WalletButton />
           <Link className="button button-primary" href={header.cta.href}>
             {header.cta.label}
+            <Sparkles
+              count={4}
+              colors={["var(--green)", "var(--green-deep)"]}
+              area={[
+                { x: [-8, 20], y: [-45, -15] },
+                { x: [80, 100], y: [100, 125] },
+              ]}
+              seed="header-mint"
+              size={9}
+              mode="burst"
+            />
           </Link>
         </div>
       </div>

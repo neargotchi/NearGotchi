@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { wardrobe } from "../lib/copy";
+import Mascot from "../components/Mascot";
+import { mascots, wardrobe } from "../lib/copy";
 import { items, slots } from "../lib/mocks";
 
 export default function Wardrobe() {
@@ -15,6 +16,7 @@ export default function Wardrobe() {
           <Link className="button button-primary" href={wardrobe.cta.href}>
             {wardrobe.cta.label}
           </Link>
+          <Mascot {...mascots.wardrobe} className="mascot-under" />
         </header>
         <div className="wardrobe-groups">
           {slots.map((slot) => {

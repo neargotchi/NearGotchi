@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Sparkles from "../components/Sparkles";
 import Faq from "./faq";
 import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
@@ -19,7 +20,25 @@ export default function Home() {
               <br />
               lives
               <br />
-              on near.
+              on{" "}
+              <span className="hero-near">
+                near.
+                <Sparkles
+                  count={7}
+                  colors={["var(--green)", "var(--green-deep)"]}
+                  area={[
+                    { x: [-4, 8], y: [-30, -14] },
+                    { x: [34, 46], y: [-36, -20] },
+                    { x: [74, 86], y: [-28, -12] },
+                    { x: [102, 110], y: [0, 20] },
+                    { x: [104, 112], y: [56, 76] },
+                    { x: [14, 26], y: [98, 110] },
+                    { x: [60, 72], y: [100, 112] },
+                  ]}
+                  seed="hero-near"
+                  size={18}
+                />
+              </span>
             </h1>
             <p className="hero-lede">
               mint it. feed it. dress it. talk to it. it thinks with near ai,
@@ -28,6 +47,18 @@ export default function Home() {
             <div className="hero-actions">
               <Link className="button button-primary" href="/mint">
                 mint your pet
+                <Sparkles
+                  count={5}
+                  colors={["var(--green)", "var(--green-deep)"]}
+                  area={[
+                    { x: [-8, 20], y: [-40, -10] },
+                    { x: [80, 104], y: [-40, -10] },
+                    { x: [100, 112], y: [20, 90] },
+                  ]}
+                  seed="hero-mint"
+                  size={12}
+                  mode="burst"
+                />
               </Link>
               <a className="button button-secondary" href="#how-it-works">
                 how it works <span aria-hidden="true">↓</span>
@@ -45,8 +76,24 @@ export default function Home() {
               priority
             />
             <span className="n-sweep" aria-hidden="true">
-              <span />
+              <span className="n-sweep-box">
+                <span />
+              </span>
             </span>
+            <Sparkles
+              count={5}
+              colors={["var(--green)", "var(--green-deep)"]}
+              area={[
+                { x: [0, 10], y: [10, 40] },
+                { x: [88, 98], y: [20, 60] },
+                { x: [6, 14], y: [70, 90] },
+                { x: [84, 94], y: [72, 92] },
+                { x: [70, 80], y: [0, 6] },
+              ]}
+              seed="hero-egg"
+              size={15}
+              duration={[2.2, 3.4]}
+            />
           </div>
         </div>
       </section>
