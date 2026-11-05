@@ -982,13 +982,13 @@ main > section[class] { background: transparent; }
     100% { transform: translateX(81%); }
   }
 
-  /* Buttons: pixel lift on hover, press into the shadow on active. Instant. */
+  /* Buttons: pixel half-press on hover (2px down-right, shadow 2px shorter), full press on
+     active (down-right by the whole shadow, shadow 0). Instant, transform only.
+     Buttons without a resting shadow (secondary, mood) move 2px on both. */
   .button:hover,
-  .pet-mood:hover { transform: translate(-2px, -2px); }
-  .button-primary:hover { box-shadow: round(calc(8px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px) 0 var(--ink); }
-  .site-actions .button-primary:hover { box-shadow: round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) 0 var(--ink); }
-  .button-secondary:hover,
-  .pet-mood:hover { box-shadow: round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px) 0 var(--ink); }
+  .pet-mood:hover { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); }
+  .button-primary:hover { box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--ink); }
+  .site-actions .button-primary:hover { box-shadow: round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px) 0 var(--ink); }
 
   .button-primary:active { transform: translate(round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px)); box-shadow: none; }
   .site-actions .button-primary:active { transform: translate(round(calc(4px * var(--ui-scale)), 1px), round(calc(4px * var(--ui-scale)), 1px)); box-shadow: none; }
