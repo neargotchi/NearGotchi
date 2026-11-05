@@ -18,6 +18,12 @@
 
 html { background: var(--cream); font-size: calc(100% * var(--ui-scale)); }
 
+/* Page scrollbar hidden visually; scrolling (wheel, touch, keys, anchors) still works.
+   Only the root scroller is affected, inner scroll areas keep their bars. */
+html { scrollbar-width: none; }
+html::-webkit-scrollbar,
+body::-webkit-scrollbar { display: none; }
+
 @media (min-width: 2200px) { :root { --ui-scale: 1.2; } }
 @media (min-width: 3000px) { :root { --ui-scale: 1.35; } }
 
@@ -58,6 +64,10 @@ a { color: inherit; }
   min-height: round(calc(1080px * var(--ui-scale)), 1px);
   margin: 0 auto;
 }
+
+/* Hero block sits 40px above center at every size: bottom padding shifts the
+   flex-centered copy + egg up by half of it. */
+.hero-content { padding-bottom: 80px; }
 
 .hero-copy {
   flex: 0 0 round(calc(640px * var(--ui-scale)), 1px);
@@ -864,6 +874,49 @@ main > section[class] { background: transparent; }
   image-rendering: pixelated;
 }
 
+/* 404: one viewport between the sticky header (79px) and footer (108px), centered. */
+.notfound {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: calc(100svh - round(calc(187px * var(--ui-scale)), 1px));
+  place-items: center;
+  padding: round(calc(32px * var(--ui-scale)), 1px) 0;
+  overflow: hidden;
+}
+
+.notfound-content {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.notfound-scene { position: relative; }
+
+.notfound-sprite {
+  display: block;
+  width: auto;
+  height: min(round(calc(216px * var(--ui-scale)), 1px), 28svh);
+  image-rendering: pixelated;
+}
+
+.notfound-code {
+  margin: round(calc(20px * var(--ui-scale)), 1px) 0 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: min(5.5rem, 12svh);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.055em;
+}
+
+.notfound-line {
+  margin: round(calc(16px * var(--ui-scale)), 1px) 0 round(calc(32px * var(--ui-scale)), 1px);
+  font-size: 1.375rem;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
 /* ---------- Stage 4: desktop sizes ----------
    The approved 1920 layout lives in the 1801–round(calc(2199px * var(--ui-scale)), 1px) band and is unchanged there; the
    fluid rules below compute to the exact 1920 values at that width. */
@@ -997,7 +1050,8 @@ main > section[class] { background: transparent; }
   }
 
   /* Mascots: idle bob like the pet cards; hop when petted. */
-  .mascot-sprite { animation: pet-bob 1.2s steps(1, end) infinite; }
+  .mascot-sprite,
+  .notfound-sprite { animation: pet-bob 1.2s steps(1, end) infinite; }
   .mascot-button.is-active .mascot-figure { animation: pet-hop 0.36s steps(1, end) 1; }
 
   /* FAQ: smooth 180ms expand/collapse (native details; JS fallback in app/faq-motion.tsx). */

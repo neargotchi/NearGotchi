@@ -72,6 +72,12 @@ export const faq = {
   ],
 };
 
+export const notFound = {
+  code: "404",
+  line: "your gotchi wandered off.",
+  cta: { label: "bring it home", href: "/" },
+};
+
 export const header = {
   brand: "neargotchi",
   nav: [
