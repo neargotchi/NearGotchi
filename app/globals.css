@@ -646,6 +646,7 @@ section[id] { scroll-margin-top: 79px; }
 
 .site-nav a {
   position: relative;
+  white-space: nowrap;
   margin: -4px;
   padding: 4px;
   font-size: 1rem;
@@ -854,6 +855,55 @@ main > section[class] { background: transparent; }
   width: auto;
   height: 112px;
   image-rendering: pixelated;
+}
+
+/* ---------- Stage 4: desktop sizes ----------
+   The approved 1920 layout lives in the 1801–2199px band and is unchanged there; the
+   fluid rules below compute to the exact 1920 values at that width. */
+
+/* Wardrobe: cells shrink with the container so a slot row always fits 7 columns. */
+.wardrobe-section .pets-content { container-type: inline-size; }
+.wardrobe-group ul { grid-auto-columns: min(var(--item-cell-max, 188px), calc((100cqi - 96px) / 7)); }
+
+/* Tokenomics: values scale down with the tile row so "$NEARGotchi" never overflows. */
+.stat-list { container-type: inline-size; }
+.stat-card dd { font-size: min(1.125rem, calc((100cqi - 372px) / 56)); }
+
+/* Hero: outside the 1920 band the egg is no longer offset; it sits on the container's
+   right edge so left and right margins match. */
+@media (max-width: 1800px), (min-width: 2200px) {
+  .device-wrap { margin-left: auto; transform: none; }
+
+  /* Hero fills the first screen below the 79px header, so copy + egg center in view. */
+  .hero,
+  .hero-content { min-height: max(640px, calc(100svh - 79px)); }
+}
+
+/* Small desktops: a smaller egg and gap keep copy + egg side by side without cropping. */
+@media (max-width: 1365px) {
+  /* Header: brand | nav | actions sized to content; gaps shrink so it stays one line. */
+  .site-header-inner { grid-template-columns: auto 1fr auto; gap: 24px; }
+  .site-nav { justify-self: center; }
+  .site-nav ul { gap: 20px; }
+
+  .hero-content { gap: 48px; }
+  .device-wrap { flex-basis: 440px; }
+  .device-logo { width: 440px; }
+}
+
+/* 3×2 pets grid: sprites fit the 188px LCD box instead of filling the wider card. */
+@media (max-width: 1280px) {
+  .pet-sprite { width: auto; height: 184px; }
+}
+
+/* Large screens: content column caps at 1600px, centered; backgrounds stay full width. */
+@media (min-width: 2200px) {
+  .hero-content,
+  .pets-content,
+  .site-header-inner,
+  .site-footer-inner { width: min(1600px, calc(100% - 144px)); }
+
+  .wardrobe-section { --item-cell-max: 212px; }
 }
 
 /* ---------- animations v1: everything below runs only without reduced motion ---------- */
