@@ -112,6 +112,28 @@ h1 {
   transform: translateX(258px);
 }
 
+/* Overlay on the NEAR "N" square of logo-transparent.png (x 413-612, y 380-569 of 1024). */
+.n-sweep {
+  position: absolute;
+  top: 37.11%;
+  left: 40.33%;
+  width: 19.53%;
+  height: 18.55%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.n-sweep > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 124.69%;
+  height: 100%;
+  background: rgb(255 255 255 / 0.6);
+  clip-path: polygon(71.43% 0.00%, 71.43% 6.25%, 66.67% 6.25%, 66.67% 12.50%, 61.90% 12.50%, 61.90% 18.75%, 57.14% 18.75%, 57.14% 25.00%, 52.38% 25.00%, 52.38% 31.25%, 47.62% 31.25%, 47.62% 37.50%, 42.86% 37.50%, 42.86% 43.75%, 38.10% 43.75%, 38.10% 50.00%, 33.33% 50.00%, 33.33% 56.25%, 28.57% 56.25%, 28.57% 62.50%, 23.81% 62.50%, 23.81% 68.75%, 19.05% 68.75%, 19.05% 75.00%, 14.29% 75.00%, 14.29% 81.25%, 9.52% 81.25%, 9.52% 87.50%, 4.76% 87.50%, 4.76% 93.75%, 0.00% 93.75%, 0.00% 100.00%, 23.81% 100.00%, 23.81% 93.75%, 28.57% 93.75%, 28.57% 87.50%, 33.33% 87.50%, 33.33% 81.25%, 38.10% 81.25%, 38.10% 75.00%, 42.86% 75.00%, 42.86% 68.75%, 47.62% 68.75%, 47.62% 62.50%, 52.38% 62.50%, 52.38% 56.25%, 57.14% 56.25%, 57.14% 50.00%, 61.90% 50.00%, 61.90% 43.75%, 66.67% 43.75%, 66.67% 37.50%, 71.43% 37.50%, 71.43% 31.25%, 76.19% 31.25%, 76.19% 25.00%, 80.95% 25.00%, 80.95% 18.75%, 85.71% 18.75%, 85.71% 12.50%, 90.48% 12.50%, 90.48% 6.25%, 95.24% 6.25%, 95.24% 0.00%);
+  transform: translateX(-100%);
+}
+
 .device-logo {
   position: relative;
   width: 520px;
@@ -612,12 +634,40 @@ section[id] { scroll-margin-top: 79px; }
 }
 
 .site-nav a {
+  position: relative;
+  margin: -4px;
+  padding: 4px;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
 }
 
-.site-nav a:hover { text-decoration: underline; text-underline-offset: 6px; }
+/* Hover: NEAR green pixel block + dark-green pixel underline, ink text. Instant, no transition. */
+.site-nav a::before,
+.site-nav a::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  visibility: hidden;
+}
+
+.site-nav a::before {
+  inset: 0;
+  background: var(--green);
+  clip-path: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+
+.site-nav a::after {
+  right: 2px;
+  bottom: -4px;
+  left: 2px;
+  height: 2px;
+  background: var(--green-deep);
+}
+
+.site-nav a:hover::before,
+.site-nav a:hover::after { visibility: visible; }
+
 
 .site-actions {
   position: relative;
@@ -658,7 +708,7 @@ section[id] { scroll-margin-top: 79px; }
 .site-footer a:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px; }
 
 .site-footer {
-  padding: 72px 0;
+  padding: 42px 0;
   color: var(--cream);
   background: var(--ink);
 }
@@ -686,4 +736,88 @@ section[id] { scroll-margin-top: 79px; }
   .pets-heading h2 { font-size: 1.45rem; }
   .pets-heading > p:last-child { margin-top: 22px; font-size: 1.05rem; }
   .pets-list { grid-template-columns: 1fr; margin-top: 48px; }
+}
+
+/* Sparkles around "burns." (static = hidden when motion is reduced). */
+.burns { position: relative; }
+
+.sparkle {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  clip-path: polygon(40% 0, 60% 0, 60% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%, 40% 100%, 40% 60%, 0 60%, 0 40%, 40% 40%);
+  transform: scale(0);
+  pointer-events: none;
+}
+
+.sparkle-white { background: #fff; }
+.sparkle-ink { background: var(--ink); }
+.sparkle-green { background: var(--green); }
+.sparkle-deep { background: var(--green-deep); }
+
+/* ---------- animations v1: everything below runs only without reduced motion ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero: pixel light sweep across the NEAR N (0.8s sweep, ~3s pause). */
+  .n-sweep > span { animation: n-sweep 3.8s infinite; }
+
+  @keyframes n-sweep {
+    0% { transform: translateX(-100%); animation-timing-function: steps(18, end); }
+    21% { transform: translateX(81%); }
+    100% { transform: translateX(81%); }
+  }
+
+  /* Buttons: pixel lift on hover, press into the shadow on active. Instant. */
+  .button:hover,
+  .pet-mood:hover { transform: translate(-2px, -2px); }
+  .button-primary:hover { box-shadow: 8px 8px 0 var(--ink); }
+  .site-actions .button-primary:hover { box-shadow: 6px 6px 0 var(--ink); }
+  .button-secondary:hover,
+  .pet-mood:hover { box-shadow: 2px 2px 0 var(--ink); }
+
+  .button-primary:active { transform: translate(6px, 6px); box-shadow: none; }
+  .site-actions .button-primary:active { transform: translate(4px, 4px); box-shadow: none; }
+  .button-secondary:active,
+  .pet-mood:active { transform: translate(2px, 2px); box-shadow: none; }
+
+  /* Pets: 2-frame idle bob, offset per card; one pixel hop on card hover. */
+  .pet-sprite { animation: pet-bob 1.2s steps(1, end) infinite; }
+  .pet-card:nth-child(2) .pet-sprite { animation-delay: -0.4s; }
+  .pet-card:nth-child(3) .pet-sprite { animation-delay: -0.8s; }
+  .pet-card:hover .pet-sprite { animation: pet-bob 1.2s steps(1, end) infinite, pet-hop 0.36s steps(1, end) 1; }
+
+  @keyframes pet-bob {
+    0% { translate: 0 0; }
+    50% { translate: 0 -4px; }
+  }
+
+  @keyframes pet-hop {
+    0% { transform: translateY(-6px); }
+    33% { transform: translateY(-12px); }
+    66% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+  }
+
+  /* Locked cards: the "?" blinks. */
+  .locked-sprite span { animation: locked-blink 1.6s steps(1, end) infinite; }
+
+  @keyframes locked-blink {
+    0% { color: rgb(196 193 186 / 1); }
+    50% { color: rgb(196 193 186 / 0.4); }
+  }
+
+  /* "burns.": sparkles twinkle, highlight pulses between the two NEAR greens. */
+  .burns { animation: burns-pulse 2.4s steps(1, end) infinite; }
+  .sparkle { animation-name: sparkle; animation-iteration-count: infinite; animation-timing-function: steps(3, end); }
+
+  @keyframes burns-pulse {
+    0% { background: var(--green); }
+    50% { background: var(--green-deep); }
+  }
+
+  @keyframes sparkle {
+    0% { transform: scale(0); }
+    25% { transform: scale(1); }
+    50% { transform: scale(0); }
+    100% { transform: scale(0); }
+  }
 }

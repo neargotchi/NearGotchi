@@ -44,6 +44,9 @@ export default function Home() {
               height={1024}
               priority
             />
+            <span className="n-sweep" aria-hidden="true">
+              <span />
+            </span>
           </div>
         </div>
       </section>
