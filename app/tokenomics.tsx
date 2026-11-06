@@ -45,7 +45,7 @@ export default function Tokenomics() {
             />
             <Sparkles
               count={5}
-              colors={["var(--green)", "var(--green-deep)"]}
+              colors={["var(--green)", "var(--sparkle-alt)"]}
               area={[
                 { x: [-10, -2], y: [-40, -20] },
                 { x: [96, 104], y: [-34, -18] },

@@ -1,6 +1,6 @@
 import Sparkles, { type SparkleZone } from "./Sparkles";
 
-const GREENS = ["var(--green)", "var(--green-deep)"];
+const GREENS = ["var(--green)", "var(--sparkle-alt)"];
 const BANDS: [number, number][] = [[4, 20], [22, 38], [40, 56], [58, 74], [76, 94]];
 
 // Viewport zones in %: the side margins outside the 1460px content column (5 bands per side);

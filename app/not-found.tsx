@@ -22,7 +22,7 @@ export default function NotFound() {
             />
             <Sparkles
               count={5}
-              colors={["var(--green)", "var(--green-deep)"]}
+              colors={["var(--green)", "var(--sparkle-alt)"]}
               area={[
                 { x: [0, 10], y: [4, 24] },
                 { x: [84, 96], y: [0, 18] },

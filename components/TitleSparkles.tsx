@@ -27,7 +27,7 @@ export default function TitleSparkles({ seed, below = false, belowRight = false 
   return (
     <Sparkles
       count={area.length}
-      colors={["var(--green)", "var(--green-deep)"]}
+      colors={["var(--green)", "var(--sparkle-alt)"]}
       area={area}
       seed={seed}
       size={SIZE}

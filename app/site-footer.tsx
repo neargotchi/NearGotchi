@@ -8,7 +8,7 @@ export default function SiteFooter() {
     <footer className="site-footer">
       <Sparkles
         count={4}
-        colors={["var(--green)", "var(--green-deep)"]}
+        colors={["var(--green)", "var(--sparkle-alt)"]}
         area={[
           { x: [50, 60], y: [20, 75] },
           { x: [64, 74], y: [20, 75] },

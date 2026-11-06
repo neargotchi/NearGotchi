@@ -25,7 +25,7 @@ export default function Home() {
                 near.
                 <Sparkles
                   count={7}
-                  colors={["var(--green)", "var(--green-deep)"]}
+                  colors={["var(--green)", "var(--sparkle-alt)"]}
                   area={[
                     { x: [-4, 8], y: [-30, -14] },
                     { x: [34, 46], y: [-36, -20] },
@@ -49,7 +49,7 @@ export default function Home() {
                 mint your pet
                 <Sparkles
                   count={5}
-                  colors={["var(--green)", "var(--green-deep)"]}
+                  colors={["var(--green)", "var(--sparkle-alt)"]}
                   area={[
                     { x: [-8, 20], y: [-40, -10] },
                     { x: [80, 104], y: [-40, -10] },
@@ -82,7 +82,7 @@ export default function Home() {
             </span>
             <Sparkles
               count={5}
-              colors={["var(--green)", "var(--green-deep)"]}
+              colors={["var(--green)", "var(--sparkle-alt)"]}
               area={[
                 { x: [0, 10], y: [10, 40] },
                 { x: [88, 98], y: [20, 60] },

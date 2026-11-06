@@ -51,7 +51,7 @@ export default function Mascot({ name, line, spriteFolder, className }: MascotPr
           />
           <Sparkles
             count={5}
-            colors={["var(--green)", "var(--green-deep)"]}
+            colors={["var(--green)", "var(--sparkle-alt)"]}
             area={{ x: [-10, 100], y: [-20, 60] }}
             seed={`mascot-${name}`}
             size={12}

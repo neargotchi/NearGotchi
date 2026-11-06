@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import BackgroundSparkles from "../components/BackgroundSparkles";
+import { THEME_COLORS, themeInitScript } from "../lib/theme";
 import SiteFooter from "./site-footer";
 import SiteHeader from "./site-header";
 
@@ -25,7 +26,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${pressStart.variable} ${spaceGrotesk.variable}`}>
+    // data-theme is set by the inline script before hydration, hence suppressHydrationWarning.
+    <html lang="en" className={`${pressStart.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content={THEME_COLORS.light} suppressHydrationWarning />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <BackgroundSparkles />
         <SiteHeader />
