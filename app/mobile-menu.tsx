@@ -29,6 +29,11 @@ export default function MobileMenu() {
     const panel = panelRef.current;
     panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
 
+    // Lock the page behind the panel (globals.css: html.menu-open); anchor jumps from the menu
+    // links still work because overflow: hidden only blocks user scrolling.
+    const root = document.documentElement;
+    root.classList.add("menu-open");
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -67,6 +72,7 @@ export default function MobileMenu() {
     document.addEventListener("pointerdown", onPointerDown);
     desktop.addEventListener("change", onDesktop);
     return () => {
+      root.classList.remove("menu-open");
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown);
       desktop.removeEventListener("change", onDesktop);

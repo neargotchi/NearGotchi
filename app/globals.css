@@ -16,7 +16,19 @@
 
 * { box-sizing: border-box; }
 
-html { background: var(--cream); font-size: calc(100% * var(--ui-scale)); }
+html { background: var(--ink); font-size: calc(100% * var(--ui-scale)); }
+
+/* No rubber-band past the top/bottom and no sideways pan. html is ink so any bounce left
+   (older iOS) shows footer colour under the footer; body keeps the cream page. Only html gets
+   the `hidden` fallback: on body it would make a scroll container and unstick the header. */
+html,
+body { overscroll-behavior: none; }
+html { overflow-x: hidden; overflow-x: clip; }
+body { min-height: 100vh; overflow-x: clip; }
+
+/* Mobile menu open (app/mobile-menu.tsx): page behind the panel can't scroll. */
+html.menu-open,
+html.menu-open body { overflow: hidden; }
 
 /* Page scrollbar hidden visually; scrolling (wheel, touch, keys, anchors) still works.
    Only the root scroller is affected, inner scroll areas keep their bars. */
@@ -1037,6 +1049,7 @@ main > section[class] { background: transparent; }
     max-height: calc(100svh - 71px);
     padding: 8px var(--gutter) 28px;
     overflow-y: auto;
+    overscroll-behavior: contain;
     border-bottom: 2px solid var(--ink);
     background: var(--cream);
   }
@@ -1101,6 +1114,10 @@ main > section[class] { background: transparent; }
   .hero-lede { max-width: 40ch; margin-top: 20px; font-size: 1.125rem; }
   .hero-actions { flex-direction: column; gap: 14px; margin-top: 28px; }
   .hero-actions .button { width: 100%; min-height: 56px; }
+  /* Full-width mint button: burst sparkles 3 + 5 (zones up to 112% / 104% of the button) sit
+     past the screen edge; drop them so nothing in the hero is wider than the viewport. */
+  .hero-actions .button-primary .sparkle:is(:nth-child(3), :nth-child(5)) { display: none; }
+  .hero-shell { overflow: hidden; overflow: clip; }
   .hero-near .sparkle,
   .device-wrap .sparkle { width: 15px !important; height: 15px !important; }
 
@@ -1183,6 +1200,7 @@ main > section[class] { background: transparent; }
     padding: 0 var(--gutter) 10px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--gutter);
     scrollbar-width: none;
