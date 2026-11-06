@@ -1,0 +1,152 @@
+# /mint — plan (demo, frontend only)
+
+Status: 2026-11-06 (task 024). Reuses: `.pet-card` + locked cards, `.button-*`, `Sparkles` (burst), `Mascot`, theme tokens (light/dark), `--ui-scale`, ≤1279 burger / ≤1023 mobile rules, `prefers-reduced-motion` block. Nothing here is a real mint: no wallet, no network, no token.
+
+## 1. Files
+Add
+- `app/mint/page.tsx`: server page with metadata and the section shell (grid ON, like the hero). Renders `<MintFlow />`.
+- `app/mint/mint-flow.tsx`: client state machine `loading → existing | form → hatching → done`.
+- `app/mint/pet-picker.tsx`: radio-group cards (3 pets + 3 locked "soon" cards via `PETS_4_6_ENABLED` / `upcomingPetSlots`).
+- `app/mint/hatch-stage.tsx`: hatch animation plus a live region.
+- `app/pet/page.tsx`: minimal stub so the redirect and the nav link never 404. It shows the pet (happy sprite), its name and "start over", or "no pet yet" plus a link to /mint. The full /pet page is a later task.
+
+Change
+- `lib/mocks.ts`: `DemoPet` type, name rules, store functions (§2).
+- `lib/copy.ts` + `docs/neargotchi-copy-v1.md` (APLIKACJA section): `mint` copy and nav item (§5).
+- `app/site-header.tsx`, `app/mobile-menu.tsx`: nav hrefs that start with "/" are used as-is. Today every href renders as `/${href}`, so `/pet` would become `//pet`.
+- `app/globals.css`: `.mint-*` block, `.pet-card.is-selected`, hatch keyframes (inside the reduced-motion block), header breakpoints (see the warning below).
+- Header "mint your pet" CTAs (header, burger panel, hero) already point to `/mint`. No change, just verify.
+
+Header width (needs your OK). Free space now: 11px at 1280, 15px at 1440. A 6th link "my pet" (~52px + gap, estimate) does not fit. Proposal:
+- burger up to ≤1439;
+- tight-gap band (021 values) at 1440–1599 (free ≈106px at 1440);
+- full gaps from ≥1600 (free ≈87px).
+I will re-measure after building.
+
+## 2. Data model + interface (`lib/mocks.ts`)
+```ts
+export type DemoPet = {
+  v: 1; id: string;            // "demo-" + petId + "-" + Date.now()
+  petId: PetProfile["id"];     // "pet1" | "pet2" | "pet3"
+  species: string; name: string;
+  balance: number;             // 100 (demo $NEARGotchi, display only)
+  hunger: number; energy: number; // 0–100; start 20 / 100
+  mood: Mood;                  // "happy" right after hatch
+  outfit: Partial<Record<Slot, Item["id"] | null>>; // {} at mint
+  mintedAt: string;            // ISO
+  demo: true;
+};
+export const PET_STORAGE_KEY = "neargotchi-pet"; // JSON DemoPet; theme key stays separate
+export function validatePetName(raw: string, petId: string): { ok: true; name: string } | { ok: false; error: NameError };
+export async function getPet(): Promise<DemoPet | null>;  // null if none / corrupt / wrong v / unknown petId (then clears)
+export async function mintPet(input: { petId: string; name: string }): Promise<DemoPet>; // validates, throws MintError
+export async function updatePet(patch: Partial<Omit<DemoPet, "v" | "id" | "demo">>): Promise<DemoPet>; // for /pet
+export async function resetPet(): Promise<void>;
+export function subscribePet(cb: (pet: DemoPet | null) => void): () => void; // storage event (other tabs)
+export function isPersistent(): boolean; // false when localStorage is blocked
+```
+- The functions are async on purpose, so a future backend swaps the bodies and keeps the same calls.
+- Every storage access is wrapped in try/catch. If storage is blocked, the module keeps the pet in a module-level variable: it survives client navigation to /pet and is lost on reload.
+
+Name rules (`validatePetName`)
+- trim, collapse inner spaces, lowercase;
+- 2–12 chars; allowed `a–z 0–9 space - _`;
+- empty → the pet's own name (batman / nightshade / merk).
+- Errors: `too_short | too_long | bad_chars | no_pet`.
+- The input has `maxLength=24` so a paste doesn't freeze anything; the message explains the 12-char limit.
+
+## 3. Layout
+One `<section class="mint-section">` under the header. Grid ON, sparkles page-wide. Content column = `.pets-content`.
+```
+1920  [h1 hatch your gotchi ✦ ][mascot nightshade + bubble]      [demo · no real mint, no wallet]
+      sub line
+      1. pick your pet   [card][card][card][soon][soon][soon]       (6-col, like pets-list)
+      2. name it         [ name input 480px ][ mint · demo ]        (one row; error under input)
+      hatch: the form area swaps in place for a 640px LCD stage (egg 320px, centered), same section
+1280  same, cards 3×2 (existing ≤1280 rule); name + mint stay one row
+375   h1 (mobile title size) / mascot row / demo pill / sub
+      cards: horizontal snap row, next card peeking (existing mobile rule)
+      name input 100% / error / mint 100% × 56px
+      hatch stage 100% wide, egg clamp(160px, 30svh, 260px)
+existing pet (all sizes): the form is replaced by one card (happy sprite, name, species) + [go to your pet] [start over]
+```
+Selected card: `--green` card background with ink text (same in light and dark, like the active mood button), a pixel "✓ picked" tag in the name row, and the happy sprite. Unselected: normal sprite. Locked cards are not inputs, have no hover, and use the existing `.pet-card-locked` style.
+
+## 4. Hatch storyboard (total 3.2s; transform/opacity only, `steps()`, no rotation)
+| t (ms) | frame | CSS |
+|---|---|---|
+| 0–600 | egg wobble ±4px x, 3 cycles | `translateX` keyframes, `steps(4)` per 200ms |
+| 600–1000 | hard shake ±8px x, ±2px y | `steps(4)` per 100ms |
+| 1000–1300 | crack: ink zig-zag line grows across the egg in 3 frames | overlay `clip-path` widths 33/66/100%, `steps(3)` |
+| 1300–1600 | halves split: top −24px y, bottom +8px; flash (LCD → white → LCD) | 2 clip-path halves of logo-transparent, `steps(3)` |
+| 1300–1900 | NEAR sparkle burst, 8 sparkles, green + `--sparkle-alt` | `<Sparkles mode="burst">` (existing keyframes, 0.6s) |
+| 1600–2000 | happy pet appears where the egg was, halves fade out | opacity `steps(2)` + `pet-hop` (existing) |
+| 2000–3200 | hold; live text "{name} hatched." → "taking you to {name}…" | then `router.push("/pet")` |
+- The "go to {name}" button is shown from 2000ms in case the redirect is slow or blocked.
+- Reduced motion: the egg is swapped for the happy pet instantly (no shake, crack or burst), the same live text plays, and the redirect happens after 1500ms.
+
+## 5. New copy (lowercase, copy v1 tone) → `lib/copy.ts` `mint`, `header.nav`, copy v1
+- meta title `mint — NEARGOTCHI` · meta description `pick a gotchi, name it, watch it hatch. demo, no real mint.`
+- h1 `hatch your gotchi` · sub `pick a pet. give it a name. watch it hatch.`
+- demo label `demo · no real mint, no wallet`
+- mascot (nightshade) `i hatched once. it was a lot.`
+- step 1 legend `1. pick your pet` · locked card `soon` (existing) · picked tag `picked`
+- step 2 label `2. name it` · hint `2–12 characters. letters, numbers, spaces, - and _.` · placeholder = the pet's name
+- errors:
+  - `too short. 2 characters at least.`
+  - `too long. 12 characters max.`
+  - `letters, numbers, spaces, - and _ only.`
+  - `pick a pet first.`
+- mint button `mint` + tag `demo` (same pill as connect wallet)
+- hatch live text:
+  - `hatching…`
+  - `{name} hatched.`
+  - `taking you to {name}…`
+  - button `go to {name}`
+- existing pet:
+  - title `you already have a gotchi.`
+  - body `{name} the {species} is waiting.`
+  - buttons `go to your pet` / `start over`
+- start-over confirm (inline, no browser dialog):
+  - text `start over? {name} will be gone. it's a demo, so nothing real is lost.`
+  - buttons `yes, start over` / `keep {name}`
+- storage blocked note `this browser won't save your pet. it stays until you close the tab.`
+- noscript `turn on javascript to hatch a pet.`
+- nav `my pet` → `/pet`
+- /pet stub (empty) `no pet yet.` + link `hatch one`
+
+## 6. Edge cases
+- **Pet already saved** → existing-pet view. "start over" asks for inline confirmation, then `resetPet()` and back to the form.
+- **localStorage blocked or throws** → in-memory store plus the note; the flow still works and the redirect still shows the pet.
+- **Corrupt JSON, wrong `v` or unknown petId** → `getPet()` clears the key and returns null, so the form shows. No crash.
+- **Double-click / Enter spam on mint** → the state goes to `hatching` on the first call; the button is removed from the DOM, not just disabled.
+- **Leaving mid-hatch** → the pet is already saved (`mintPet` runs before the animation); the timers are cleared on unmount.
+- **Back button from /pet** → existing-pet view, not a second hatch.
+- **Two tabs** → `subscribePet` updates the view; minting in one tab switches the other tab to existing-pet.
+- **No pet picked** → `pick a pet first.` and focus moves to the first radio. Nothing is preselected, so the choice is explicit.
+- **Uppercase, emoji, paste** → lowercased on blur and save; other characters get the `bad_chars` error (not silently stripped).
+- **Empty name** → default name, shown as the placeholder so it's predictable.
+- **SSR / hydration** → the server renders `loading` (a skeleton the size of the form), so there's no flash of the form before an existing pet is found.
+- **JS off** → noscript note; the cards still render as static content.
+- **/pet visited with no pet** → stub with `no pet yet.` + link to /mint.
+- **Theme or size change mid-hatch** → tokens only; the stage is fluid and the animation keeps running.
+
+## 7. Accessibility
+- Picker = `<fieldset>` + `<legend>` with native visually-hidden `<input type="radio" name="pet">` inside each `<label class="pet-card">`. Arrow keys work natively. The focus ring is the pink outline on the card.
+- Locked cards stay outside the radio inputs, keeping `aria-label="locked pet, soon"`.
+- Name `<input>`: `<label>`, `aria-describedby` for hint + error, `aria-invalid` on error. The error is shown on submit and on blur, not while typing.
+- The hatch stage is a `role="status"` live region. Focus goes to the stage heading and then to "go to {name}".
+- The existing-pet and confirm views move focus to their heading.
+- Tap targets ≥44px; contrast as in 020 (ink on green, cream on surface).
+
+## 8. Acceptance checklist
+- [ ] Header + burger "mint your pet" → /mint; "my pet" in nav → /pet (no `//pet`); the header fits at 1024/1280/1366/1440/1600/1920.
+- [ ] 1920 / 1280 / 375, light + dark: layout as in §3, no horizontal scroll, all copy as in §5, demo label visible above the fold.
+- [ ] Tab reaches the radio group; arrows change the pet; the selected card is green with "picked" and the happy sprite; locked cards can't be selected.
+- [ ] Names: "Batman!!" → bad_chars message; "a" → too short; 13 chars → too long; empty → default name; "  Big  Boi " → "big boi".
+- [ ] Mint → wobble, shake, crack, split + flash, burst, happy pet, text, redirect to /pet at ~3.2s; double-click mints once.
+- [ ] Reduced motion: instant swap, same text, redirect at 1.5s; nothing moves.
+- [ ] Back to /mint → "you already have a gotchi."; start over → confirm → form; keep → stays.
+- [ ] DevTools: localStorage `neargotchi-pet` holds a `DemoPet` with `demo: true`; editing it into garbage → form shows, key cleared.
+- [ ] Storage blocked (private mode / blocked site data): the note shows, the hatch works, /pet shows the pet until reload.
+- [ ] Screen reader: legend + "batman, radio, 1 of 3"; errors announced; hatch text announced; no console errors; no network requests besides page assets.
