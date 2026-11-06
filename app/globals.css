@@ -106,6 +106,8 @@ a { color: inherit; }
   opacity: var(--grid-opacity);
   background-image: linear-gradient(to right, var(--grid-line) round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px)), linear-gradient(to bottom, var(--grid-line) round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px));
   background-size: round(calc(96px * var(--ui-scale)), 1px) round(calc(96px * var(--ui-scale)), 1px);
+  /* Shifted up by one line width so no grid line sits right under a section's top divider. */
+  background-position: 0 calc(-1 * round(calc(1px * var(--ui-scale)), 1px));
 }
 
 .hero-content {
@@ -245,6 +247,8 @@ h1 {
   opacity: var(--grid-opacity);
   background-image: linear-gradient(to right, var(--grid-line) round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px)), linear-gradient(to bottom, var(--grid-line) round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px));
   background-size: round(calc(96px * var(--ui-scale)), 1px) round(calc(96px * var(--ui-scale)), 1px);
+  /* Shifted up by one line width so no grid line sits right under a section's top divider. */
+  background-position: 0 calc(-1 * round(calc(1px * var(--ui-scale)), 1px));
 }
 
 .pets-content {
@@ -869,7 +873,9 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
   pointer-events: none;
 }
 
-/* Sections paint over the fixed layer in DOM order; let it show through their cream. */
+/* Sections paint over the fixed layer in DOM order; let it show through their cream.
+   Grid alternates per section (own .hero-grid / .pets-grid layer): on in hero, how it works,
+   tokenomics and 404; off in pets, wardrobe and faq. */
 main > section[class] { background: transparent; }
 
 .sparkle {

@@ -6,7 +6,6 @@ import { faq, mascots } from "../lib/copy";
 export default function Faq() {
   return (
     <section id="faq" className="faq-section" aria-labelledby="faq-title">
-      <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <div className="section-head">
           <h2 id="faq-title" className="faq-title section-title-host">

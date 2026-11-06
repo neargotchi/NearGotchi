@@ -9,7 +9,6 @@ import { items, slots } from "../lib/mocks";
 export default function Wardrobe() {
   return (
     <section id="wardrobe" className="wardrobe-section" aria-labelledby="wardrobe-title">
-      <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <header className="wardrobe-heading">
           <h2 id="wardrobe-title" className="section-title-host">
