@@ -66,7 +66,7 @@ export default function MobileMenu() {
     };
 
     // Back to desktop width: the panel is hidden by CSS, so drop the open state too.
-    const desktop = window.matchMedia("(min-width: 1024px)");
+    const desktop = window.matchMedia("(min-width: 1280px)");
     const onDesktop = () => desktop.matches && close(false);
 
     document.addEventListener("keydown", onKeyDown);

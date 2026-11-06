@@ -1045,29 +1045,20 @@ main > section[class] { background: transparent; }
   .pet-sprite { width: auto; height: round(calc(184px * var(--ui-scale)), 1px); }
 }
 
-/* ---------- Stage 5: mobile + tablet (≤1023px) ----------
-   Every rule lives inside the max-width query below; ≥1024px renders exactly as before.
-   Mobile-only elements are display:none outside it. */
+/* Burger header + mobile-only elements: hidden unless a query below shows them. */
 .menu-button,
 .mobile-menu,
 .mobile-menu-backdrop,
 .bg-sparkles-mobile { display: none; }
 
-@media (max-width: 1023px) {
-  :root { --gutter: 20px; }
-
-  .hero-content,
-  .pets-content,
-  .site-header-inner { width: calc(100% - 2 * var(--gutter)); }
-
-  section[id] { scroll-margin-top: 71px; }
-
-  /* Header: logo + name left, pixel burger right; nav + actions move into the panel. */
-  .site-header-inner { grid-template-columns: 1fr auto; gap: 16px; height: 64px; }
+/* ---------- Header fit ----------
+   ≤1279px: burger header (same panel as mobile). 1024–1279px keeps the 72px desktop header
+   height and side margins, so the panel opens under it at 79px. */
+@media (max-width: 1279px) {
+  /* Logo + name left, pixel burger right; nav, actions and the theme toggle move into the panel. */
+  .site-header-inner { grid-template-columns: 1fr auto; gap: 16px; }
   .site-nav,
   .site-actions { display: none; }
-  .site-brand { min-height: 44px; }
-  .site-brand img { width: 36px; height: 36px; }
 
   .menu-button {
     display: grid;
@@ -1108,15 +1099,15 @@ main > section[class] { background: transparent; }
     right: 0;
     left: 0;
     display: block;
-    max-height: calc(100svh - 71px);
-    padding: 8px var(--gutter) 28px;
+    max-height: calc(100svh - 79px);
+    padding: 8px 72px 28px;
     overflow-y: auto;
     overscroll-behavior: contain;
     border-bottom: 2px solid var(--line);
     background: var(--surface);
   }
 
-  .mobile-menu-backdrop { position: fixed; inset: 71px 0 0; display: block; background: var(--scrim); }
+  .mobile-menu-backdrop { position: fixed; inset: 79px 0 0; display: block; background: var(--scrim); }
 
   .mobile-menu ul { margin: 0; padding: 0; list-style: none; }
   .mobile-menu li { border-bottom: 2px solid var(--divider); }
@@ -1151,6 +1142,37 @@ main > section[class] { background: transparent; }
   .mobile-menu .theme-icon { width: 20px; height: 20px; }
 
   .mobile-menu .wallet-note { position: static; margin-top: -4px; font-size: 1rem; white-space: normal; }
+}
+
+/* 1280–1439px: full desktop header with tighter gaps (nav, actions, outer) and a slimmer
+   "demo" pill so brand, nav, wallet, theme toggle and mint fit on one line with room to spare. */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .site-header-inner { gap: 12px; }
+  .site-nav ul { gap: 12px; }
+  .site-actions { gap: 8px; }
+  .site-actions .wallet-tag { margin-left: 6px; padding: 4px 3px; }
+}
+
+/* ---------- Stage 5: mobile + tablet (≤1023px) ----------
+   Every rule lives inside the max-width query below; ≥1024px renders exactly as before, except
+   the burger header shared with 1024–1279px (header fit block above).
+   Mobile-only elements are display:none outside those queries. */
+@media (max-width: 1023px) {
+  :root { --gutter: 20px; }
+
+  .hero-content,
+  .pets-content,
+  .site-header-inner { width: calc(100% - 2 * var(--gutter)); }
+
+  section[id] { scroll-margin-top: 71px; }
+
+  /* Header: phone-size header (64px, smaller logo); the burger panel itself is shared with
+     1024–1279px above, only its offsets follow the shorter header. */
+  .site-header-inner { height: 64px; }
+  .site-brand { min-height: 44px; }
+  .site-brand img { width: 36px; height: 36px; }
+  .mobile-menu:not([hidden]) { max-height: calc(100svh - 71px); padding: 8px var(--gutter) 28px; }
+  .mobile-menu-backdrop { inset: 71px 0 0; }
 
   /* Hero: egg on top, then the 3-line headline, sub and full-width stacked buttons.
      Exactly one screen below the 71px header (svh, vh fallback); the egg + copy block is
@@ -1362,9 +1384,11 @@ main > section[class] { background: transparent; }
     .button:hover,
     .pet-mood:hover { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); }
     .button-primary:hover { box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--shadow); }
+    .mobile-menu-actions .button-primary:hover,
     .site-actions .button-primary:hover { box-shadow: round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px) 0 var(--shadow); }
 
     .button-primary:active { transform: translate(round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px)); box-shadow: none; }
+    .mobile-menu-actions .button-primary:active,
     .site-actions .button-primary:active { transform: translate(round(calc(4px * var(--ui-scale)), 1px), round(calc(4px * var(--ui-scale)), 1px)); box-shadow: none; }
     .theme-toggle:hover,
     .theme-toggle:active,
