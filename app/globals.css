@@ -313,7 +313,8 @@ h1 {
   image-rendering: pixelated;
 }
 
-.pet-card h3 {
+.pet-card h3,
+.pet-card .locked-title {
   margin: round(calc(20px * var(--ui-scale)), 1px) 0 round(calc(12px * var(--ui-scale)), 1px);
   font-family: var(--font-pixel), monospace;
   font-size: 0.75rem;
@@ -373,7 +374,8 @@ h1 {
   line-height: 1;
 }
 
-.pet-card-locked h3 { color: var(--text-muted); }
+.pet-card-locked h3,
+.pet-card-locked .locked-title { color: var(--text-muted); }
 
 .steps-section {
   position: relative;
@@ -960,12 +962,12 @@ main > section[class] { background: transparent; }
   image-rendering: pixelated;
 }
 
-/* 404: one viewport between the sticky header (79px) and footer (108px), centered. */
+/* 404: one viewport between the sticky header (79px) and footer (132px with the privacy line), centered. */
 .notfound {
   position: relative;
   isolation: isolate;
   display: grid;
-  min-height: calc(100svh - round(calc(187px * var(--ui-scale)), 1px));
+  min-height: calc(100svh - round(calc(211px * var(--ui-scale)), 1px));
   place-items: center;
   padding: round(calc(32px * var(--ui-scale)), 1px) 0;
   overflow: hidden;
@@ -1356,7 +1358,7 @@ main > section[class] { background: transparent; }
   .site-footer > .sparkles > .sparkle:nth-child(-n+2) { display: none; }
 
   /* 404 */
-  .notfound { min-height: calc(100svh - 71px - 111px); padding: 24px var(--gutter); }
+  .notfound { min-height: calc(100svh - 71px - 151px); padding: 16px var(--gutter); }
   .notfound-sprite { height: min(216px, 24svh); }
   .notfound-line { font-size: 1.125rem; }
 }
@@ -1437,7 +1439,7 @@ main > section[class] { background: transparent; }
 .mint-section {
   position: relative;
   isolation: isolate;
-  min-height: calc(100svh - round(calc(187px * var(--ui-scale)), 1px));
+  min-height: calc(100svh - round(calc(211px * var(--ui-scale)), 1px));
   padding: round(calc(140px * var(--ui-scale)), 1px) 0;
   overflow: hidden;
 }
@@ -1656,7 +1658,7 @@ main > section[class] { background: transparent; }
 .hatch-go { margin-top: round(calc(24px * var(--ui-scale)), 1px); }
 
 @media (max-width: 1023px) {
-  .mint-section { min-height: calc(100svh - 71px - 111px); padding: 72px 0; }
+  .mint-section { min-height: calc(100svh - 71px - 151px); padding: 72px 0; }
   .mint-head { display: block; }
   /* "hatch your gotchi": 17 pixel glyphs on one line. */
   .mint-title { font-size: min(1.5rem, calc((100vw - 2 * var(--gutter)) / 17.5)); }

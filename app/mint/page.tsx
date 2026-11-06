@@ -3,12 +3,10 @@ import type { Metadata } from "next";
 import Mascot from "../../components/Mascot";
 import TitleSparkles from "../../components/TitleSparkles";
 import { mintPage } from "../../lib/copy";
+import { pageMeta } from "../../lib/site";
 import MintFlow from "./mint-flow";
 
-export const metadata: Metadata = {
-  title: mintPage.metaTitle,
-  description: mintPage.metaDescription,
-};
+export const metadata: Metadata = pageMeta({ path: "/mint", title: mintPage.metaTitle, description: mintPage.metaDescription });
 
 /** /mint: demo hatch (docs/PLAN-MINT.md). No wallet, no network, no real mint. */
 export default function MintPage() {

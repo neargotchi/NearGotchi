@@ -56,7 +56,9 @@ function PetCard({ pet }: { pet: PetProfile }) {
   );
 }
 
-export function LockedCard({ slot }: { slot: string }) {
+/** `title="p"` where the page has no h2 above the cards (/mint), so the heading order stays valid. */
+export function LockedCard({ slot, title = "h3" }: { slot: string; title?: "h3" | "p" }) {
+  const Title = title;
   return (
     <article className="pet-card pet-card-locked" aria-label="locked pet, soon">
       <div className="pet-sprite-wrap locked-sprite" aria-hidden="true">
@@ -74,7 +76,7 @@ export function LockedCard({ slot }: { slot: string }) {
           duration={[3, 4.5]}
         />
       </div>
-      <h3>soon</h3>
+      <Title className="locked-title">soon</Title>
     </article>
   );
 }

@@ -43,6 +43,7 @@ export default function PetPicker({ selected, onSelect, error, firstRadioRef }: 
                   alt=""
                   width={pet.spriteWidth}
                   height={pet.spriteHeight}
+                  priority
                 />
               </span>
               <span className="mint-card-name">
@@ -62,7 +63,7 @@ export default function PetPicker({ selected, onSelect, error, firstRadioRef }: 
             </label>
           );
         })}
-        {PETS_4_6_ENABLED ? null : upcomingPetSlots.map((slot) => <LockedCard key={slot} slot={slot} />)}
+        {PETS_4_6_ENABLED ? null : upcomingPetSlots.map((slot) => <LockedCard key={slot} slot={slot} title="p" />)}
       </div>
       {error ? (
         <p id="mint-pick-error" className="mint-error" role="alert">

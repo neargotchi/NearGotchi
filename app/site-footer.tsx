@@ -20,7 +20,10 @@ export default function SiteFooter() {
         duration={[3, 4.5]}
       />
       <div className="site-footer-inner">
-        <p>{footer.disclaimer}</p>
+        <div className="site-footer-legal">
+          <p>{footer.disclaimer}</p>
+          <p>{footer.privacy}</p>
+        </div>
         <div className="site-footer-meta">
           <p>{footer.copyright}</p>
           {socials.map((link) => (

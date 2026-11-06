@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import BackgroundSparkles from "../components/BackgroundSparkles";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
 import { THEME_COLORS, themeInitScript } from "../lib/theme";
 import SiteFooter from "./site-footer";
 import SiteHeader from "./site-header";
@@ -17,9 +18,16 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-sans",
 });
 
+const TITLE = "NEARGOTCHI — your ai pet on near";
+const DESCRIPTION = SITE_DESCRIPTION;
+
+/** Defaults for every route; pages set their own canonical via pageMeta() (lib/site.ts). */
 export const metadata: Metadata = {
-  title: "NEARGOTCHI — your ai pet on near",
-  description: "mint an ai pet on near. feed it, dress it, talk to it.",
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: { type: "website", siteName: SITE_NAME, url: "/", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 export default function RootLayout({

@@ -1,11 +1,19 @@
 import Image from "next/image";
 import Sparkles from "../components/Sparkles";
 import PetCta from "./pet-cta";
+import type { Metadata } from "next";
+import { SITE_DESCRIPTION, pageMeta } from "../lib/site";
 import Faq from "./faq";
 import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
 import Tokenomics from "./tokenomics";
 import Wardrobe from "./wardrobe";
+
+export const metadata: Metadata = pageMeta({
+  path: "/",
+  title: "NEARGOTCHI — your ai pet on near",
+  description: SITE_DESCRIPTION,
+});
 
 export default function Home() {
   return (

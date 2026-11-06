@@ -101,6 +101,8 @@ export type SocialLink = { label: string; url: string | null };
 
 export const footer = {
   disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value.",
+  // No cookies, no analytics: only functional localStorage (theme, demo pet, chat).
+  privacy: "no tracking. your demo pet lives only in your browser.",
   copyright: "© 2026 neargotchi",
   // URLs not approved yet (copy v1 §7 has [URL]); null links are not rendered.
   socials: [
@@ -166,7 +168,7 @@ export const mintPage = {
 
 /** /pet (docs/DEVLOG.md §5). Demo only: balance is always "demo", chat is local. */
 export const petPage = {
-  metaTitle: "my pet — NEARGOTCHI",
+  metaTitle: "my gotchi — NEARGOTCHI",
   empty: "no pet yet.",
   emptyLink: "hatch one",
   sub: "the {species} · hatched {date}",

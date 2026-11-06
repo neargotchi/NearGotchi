@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 
 import { petPage } from "../../lib/copy";
+import { SITE_DESCRIPTION, pageMeta } from "../../lib/site";
 import PetView from "./pet-view";
 
-export const metadata: Metadata = { title: petPage.metaTitle };
+// Personal demo state: not indexed.
+export const metadata: Metadata = pageMeta({ path: "/pet", title: petPage.metaTitle, description: SITE_DESCRIPTION, noindex: true });
 
 /** /pet (docs/DEVLOG.md): demo pet with stats, feed and local chat. No wallet, no network. */
 export default function PetPage() {
