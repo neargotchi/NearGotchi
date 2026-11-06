@@ -1387,6 +1387,301 @@ main > section[class] { background: transparent; }
   .hero-actions .button { min-height: 48px; }
 }
 
+/* ---------- /mint + /pet stub (docs/PLAN-MINT.md) ---------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Header/burger CTA: "mint your pet" and "my pet" share one grid cell, so the button keeps the
+   wider label's width when it swaps after hydration (app/pet-cta.tsx). */
+.button .cta-labels { display: inline-grid; margin: 0; font: inherit; }
+.button .cta-label { grid-area: 1 / 1; margin: 0; font: inherit; text-align: center; }
+.button .cta-label.is-off { visibility: hidden; }
+
+/* "mint {name}" under the mood buttons of the home pet cards → /mint?pet=… */
+.pet-mint-link {
+  align-self: flex-start;
+  margin-top: round(calc(14px * var(--ui-scale)), 1px);
+  font-size: 0.95rem;
+  font-weight: 600;
+  /* Whole-pixel height so the sections below keep whole-pixel positions. */
+  line-height: round(calc(22px * var(--ui-scale)), 1px);
+  text-decoration: underline;
+  text-decoration-thickness: round(calc(2px * var(--ui-scale)), 1px);
+  text-underline-offset: round(calc(3px * var(--ui-scale)), 1px);
+}
+
+@media (hover: hover) {
+  .pet-mint-link:hover { text-decoration-color: var(--green); }
+}
+
+.pet-mint-link:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
+
+.mint-section {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100svh - round(calc(187px * var(--ui-scale)), 1px));
+  padding: round(calc(140px * var(--ui-scale)), 1px) 0;
+  overflow: hidden;
+}
+
+.mint-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: round(calc(32px * var(--ui-scale)), 1px);
+  align-items: center;
+}
+
+.mint-head > .section-head { grid-row: 1; grid-column: 1; }
+
+.mint-title {
+  width: auto;
+  font-size: 2.2rem;
+  line-height: 1.3;
+}
+
+.mint-title:focus,
+.mint-subtitle:focus,
+.hatch-line:focus,
+.mint-confirm p:focus { outline: none; }
+
+.mint-demo {
+  grid-row: 1;
+  grid-column: 2;
+  margin: 0;
+  padding: round(calc(10px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  color: var(--ink);
+  background: var(--lcd);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.625rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.mint-sub {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  margin: round(calc(18px * var(--ui-scale)), 1px) 0 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+.mint-form { margin-top: round(calc(74px * var(--ui-scale)), 1px); }
+.mint-form.is-loading { visibility: hidden; }
+
+.mint-step { min-width: 0; margin: 0; padding: 0; border: 0; }
+.mint-step + .mint-step { margin-top: round(calc(56px * var(--ui-scale)), 1px); }
+
+.mint-legend {
+  display: block;
+  padding: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.mint-step .pets-list { margin-top: round(calc(24px * var(--ui-scale)), 1px); }
+
+/* Selectable pet cards: native radios; the selected card turns NEAR green (ink text, both themes). */
+.mint-card { cursor: pointer; }
+.mint-card:has(input:focus-visible) { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(4px * var(--ui-scale)), 1px); }
+.mint-card.is-selected { color: var(--ink); background: var(--green); }
+
+.mint-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: round(calc(8px * var(--ui-scale)), 1px);
+  min-height: round(calc(28px * var(--ui-scale)), 1px);
+  margin: round(calc(20px * var(--ui-scale)), 1px) 0 round(calc(12px * var(--ui-scale)), 1px);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.mint-card-text {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.42;
+  letter-spacing: -0.015em;
+}
+
+.mint-picked {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: round(calc(5px * var(--ui-scale)), 1px);
+  padding: round(calc(4px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px);
+  border: round(calc(1px * var(--ui-scale)), 1px) solid var(--ink);
+  color: var(--ink);
+  background: var(--cream);
+  font-size: 0.5rem;
+  line-height: 1;
+}
+
+.mint-picked svg { width: round(calc(14px * var(--ui-scale)), 1px); height: round(calc(10px * var(--ui-scale)), 1px); fill: currentColor; shape-rendering: crispEdges; }
+
+.mint-name-row { display: flex; gap: round(calc(18px * var(--ui-scale)), 1px); margin-top: round(calc(16px * var(--ui-scale)), 1px); }
+
+.mint-input {
+  width: round(calc(480px * var(--ui-scale)), 1px);
+  min-height: round(calc(64px * var(--ui-scale)), 1px);
+  padding: 0 round(calc(20px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  border-radius: 0;
+  color: var(--text);
+  background: var(--surface);
+  font-family: var(--font-sans), Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.mint-input::placeholder { color: var(--text-muted); opacity: 1; }
+.mint-input:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
+.mint-input[aria-invalid="true"] { border-color: var(--pink); }
+
+.button .mint-tag {
+  margin-left: round(calc(10px * var(--ui-scale)), 1px);
+  padding: round(calc(4px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px);
+  border: round(calc(1px * var(--ui-scale)), 1px) solid var(--ink);
+  background: var(--lcd);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  line-height: 1;
+}
+
+.mint-hint,
+.mint-note { margin: round(calc(12px * var(--ui-scale)), 1px) 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 500; line-height: 1.45; }
+.mint-note { margin-top: round(calc(32px * var(--ui-scale)), 1px); }
+
+/* Error: body-text colour (contrast) with a pink pixel marker. */
+.mint-error { display: flex; align-items: baseline; gap: round(calc(8px * var(--ui-scale)), 1px); margin: round(calc(12px * var(--ui-scale)), 1px) 0 0; font-size: 1rem; font-weight: 600; line-height: 1.45; }
+.mint-error::before { flex: none; width: round(calc(10px * var(--ui-scale)), 1px); height: round(calc(10px * var(--ui-scale)), 1px); content: ""; background: var(--pink); }
+
+.mint-actions { display: flex; flex-wrap: wrap; gap: round(calc(18px * var(--ui-scale)), 1px); }
+
+.mint-existing { margin-top: round(calc(74px * var(--ui-scale)), 1px); }
+
+.mint-subtitle {
+  margin: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.mint-existing-body { display: flex; align-items: center; gap: round(calc(40px * var(--ui-scale)), 1px); margin-top: round(calc(32px * var(--ui-scale)), 1px); }
+.mint-existing-card { flex: none; width: round(calc(300px * var(--ui-scale)), 1px); }
+/* Wider than a gallery card: the sprite fits the LCD box height so it is never cropped. */
+.mint-existing-card .pet-sprite { width: auto; height: round(calc(184px * var(--ui-scale)), 1px); }
+.pet-stub .mint-existing-body { margin-top: round(calc(56px * var(--ui-scale)), 1px); }
+.pet-stub > .mint-title + .mint-actions { margin-top: round(calc(40px * var(--ui-scale)), 1px); }
+
+.mint-confirm p { max-width: 42ch; margin: 0 0 round(calc(18px * var(--ui-scale)), 1px); font-size: 1.125rem; font-weight: 500; line-height: 1.45; }
+
+.mint-loading { min-height: round(calc(480px * var(--ui-scale)), 1px); }
+
+/* Hatch stage: LCD box; the egg is two clip-path halves of the logo plus a pixel crack. */
+.mint-hatch { display: grid; justify-items: start; margin-top: round(calc(74px * var(--ui-scale)), 1px); }
+
+.hatch-stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  width: min(round(calc(640px * var(--ui-scale)), 1px), 100%);
+  height: round(calc(440px * var(--ui-scale)), 1px);
+  place-items: center;
+  overflow: hidden;
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--lcd);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+
+.hatch-egg,
+.hatch-pet { grid-area: 1 / 1; }
+
+.hatch-egg { position: relative; width: round(calc(320px * var(--ui-scale)), 1px); aspect-ratio: 1; }
+
+.hatch-half {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.hatch-crack { position: absolute; inset: 0; opacity: 0; }
+.hatch-crack > span { position: absolute; inset: 0; background: var(--ink); }
+.hatch-stage.is-crack .hatch-crack { opacity: 1; }
+
+.hatch-stage:is(.is-split, .is-pet, .is-hold) .hatch-top { transform: translateY(-7.5%); }
+.hatch-stage:is(.is-split, .is-pet, .is-hold) .hatch-bottom { transform: translateY(2.5%); }
+.hatch-stage:is(.is-pet, .is-hold) .hatch-half { opacity: 0; }
+
+.hatch-pet {
+  width: auto;
+  height: round(calc(280px * var(--ui-scale)), 1px);
+  opacity: 0;
+  image-rendering: pixelated;
+}
+
+.hatch-stage:is(.is-pet, .is-hold) .hatch-pet { opacity: 1; }
+
+.hatch-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+
+.hatch-status { margin-top: round(calc(24px * var(--ui-scale)), 1px); }
+.hatch-line { margin: 0; font-size: 1.375rem; font-weight: 500; line-height: 1.45; letter-spacing: -0.02em; }
+.hatch-go { margin-top: round(calc(24px * var(--ui-scale)), 1px); }
+
+@media (max-width: 1023px) {
+  .mint-section { min-height: calc(100svh - 71px - 111px); padding: 72px 0; }
+  .mint-head { display: block; }
+  /* "hatch your gotchi": 17 pixel glyphs on one line. */
+  .mint-title { font-size: min(1.5rem, calc((100vw - 2 * var(--gutter)) / 17.5)); }
+  .mint-demo { display: inline-block; margin-top: 20px; white-space: normal; }
+  .mint-sub { margin-top: 16px; font-size: 1.0625rem; }
+
+  .mint-form { margin-top: 40px; }
+  .mint-step + .mint-step { margin-top: 40px; }
+  .mint-legend { font-size: 0.8125rem; }
+  .mint-step .pets-list { margin-top: 20px; }
+  .mint-card-text { font-size: 1rem; }
+
+  .mint-name-row { flex-direction: column; gap: 14px; }
+  .mint-input { width: 100%; min-height: 56px; font-size: 1.125rem; }
+  .mint-name-row .button { width: 100%; min-height: 56px; }
+
+  .mint-existing { margin-top: 40px; }
+  .mint-subtitle { font-size: min(1rem, calc((100vw - 2 * var(--gutter)) / 27)); }
+  .mint-existing-body { flex-direction: column; align-items: stretch; gap: 28px; margin-top: 24px; }
+  .mint-existing-card { width: min(100%, 320px); }
+  .mint-actions { display: grid; gap: 14px; }
+  .mint-actions .button { width: 100%; min-height: 56px; }
+  .pet-stub .mint-existing-body { margin-top: 32px; }
+  .pet-stub > .mint-title + .mint-actions { margin-top: 28px; }
+
+  .mint-hatch { justify-items: stretch; margin-top: 40px; }
+  .hatch-stage { width: 100%; height: auto; padding: 24px 0; }
+  .hatch-egg { width: clamp(160px, 30svh, 260px); }
+  .hatch-pet { height: calc(clamp(160px, 30svh, 260px) * 0.85); }
+  .hatch-line { font-size: 1.125rem; }
+  .hatch-go { width: 100%; min-height: 56px; }
+
+  .pet-mint-link { display: inline-flex; min-height: 44px; align-items: center; margin-top: 8px; font-size: 1rem; line-height: 22px; }
+}
+
 /* ---------- animations v1: everything below runs only without reduced motion ---------- */
 @media (prefers-reduced-motion: no-preference) {
   /* Hero: green/white pixel sweep over the black N strokes (0.5s sweep, 2s pause). */
@@ -1509,5 +1804,96 @@ main > section[class] { background: transparent; }
     25% { transform: scale(1); }
     50% { transform: scale(0); }
     100% { transform: scale(0); }
+  }
+
+  /* /mint hatch (docs/PLAN-MINT.md §4): phase classes from app/mint/hatch-stage.tsx start each step. */
+  .hatch-stage.is-shake .hatch-egg { animation: hatch-shake 1s steps(1, end) both; }
+  .hatch-stage.is-crack .hatch-crack { animation: hatch-crack 0.3s steps(1, end) both; }
+  .hatch-stage.is-split .hatch-top { animation: hatch-top 0.3s steps(1, end) both; }
+  .hatch-stage.is-split .hatch-bottom { animation: hatch-bottom 0.3s steps(1, end) both; }
+  .hatch-stage.is-split .hatch-flash { animation: hatch-flash 0.3s steps(1, end) both; }
+  .hatch-stage.is-pet .hatch-half { animation: hatch-fade 0.2s steps(1, end) both; }
+  .hatch-stage.is-pet .hatch-pet { animation: hatch-appear 0.2s steps(1, end) both, pet-hop 0.36s steps(1, end) 0.2s 1; }
+  .hatch-stage.is-hold .hatch-pet { animation: pet-bob 1.2s steps(1, end) infinite; }
+  .hatch-stage .sparkles-burst .sparkle {
+    animation-name: sparkle-burst;
+    animation-iteration-count: 1;
+    animation-timing-function: steps(3, end);
+    animation-fill-mode: both;
+  }
+
+  /* wobble ±4px (0–600ms), then hard shake ±8px/±2px (600–1000ms); transform only, no rotation */
+  @keyframes hatch-shake {
+    0% { transform: translate(0px, 0); }
+    5% { transform: translate(-4px, 0); }
+    10% { transform: translate(0px, 0); }
+    15% { transform: translate(4px, 0); }
+    20% { transform: translate(0px, 0); }
+    25% { transform: translate(-4px, 0); }
+    30% { transform: translate(0px, 0); }
+    35% { transform: translate(4px, 0); }
+    40% { transform: translate(0px, 0); }
+    45% { transform: translate(-4px, 0); }
+    50% { transform: translate(0px, 0); }
+    55% { transform: translate(4px, 0); }
+    60% { transform: translate(-8px, -2px); }
+    62.5% { transform: translate(8px, 2px); }
+    65% { transform: translate(-8px, 2px); }
+    67.5% { transform: translate(8px, -2px); }
+    70% { transform: translate(-8px, -2px); }
+    72.5% { transform: translate(8px, 2px); }
+    75% { transform: translate(-8px, 2px); }
+    77.5% { transform: translate(8px, -2px); }
+    80% { transform: translate(-8px, -2px); }
+    82.5% { transform: translate(8px, 2px); }
+    85% { transform: translate(-8px, 2px); }
+    87.5% { transform: translate(8px, -2px); }
+    90% { transform: translate(-8px, -2px); }
+    92.5% { transform: translate(8px, 2px); }
+    95% { transform: translate(-8px, 2px); }
+    97.5% { transform: translate(8px, -2px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  /* crack grows across the egg in 3 frames */
+  @keyframes hatch-crack {
+    0% { opacity: 1; clip-path: inset(0 67% 0 0); }
+    33.333% { opacity: 1; clip-path: inset(0 34% 0 0); }
+    66.667% { opacity: 1; clip-path: inset(0 0 0 0); }
+    100% { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+
+  @keyframes hatch-top {
+    0% { transform: translateY(-2.5%); }
+    33.333% { transform: translateY(-5%); }
+    66.667% { transform: translateY(-7.5%); }
+    100% { transform: translateY(-7.5%); }
+  }
+
+  @keyframes hatch-bottom {
+    0% { transform: translateY(0.8%); }
+    33.333% { transform: translateY(1.6%); }
+    66.667% { transform: translateY(2.5%); }
+    100% { transform: translateY(2.5%); }
+  }
+
+  /* LCD → white → LCD */
+  @keyframes hatch-flash {
+    0% { opacity: 0.5; }
+    33.333% { opacity: 0.9; }
+    66.667% { opacity: 0.4; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes hatch-fade {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.2; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes hatch-appear {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 1; }
   }
 }

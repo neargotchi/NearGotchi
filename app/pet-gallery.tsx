@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import Mascot from "../components/Mascot";
 import TitleSparkles from "../components/TitleSparkles";
 import Sparkles from "../components/Sparkles";
-import { mascots } from "../lib/copy";
+import { fill, mascots, petGallery } from "../lib/copy";
 import { useState } from "react";
 
 import { PETS_4_6_ENABLED } from "../lib/features";
@@ -48,11 +49,14 @@ function PetCard({ pet }: { pet: PetProfile }) {
           </button>
         ))}
       </div>
+      <Link className="pet-mint-link" href={`/mint?pet=${pet.id}`}>
+        {fill(petGallery.mintLink, { name })}
+      </Link>
     </article>
   );
 }
 
-function LockedCard({ slot }: { slot: string }) {
+export function LockedCard({ slot }: { slot: string }) {
   return (
     <article className="pet-card pet-card-locked" aria-label="locked pet, soon">
       <div className="pet-sprite-wrap locked-sprite" aria-hidden="true">

@@ -89,7 +89,12 @@ export const header = {
   ],
   wallet: { label: "connect wallet", tag: "demo", note: "demo only, no wallet connected" },
   cta: { label: "mint your pet", href: "/mint" },
+  // Header + burger CTA once a demo pet exists (PLAN-MINT review §1). Hero CTA keeps "mint your pet".
+  petCta: { label: "my pet", href: "/pet" },
 };
+
+/** Section anchors ("#pets") live on the home page; route hrefs ("/pet") are used as-is. */
+export const navHref = (href: string) => (href.startsWith("/") ? href : `/${href}`);
 
 export type SocialLink = { label: string; url: string | null };
 
@@ -110,4 +115,57 @@ export const mascots = {
   wardrobe: { name: "nightshade", spriteFolder: "pet2", line: "i look good in a crown." },
   tokenomics: { name: "batman", spriteFolder: "pet1", line: "every snack burns. feed me." },
   faq: { name: "merk", spriteFolder: "pet3", line: "ask away. i never sleep." },
+};
+
+/** Replaces {name}-style placeholders. */
+export const fill = (text: string, values: Record<string, string>) =>
+  text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
+
+/** "mint {name}" link under the mood buttons of the 3 real pet cards → /mint?pet=… */
+export const petGallery = { mintLink: "mint {name}" };
+
+/** /mint (docs/PLAN-MINT.md §5). Demo only: no real mint, no wallet. */
+export const mintPage = {
+  metaTitle: "mint — NEARGOTCHI",
+  metaDescription: "pick a gotchi, name it, watch it hatch. demo, no real mint.",
+  title: "hatch your gotchi",
+  sub: "pick a pet. give it a name. watch it hatch.",
+  demo: "demo · no real mint, no wallet",
+  mascot: { name: "nightshade", spriteFolder: "pet2", line: "i hatched once. it was a lot." },
+  pickLegend: "1. pick your pet",
+  picked: "picked",
+  nameLabel: "2. name it",
+  nameHint: "2–12 characters. letters, numbers, spaces, - and _.",
+  errors: {
+    too_short: "too short. 2 characters at least.",
+    too_long: "too long. 12 characters max.",
+    bad_chars: "letters, numbers, spaces, - and _ only.",
+    no_pet: "pick a pet first.",
+  },
+  mintButton: "mint",
+  mintTag: "demo",
+  hatching: "hatching…",
+  hatched: "{name} hatched.",
+  redirecting: "taking you to {name}…",
+  goTo: "go to {name}",
+  existing: {
+    title: "you already have a gotchi.",
+    body: "{name} the {species} is waiting.",
+    go: "go to your pet",
+    startOver: "start over",
+  },
+  confirm: {
+    text: "start over? {name} will be gone. it's a demo, so nothing real is lost.",
+    yes: "yes, start over",
+    keep: "keep {name}",
+  },
+  storageNote: "this browser won't save your pet. it stays until you close the tab.",
+  noscript: "turn on javascript to hatch a pet.",
+};
+
+/** /pet stub until the full /pet task. */
+export const petPage = {
+  metaTitle: "my pet — NEARGOTCHI",
+  empty: "no pet yet.",
+  emptyLink: "hatch one",
 };

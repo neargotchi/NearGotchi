@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { header } from "../lib/copy";
+import { header, navHref } from "../lib/copy";
 import Sparkles from "../components/Sparkles";
 import MobileMenu from "./mobile-menu";
+import PetCta from "./pet-cta";
 import ThemeToggle from "./theme-toggle";
 import WalletButton from "./wallet-button";
 
@@ -19,7 +20,7 @@ export default function SiteHeader() {
           <ul>
             {header.nav.map((link) => (
               <li key={link.href}>
-                <a href={`/${link.href}`}>{link.label}</a>
+                <a href={navHref(link.href)}>{link.label}</a>
               </li>
             ))}
           </ul>
@@ -27,8 +28,7 @@ export default function SiteHeader() {
         <div className="site-actions">
           <WalletButton />
           <ThemeToggle />
-          <Link className="button button-primary" href={header.cta.href}>
-            {header.cta.label}
+          <PetCta>
             <Sparkles
               count={4}
               colors={["var(--green)", "var(--sparkle-alt)"]}
@@ -40,7 +40,7 @@ export default function SiteHeader() {
               size={9}
               mode="burst"
             />
-          </Link>
+          </PetCta>
         </div>
         <ThemeToggle className="header-theme-toggle" />
         <MobileMenu />

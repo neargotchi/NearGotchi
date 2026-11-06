@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { header } from "../lib/copy";
+import { header, navHref } from "../lib/copy";
+import PetCta from "./pet-cta";
 import WalletButton from "./wallet-button";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -106,16 +106,14 @@ export default function MobileMenu() {
           <ul>
             {header.nav.map((link) => (
               <li key={link.href}>
-                <a href={`/${link.href}`}>{link.label}</a>
+                <a href={navHref(link.href)}>{link.label}</a>
               </li>
             ))}
           </ul>
         </nav>
         <div className="mobile-menu-actions">
           <WalletButton noteId="wallet-note-mobile" />
-          <Link className="button button-primary" href={header.cta.href}>
-            {header.cta.label}
-          </Link>
+          <PetCta />
         </div>
       </div>
     </>
