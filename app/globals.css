@@ -1683,6 +1683,215 @@ main > section[class] { background: transparent; }
   .pet-mint-link { display: inline-flex; min-height: 44px; align-items: center; margin-top: 8px; font-size: 1rem; line-height: 22px; }
 }
 
+/* ---------- /pet (docs/DEVLOG.md) ---------- */
+.pet-layout {
+  display: grid;
+  grid-template-areas: "stage side" "talk side";
+  grid-template-columns: round(calc(560px * var(--ui-scale)), 1px) minmax(0, 1fr);
+  align-items: start;
+  gap: round(calc(48px * var(--ui-scale)), 1px) round(calc(56px * var(--ui-scale)), 1px);
+  margin-top: round(calc(74px * var(--ui-scale)), 1px);
+}
+
+.pet-stage { grid-area: stage; }
+.pet-side { grid-area: side; min-width: 0; }
+.pet-talk { grid-area: talk; min-width: 0; }
+
+/* Device: the egg's colours in both themes (cream body, ink outline, NEAR green frame, LCD). */
+.pet-device { filter: drop-shadow(round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow)); }
+
+.pet-device-body {
+  padding: round(calc(24px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px) round(calc(22px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  background: var(--cream);
+  clip-path: polygon(0 round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px) 0, calc(100% - round(calc(6px * var(--ui-scale)), 1px)) 0, calc(100% - round(calc(6px * var(--ui-scale)), 1px)) round(calc(6px * var(--ui-scale)), 1px), 100% round(calc(6px * var(--ui-scale)), 1px), 100% calc(100% - round(calc(6px * var(--ui-scale)), 1px)), calc(100% - round(calc(6px * var(--ui-scale)), 1px)) calc(100% - round(calc(6px * var(--ui-scale)), 1px)), calc(100% - round(calc(6px * var(--ui-scale)), 1px)) 100%, round(calc(6px * var(--ui-scale)), 1px) 100%, round(calc(6px * var(--ui-scale)), 1px) calc(100% - round(calc(6px * var(--ui-scale)), 1px)), 0 calc(100% - round(calc(6px * var(--ui-scale)), 1px)));
+}
+
+.pet-device-frame {
+  padding: round(calc(12px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--green-deep);
+  background: var(--green);
+}
+
+.pet-device-screen {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  height: round(calc(360px * var(--ui-scale)), 1px);
+  place-items: center;
+  overflow: hidden;
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--lcd-shadow);
+  background: var(--lcd);
+}
+
+.pet-device-tap {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.pet-device-tap:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(4px * var(--ui-scale)), 1px); }
+.pet-device-figure { display: block; }
+
+.pet-device-sprite {
+  display: block;
+  width: auto;
+  height: round(calc(300px * var(--ui-scale)), 1px);
+  image-rendering: pixelated;
+}
+
+.pet-device-sprite[hidden] { display: none; }
+
+.pet-device-buttons { display: flex; justify-content: center; gap: round(calc(22px * var(--ui-scale)), 1px); margin-top: round(calc(20px * var(--ui-scale)), 1px); }
+
+.pet-device-buttons > span {
+  width: round(calc(30px * var(--ui-scale)), 1px);
+  height: round(calc(30px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  background: var(--green);
+  box-shadow: inset round(calc(-4px * var(--ui-scale)), 1px) round(calc(-4px * var(--ui-scale)), 1px) 0 var(--green-deep);
+  clip-path: polygon(30% 0, 70% 0, 70% 10%, 90% 10%, 90% 30%, 100% 30%, 100% 70%, 90% 70%, 90% 90%, 70% 90%, 70% 100%, 30% 100%, 30% 90%, 10% 90%, 10% 70%, 0 70%, 0 30%, 10% 30%, 10% 10%, 30% 10%);
+}
+
+.pet-status { margin: round(calc(22px * var(--ui-scale)), 1px) 0 0; font-size: 1.25rem; font-weight: 500; line-height: 1.45; letter-spacing: -0.02em; text-align: center; }
+
+/* Stats card + 10-segment pixel meters */
+.pet-stats {
+  display: grid;
+  gap: round(calc(20px * var(--ui-scale)), 1px);
+  padding: round(calc(28px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+
+.pet-meter {
+  display: grid;
+  grid-template-columns: round(calc(84px * var(--ui-scale)), 1px) minmax(0, 1fr) round(calc(40px * var(--ui-scale)), 1px);
+  align-items: center;
+  gap: round(calc(16px * var(--ui-scale)), 1px);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.pet-meter-value { text-align: right; }
+.pet-meter-bar { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: round(calc(4px * var(--ui-scale)), 1px); height: round(calc(24px * var(--ui-scale)), 1px); }
+.pet-meter-bar > span { border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line); background: var(--surface); }
+.pet-meter-bar > .is-on { background: var(--green); }
+.pet-meter.is-warn .pet-meter-bar > .is-on { background: var(--pink); }
+
+.pet-balance { margin: round(calc(4px * var(--ui-scale)), 1px) 0 0; font-family: var(--font-pixel), monospace; font-size: 0.8125rem; line-height: 1.5; }
+
+.pet-actions { display: flex; flex-wrap: wrap; gap: round(calc(18px * var(--ui-scale)), 1px); margin-top: round(calc(32px * var(--ui-scale)), 1px); }
+
+.button.pet-wardrobe[aria-disabled="true"] {
+  border-style: dashed;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+#wardrobe { scroll-margin-top: round(calc(110px * var(--ui-scale)), 1px); }
+
+.pet-result { min-height: round(calc(26px * var(--ui-scale)), 1px); margin-top: round(calc(18px * var(--ui-scale)), 1px); }
+.pet-result p { margin: 0; font-size: 1.0625rem; font-weight: 500; line-height: 1.45; }
+.pet-refill { margin-top: round(calc(14px * var(--ui-scale)), 1px); }
+
+.pet-reset { margin-top: round(calc(40px * var(--ui-scale)), 1px); padding-top: round(calc(28px * var(--ui-scale)), 1px); border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--divider); }
+
+/* Chat */
+.pet-chat {
+  padding: round(calc(24px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+
+.pet-chat-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: round(calc(12px * var(--ui-scale)), 1px); }
+
+.pet-chat-note {
+  margin: 0;
+  padding: round(calc(6px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px);
+  border: round(calc(1px * var(--ui-scale)), 1px) solid var(--ink);
+  color: var(--ink);
+  background: var(--lcd);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  line-height: 1.4;
+}
+
+.pet-chat-log {
+  display: flex;
+  height: round(calc(320px * var(--ui-scale)), 1px);
+  margin-top: round(calc(18px * var(--ui-scale)), 1px);
+  padding: round(calc(14px * var(--ui-scale)), 1px);
+  flex-direction: column;
+  gap: round(calc(10px * var(--ui-scale)), 1px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--page);
+}
+
+.pet-chat-log:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
+
+.pet-msg {
+  max-width: 82%;
+  margin: 0;
+  padding: round(calc(8px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.pet-msg.is-you { align-self: flex-end; color: var(--ink); background: var(--green); }
+.pet-msg.is-pet { align-self: flex-start; background: var(--surface); }
+.pet-msg.is-note { align-self: center; border-style: dashed; color: var(--text-muted); background: var(--surface); font-size: 0.9375rem; text-align: center; }
+
+.pet-chat-empty,
+.pet-typing { margin: auto 0 0; color: var(--text-muted); font-size: 0.9375rem; font-weight: 500; }
+.pet-chat-empty { margin: auto; }
+.pet-typing { font-family: var(--font-pixel), monospace; font-size: 0.625rem; line-height: 1.5; }
+
+.pet-chat-form { display: flex; gap: round(calc(14px * var(--ui-scale)), 1px); margin-top: round(calc(16px * var(--ui-scale)), 1px); }
+.pet-chat-form .mint-input { width: auto; flex: 1 1 auto; min-width: 0; }
+
+@media (max-width: 1439px) {
+  .pet-layout { grid-template-columns: round(calc(480px * var(--ui-scale)), 1px) minmax(0, 1fr); gap: round(calc(40px * var(--ui-scale)), 1px); }
+  .pet-device-screen { height: round(calc(300px * var(--ui-scale)), 1px); }
+  .pet-device-sprite { height: round(calc(250px * var(--ui-scale)), 1px); }
+}
+
+@media (max-width: 1023px) {
+  .pet-layout { grid-template-areas: "stage" "side" "talk"; grid-template-columns: minmax(0, 1fr); gap: 32px; margin-top: 32px; }
+  .pet-device-body { padding: 16px 16px 14px; }
+  .pet-device-frame { padding: 8px; }
+  .pet-device-screen { height: clamp(220px, 40svh, 320px); }
+  .pet-device-sprite { height: calc(clamp(220px, 40svh, 320px) * 0.82); }
+  .pet-device-buttons { margin-top: 14px; }
+  .pet-device-buttons > span { width: 24px; height: 24px; }
+  .pet-status { margin-top: 16px; font-size: 1.0625rem; }
+  .pet-stats { padding: 18px 16px; gap: 16px; }
+  .pet-meter { grid-template-columns: 68px minmax(0, 1fr) 32px; gap: 10px; font-size: 0.625rem; }
+  .pet-meter-bar { gap: 3px; height: 20px; }
+  .pet-balance { font-size: 0.6875rem; }
+  .pet-actions { display: grid; gap: 14px; margin-top: 24px; }
+  .pet-actions .button,
+  .pet-refill,
+  .pet-reset .button { width: 100%; min-height: 56px; }
+  #wardrobe { scroll-margin-top: 90px; }
+  .pet-reset { margin-top: 28px; padding-top: 24px; }
+  .pet-chat { padding: 16px; }
+  .pet-chat-log { height: auto; min-height: 220px; max-height: 50svh; }
+  .pet-chat-form { flex-direction: column; gap: 12px; }
+  .pet-chat-form .mint-input { width: 100%; }
+  .pet-chat-form .button { width: 100%; min-height: 56px; }
+}
+
 /* ---------- animations v1: everything below runs only without reduced motion ---------- */
 @media (prefers-reduced-motion: no-preference) {
   /* Hero: green/white pixel sweep over the black N strokes (0.5s sweep, 2s pause). */
@@ -1897,4 +2106,16 @@ main > section[class] { background: transparent; }
     50% { opacity: 1; }
     100% { opacity: 1; }
   }
+
+  /* /pet: idle bob, hop on tap, sparkle burst on feed/tap; disabled wardrobe never presses. */
+  .pet-device-sprite { animation: pet-bob 1.2s steps(1, end) infinite; }
+  .pet-device-figure.is-hop { animation: pet-hop 0.36s steps(1, end) 1; }
+  .pet-device .sparkles-burst .sparkle {
+    animation-name: sparkle-burst;
+    animation-iteration-count: 1;
+    animation-timing-function: steps(3, end);
+    animation-fill-mode: both;
+  }
+  .button[aria-disabled="true"]:hover,
+  .button[aria-disabled="true"]:active { transform: none; }
 }

@@ -35,7 +35,7 @@ export const howItWorks = {
 export const wardrobe = {
   header: "dress to impress",
   sub: "crowns, caps, capes, gold chains. buy the fit, flex the fit.",
-  cta: { label: "open wardrobe", href: "/pet" },
+  cta: { label: "open wardrobe", href: "/pet#wardrobe" },
 };
 
 export const tokenomics = {
@@ -163,9 +163,41 @@ export const mintPage = {
   noscript: "turn on javascript to hatch a pet.",
 };
 
-/** /pet stub until the full /pet task. */
+/** /pet (docs/DEVLOG.md §5). Demo only: balance is always "demo", chat is local. */
 export const petPage = {
   metaTitle: "my pet — NEARGOTCHI",
   empty: "no pet yet.",
   emptyLink: "hatch one",
+  sub: "the {species} · hatched {date}",
+  tapLabel: "pet {name}",
+  status: {
+    sleep: "{name} is asleep. zzz…",
+    happy: "{name} is happy.",
+    hungry: "{name} is hungry.",
+    normal: "{name} is chilling.",
+  },
+  meters: { hunger: "hunger", energy: "energy", valueText: "{n} of 100" },
+  balance: "{n} demo $NEARGotchi",
+  feed: { label: "feed", tag: "5 demo" },
+  feedResult: {
+    fed: "nom. −5 demo $NEARGotchi.",
+    full: "{name} is full. no snack needed.",
+    broke: "out of demo $NEARGotchi.",
+  },
+  refill: { label: "refill demo balance", done: "refilled to 100 demo $NEARGotchi. still not real." },
+  wardrobe: "wardrobe · soon",
+  chat: {
+    title: "talk",
+    note: "demo · near ai soon",
+    label: "message",
+    placeholder: "say something to {name}",
+    hint: "each message uses 4 energy.",
+    send: "send",
+    typing: "{name} is typing…",
+    empty: "no messages yet. say hi.",
+    tooLong: "140 characters max.",
+    blank: "type something first.",
+    asleep: "zzz… {name} is asleep. feed it to wake it up.",
+    you: "you",
+  },
 };
