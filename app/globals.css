@@ -683,31 +683,11 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
   text-decoration: none;
 }
 
-/* Hover: NEAR green pixel block + dark-green pixel underline, ink text. Instant, no transition. */
-.site-nav a::before,
-.site-nav a::after {
-  position: absolute;
-  z-index: -1;
-  content: "";
-  visibility: hidden;
+/* Hover: the text turns NEAR green, instant (no transition); nothing else changes.
+   Desktop pointers only; the nav is hidden ≤1023px and the burger panel links have no hover. */
+@media (hover: hover) {
+  .site-nav a:hover { color: var(--green); }
 }
-
-.site-nav a::before {
-  inset: 0;
-  background: var(--green);
-  clip-path: polygon(0 round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px) 0, calc(100% - round(calc(2px * var(--ui-scale)), 1px)) 0, calc(100% - round(calc(2px * var(--ui-scale)), 1px)) round(calc(2px * var(--ui-scale)), 1px), 100% round(calc(2px * var(--ui-scale)), 1px), 100% calc(100% - round(calc(2px * var(--ui-scale)), 1px)), calc(100% - round(calc(2px * var(--ui-scale)), 1px)) calc(100% - round(calc(2px * var(--ui-scale)), 1px)), calc(100% - round(calc(2px * var(--ui-scale)), 1px)) 100%, round(calc(2px * var(--ui-scale)), 1px) 100%, round(calc(2px * var(--ui-scale)), 1px) calc(100% - round(calc(2px * var(--ui-scale)), 1px)), 0 calc(100% - round(calc(2px * var(--ui-scale)), 1px)));
-}
-
-.site-nav a::after {
-  right: round(calc(2px * var(--ui-scale)), 1px);
-  bottom: -4px;
-  left: round(calc(2px * var(--ui-scale)), 1px);
-  height: round(calc(2px * var(--ui-scale)), 1px);
-  background: var(--green-deep);
-}
-
-.site-nav a:hover::before,
-.site-nav a:hover::after { visibility: visible; }
 
 
 .site-actions {
@@ -1069,7 +1049,6 @@ main > section[class] { background: transparent; }
     text-decoration: none;
   }
 
-  .mobile-menu nav a:hover { background: var(--green); }
   .mobile-menu a:focus-visible { outline: 3px solid var(--pink); outline-offset: -3px; }
 
   .mobile-menu-actions { display: grid; gap: 14px; margin-top: 24px; }
@@ -1291,16 +1270,27 @@ main > section[class] { background: transparent; }
 
   /* Buttons: pixel half-press on hover (2px down-right, shadow 2px shorter), full press on
      active (down-right by the whole shadow, shadow 0). Instant, transform only.
-     Buttons without a resting shadow (secondary, mood) move 2px on both. */
-  .button:hover,
-  .pet-mood:hover { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); }
-  .button-primary:hover { box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--ink); }
-  .site-actions .button-primary:hover { box-shadow: round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px) 0 var(--ink); }
+     Buttons without a resting shadow (secondary, mood) move 2px on both.
+     Desktop with a real hover only: on mobile (≤1023px) and touch screens of any width
+     buttons stay static with their resting shadow (no stuck hover after a tap). */
+  @media (min-width: 1024px) and (hover: hover) {
+    .button:hover,
+    .pet-mood:hover { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); }
+    .button-primary:hover { box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--ink); }
+    .site-actions .button-primary:hover { box-shadow: round(calc(2px * var(--ui-scale)), 1px) round(calc(2px * var(--ui-scale)), 1px) 0 var(--ink); }
 
-  .button-primary:active { transform: translate(round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px)); box-shadow: none; }
-  .site-actions .button-primary:active { transform: translate(round(calc(4px * var(--ui-scale)), 1px), round(calc(4px * var(--ui-scale)), 1px)); box-shadow: none; }
-  .button-secondary:active,
-  .pet-mood:active { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); box-shadow: none; }
+    .button-primary:active { transform: translate(round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px)); box-shadow: none; }
+    .site-actions .button-primary:active { transform: translate(round(calc(4px * var(--ui-scale)), 1px), round(calc(4px * var(--ui-scale)), 1px)); box-shadow: none; }
+    .button-secondary:active,
+    .pet-mood:active { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); box-shadow: none; }
+
+    .button:hover .sparkles-burst .sparkle {
+      animation-name: sparkle-burst;
+      animation-iteration-count: 1;
+      animation-timing-function: steps(3, end);
+      animation-fill-mode: both;
+    }
+  }
 
   /* Pets: 2-frame idle bob, offset per card; one pixel hop on card hover. */
   .pet-sprite { animation: pet-bob 1.2s steps(1, end) infinite; }
@@ -1331,10 +1321,10 @@ main > section[class] { background: transparent; }
   /* "burns." highlight pulses between the two NEAR greens. */
   .burns { animation: burns-pulse 2.4s steps(1, end) infinite; }
 
-  /* Shared sparkles: loop twinkles forever; burst plays once on hover (mint) or click (mascot). */
+  /* Shared sparkles: loop twinkles forever; burst plays once on click (mascot) here and on
+     hover (mint, desktop only) in the button block above. */
   .sparkles-ambient .sparkle { animation-name: sparkle-ambient; animation-iteration-count: infinite; animation-timing-function: steps(3, end); }
   .sparkles-loop .sparkle { animation-name: sparkle; animation-iteration-count: infinite; animation-timing-function: steps(3, end); }
-  .button:hover .sparkles-burst .sparkle,
   .mascot-button.is-active .sparkles-burst .sparkle {
     animation-name: sparkle-burst;
     animation-iteration-count: 1;
