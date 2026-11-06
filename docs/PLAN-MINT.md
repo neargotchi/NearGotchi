@@ -150,3 +150,9 @@ Selected card: `--green` card background with ink text (same in light and dark, 
 - [ ] DevTools: localStorage `neargotchi-pet` holds a `DemoPet` with `demo: true`; editing it into garbage → form shows, key cleared.
 - [ ] Storage blocked (private mode / blocked site data): the note shows, the hatch works, /pet shows the pet until reload.
 - [ ] Screen reader: legend + "batman, radio, 1 of 3"; errors announced; hatch text announced; no console errors; no network requests besides page assets.
+
+## PLANNER REVIEW (2026-11-06) — overrides the plan where they differ
+1. Header: do NOT add a 6th nav link and do NOT change the approved header breakpoints (burger stays ≤1279). Instead the existing "mint your pet" CTA (header, burger panel) becomes "my pet" → /pet when a pet exists (getPet() on the client; render "mint your pet" on the server/first paint, swap after hydration with the same button width so there is no layout shift — size the button to the wider label). Hero CTA stays "mint your pet" → /mint (which shows the existing-pet view). Still fix the `//pet` href bug.
+2. Deep link: `/mint?pet=pet1|pet2|pet3` preselects that pet (unknown value = nothing selected). Make the 3 real cards on the home "pick your gotchi" section link-able via a small "mint {name}" text link under the mood buttons → `/mint?pet=…` (copy: `mint {name}`, add to copy). Mood buttons keep working.
+3. Balance 100 is shown on /pet later as "100 demo $NEARGotchi" — never as a plain number next to the ticker.
+4. Everything else approved as written (data model, async interface, name rules, storyboard, copy, edge cases, a11y, checklist).
