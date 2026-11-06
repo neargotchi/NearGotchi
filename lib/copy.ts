@@ -14,7 +14,7 @@ export const howItWorks = {
     {
       number: 1,
       title: "mint",
-      body: "pick a pet. it hatches as an nft with its own balance.",
+      body: "hatch a random pet. 300 in drop 1. each one is an nft with its own balance.",
       sprite: { src: "/logo-transparent.png", width: 1024, height: 1024, alt: "" },
     },
     {
@@ -45,8 +45,10 @@ export const tokenomics = {
     { label: "chain", value: ["near"] },
     // Placeholder until the owner decides: always "tba".
     { label: "supply", value: ["tba"] },
-    { label: "platform fees", value: ["50% burned /", "50% to the community"] },
+    { label: "split", value: ["33% team /", "33% stakers /", "34% buyback & burn"] },
   ],
+  // Under the tiles (body font).
+  note: "applies to hatches, platform fees and the 5% royalty.",
   closing: { lead: "every snack ", accent: "burns." },
 };
 
@@ -58,6 +60,10 @@ export const faq = {
       answer: "an ai pet on near. every pet is an nft that eats tokens to think.",
     },
     {
+      question: "how many pets are there?",
+      answer: "drop 1 is 300 pets: 100 of each. every hatch is random: pet, background, starter accessory and rarity. 2 near per hatch.",
+    },
+    {
       question: "why does my pet need tokens?",
       answer: "talking runs on near ai. tokens = energy. no energy, no words.",
     },
@@ -67,7 +73,7 @@ export const faq = {
     },
     {
       question: "where do the fees go?",
-      answer: "half is burned. half goes back to the community.",
+      answer: "split three ways: 33% team, 33% to stakers, 34% buys back $NEARGotchi and burns it.",
     },
   ],
 };

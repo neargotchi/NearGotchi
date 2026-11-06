@@ -27,6 +27,7 @@ export default function Tokenomics() {
             </div>
           ))}
         </dl>
+        <p className="stat-note">{tokenomics.note}</p>
         <p className="tokenomics-closing">
           {tokenomics.closing.lead}
           <strong className="burns">

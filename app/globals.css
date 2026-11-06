@@ -604,6 +604,14 @@ h1 {
 
 .stat-card dd span { display: block; }
 
+/* Under the tiles: where the split applies (body font, small). */
+.stat-note {
+  margin: round(calc(24px * var(--ui-scale)), 1px) 0 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
 .tokenomics-closing {
   margin: round(calc(96px * var(--ui-scale)), 1px) 0 0;
   font-family: var(--font-pixel), monospace;
@@ -1328,12 +1336,13 @@ main > section[class] { background: transparent; }
   .item-sprite-wrap { height: auto; aspect-ratio: 1; }
   .item-sprite { max-width: 80%; max-height: 80%; }
 
-  /* Tokenomics: 2×2 tiles; values scale with the tile so "50% burned /" (12 glyphs) and
-     "$NEARGotchi" stay on one line. */
+  /* Tokenomics: 2×2 tiles; values scale with the tile so "33% stakers /" (13 glyphs) and
+     "$NEARGotchi" stay on one line; "34% buyback & burn" wraps balanced ("34% buyback" / "& burn"). */
   .stat-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 40px; }
   .stat-card { padding: 16px 12px 18px; gap: 12px; }
   .stat-card dt { font-size: 1rem; }
-  .stat-card dd { font-size: min(1.125rem, calc(((100cqi - 14px) / 2 - 28px) / 11.6)); letter-spacing: -0.05em; }
+  .stat-card dd { font-size: min(1.125rem, calc(((100cqi - 14px) / 2 - 28px) / 12.6)); letter-spacing: -0.05em; }
+  .stat-card dd span { text-wrap: balance; }
 
   .tokenomics-closing { margin-top: 64px; font-size: min(2.6rem, calc((100vw - 2 * var(--gutter)) / 11.6)); }
   /* "burns." sits under "every snack": drop the sparkles inside the highlight and the
