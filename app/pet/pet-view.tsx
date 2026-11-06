@@ -18,7 +18,7 @@ import {
   type DemoPet,
 } from "../../lib/mocks";
 import PetChat from "./pet-chat";
-import PetDevice from "./pet-device";
+import PetDevice, { type FeedAnim } from "./pet-device";
 import StatBars from "./stat-bars";
 
 const SAVE_EVERY_MS = 15000;
@@ -34,6 +34,8 @@ export default function PetView() {
   const [happyUntil, setHappyUntil] = useState(0);
   const [hop, setHop] = useState(0);
   const [burst, setBurst] = useState(0);
+  const [feedAnim, setFeedAnim] = useState<FeedAnim | null>(null);
+  const feedTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [result, setResult] = useState<string | null>(null);
   const [broke, setBroke] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -60,8 +62,10 @@ export default function PetView() {
     };
     document.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", onHide);
+    const timers = feedTimers.current;
     return () => {
       live = false;
+      timers.forEach(clearTimeout);
       unsubscribe();
       clearInterval(clock);
       clearInterval(saver);
@@ -120,15 +124,25 @@ export default function PetView() {
     setHappyUntil(Date.now() + PET_RULES.happyMs);
   };
 
+  /** Snack drop → chomp + bites + crumbs → "+nom" + burst (~1.4s); "full": drop + turn away. */
   const feed = async () => {
     const { pet: next, result: outcome } = await feedPet();
     setPet(next);
     setBroke(outcome === "broke");
     setResult(fill(petPage.feedResult[outcome], { name: pet.name }));
+    // A click mid-animation restarts it: old timers cleared, the layer remounts with a new run.
+    feedTimers.current.forEach(clearTimeout);
+    feedTimers.current = [];
+    if (outcome === "broke") {
+      setFeedAnim(null);
+      return;
+    }
+    setFeedAnim((current) => ({ run: (current?.run ?? 0) + 1, kind: outcome }));
     if (outcome === "fed") {
       makeHappy();
-      setBurst((value) => value + 1);
+      feedTimers.current.push(setTimeout(() => setBurst((value) => value + 1), 1000));
     }
+    feedTimers.current.push(setTimeout(() => setFeedAnim(null), 1500));
   };
 
   const refill = async () => {
@@ -157,7 +171,7 @@ export default function PetView() {
 
       <div className="pet-layout">
         <div className="pet-stage">
-          <PetDevice profile={profile} name={pet.name} mood={mood} hop={hop} burst={burst} onTap={tap} />
+          <PetDevice profile={profile} name={pet.name} mood={mood} hop={hop} burst={burst} feed={feedAnim} onTap={tap} />
           <p className="pet-status">{fill(petPage.status[mood], { name: pet.name })}</p>
         </div>
 

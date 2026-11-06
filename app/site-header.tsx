@@ -28,7 +28,7 @@ export default function SiteHeader() {
         <div className="site-actions">
           <WalletButton />
           <ThemeToggle />
-          <PetCta>
+          <PetCta variant="header">
             <Sparkles
               count={4}
               colors={["var(--green)", "var(--sparkle-alt)"]}

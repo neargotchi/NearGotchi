@@ -113,7 +113,7 @@ export default function MobileMenu() {
         </nav>
         <div className="mobile-menu-actions">
           <WalletButton noteId="wallet-note-mobile" />
-          <PetCta />
+          <PetCta variant="burger" />
         </div>
       </div>
     </>

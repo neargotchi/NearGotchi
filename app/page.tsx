@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import Sparkles from "../components/Sparkles";
+import PetCta from "./pet-cta";
 import Faq from "./faq";
 import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
@@ -45,8 +45,7 @@ export default function Home() {
               and it eats tokens to do it.
             </p>
             <div className="hero-actions">
-              <Link className="button button-primary" href="/mint">
-                mint your pet
+              <PetCta variant="hero">
                 <Sparkles
                   count={5}
                   colors={["var(--green)", "var(--sparkle-alt)"]}
@@ -59,7 +58,7 @@ export default function Home() {
                   size={12}
                   mode="burst"
                 />
-              </Link>
+              </PetCta>
               <a className="button button-secondary" href="#how-it-works">
                 how it works <span aria-hidden="true">↓</span>
               </a>

@@ -88,9 +88,10 @@ export const header = {
     { label: "faq", href: "#faq" },
   ],
   wallet: { label: "connect wallet", tag: "demo", note: "demo only, no wallet connected" },
-  cta: { label: "mint your pet", href: "/mint" },
-  // Header + burger CTA once a demo pet exists (PLAN-MINT review §1). Hero CTA keeps "mint your pet".
-  petCta: { label: "my pet", href: "/pet" },
+  // One primary CTA for hero, header and burger panel (app/pet-cta.tsx): no pet → /mint …
+  cta: { label: "hatch a gotchi", href: "/mint" },
+  // … demo pet exists → /pet.
+  petCta: { label: "my gotchi", href: "/pet" },
 };
 
 /** Section anchors ("#pets") live on the home page; route hrefs ("/pet") are used as-is. */

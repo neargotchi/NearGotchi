@@ -752,6 +752,9 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
 
 .site-actions .button { min-height: round(calc(48px * var(--ui-scale)), 1px); padding: 0 round(calc(20px * var(--ui-scale)), 1px); font-size: 0.78125rem; }
 .site-actions .button-primary { box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--shadow); }
+/* "hatch a gotchi" is one glyph longer than the old label: the header CTA label is 1px smaller so
+   the header keeps its fit at 1280 and 1440 (task 028). */
+.site-actions .button-primary { font-size: calc(0.78125rem - 1px * var(--ui-scale)); }
 
 .site-actions .wallet-tag {
   margin-left: round(calc(10px * var(--ui-scale)), 1px);
@@ -1400,11 +1403,17 @@ main > section[class] { background: transparent; }
   border: 0;
 }
 
-/* Header/burger CTA: "mint your pet" and "my pet" share one grid cell, so the button keeps the
+/* Primary CTA (hero, header, burger): "hatch a gotchi" and "my gotchi" share one grid cell, so the button keeps the
    wider label's width when it swaps after hydration (app/pet-cta.tsx). */
 .button .cta-labels { display: inline-grid; margin: 0; font: inherit; }
 .button .cta-label { grid-area: 1 / 1; margin: 0; font: inherit; text-align: center; }
 .button .cta-label.is-off { visibility: hidden; }
+
+/* "burns." sparkles around the CTA: desktop only (mobile buttons have no motion since task 019);
+   the green pulse itself runs everywhere (a colour change, not movement). */
+@media (max-width: 1023px) {
+  .cta-sparkles { display: none; }
+}
 
 /* "mint {name}" under the mood buttons of the home pet cards → /mint?pet=… */
 .pet-mint-link {
@@ -1714,10 +1723,12 @@ main > section[class] { background: transparent; }
 }
 
 .pet-device-screen {
+  --screen-h: round(calc(360px * var(--ui-scale)), 1px);
+  --sprite-h: round(calc(300px * var(--ui-scale)), 1px);
   position: relative;
   isolation: isolate;
   display: grid;
-  height: round(calc(360px * var(--ui-scale)), 1px);
+  height: var(--screen-h);
   place-items: center;
   overflow: hidden;
   border: round(calc(2px * var(--ui-scale)), 1px) solid var(--lcd-shadow);
@@ -1738,7 +1749,7 @@ main > section[class] { background: transparent; }
 .pet-device-sprite {
   display: block;
   width: auto;
-  height: round(calc(300px * var(--ui-scale)), 1px);
+  height: var(--sprite-h);
   image-rendering: pixelated;
 }
 
@@ -1862,16 +1873,14 @@ main > section[class] { background: transparent; }
 
 @media (max-width: 1439px) {
   .pet-layout { grid-template-columns: round(calc(480px * var(--ui-scale)), 1px) minmax(0, 1fr); gap: round(calc(40px * var(--ui-scale)), 1px); }
-  .pet-device-screen { height: round(calc(300px * var(--ui-scale)), 1px); }
-  .pet-device-sprite { height: round(calc(250px * var(--ui-scale)), 1px); }
+  .pet-device-screen { --screen-h: round(calc(300px * var(--ui-scale)), 1px); --sprite-h: round(calc(250px * var(--ui-scale)), 1px); }
 }
 
 @media (max-width: 1023px) {
   .pet-layout { grid-template-areas: "stage" "side" "talk"; grid-template-columns: minmax(0, 1fr); gap: 32px; margin-top: 32px; }
   .pet-device-body { padding: 16px 16px 14px; }
   .pet-device-frame { padding: 8px; }
-  .pet-device-screen { height: clamp(220px, 40svh, 320px); }
-  .pet-device-sprite { height: calc(clamp(220px, 40svh, 320px) * 0.82); }
+  .pet-device-screen { --screen-h: clamp(220px, 40svh, 320px); --sprite-h: calc(clamp(220px, 40svh, 320px) * 0.82); }
   .pet-device-buttons { margin-top: 14px; }
   .pet-device-buttons > span { width: 24px; height: 24px; }
   .pet-status { margin-top: 16px; font-size: 1.0625rem; }
@@ -1891,6 +1900,58 @@ main > section[class] { background: transparent; }
   .pet-chat-form .mint-input { width: 100%; }
   .pet-chat-form .button { width: 100%; min-height: 56px; }
 }
+
+
+/* Feed animation layer (app/pet/pet-device.tsx): only shown when motion is allowed. Everything
+   is anchored at the pet's mouth (lib/mocks.ts `mouth`, fractions of the sprite); the snack falls
+   from the top of the screen to it in 4 whole-pixel steps (--feed-drop, a multiple of 4px). */
+.pet-device-screen {
+  --feed-drop: round(calc(var(--screen-h) / 2 + (var(--mouth-y) - 0.5) * var(--sprite-h) - round(calc(28px * var(--ui-scale)), 1px)), 4px);
+}
+.pet-device-chew { display: block; transform-origin: 50% 100%; }
+.pet-feed { position: absolute; z-index: 1; inset: 0; display: none; pointer-events: none; }
+
+.pet-mouth {
+  position: absolute;
+  top: calc(50% + (var(--mouth-y) - 0.5) * var(--sprite-h));
+  left: calc(50% + (var(--mouth-x) - 0.5) * var(--sprite-h) * 1.1346);
+  width: 0;
+  height: 0;
+}
+
+.pet-snack { position: absolute; top: round(calc(-8px * var(--ui-scale)), 1px); left: round(calc(-16px * var(--ui-scale)), 1px); width: round(calc(32px * var(--ui-scale)), 1px); height: round(calc(16px * var(--ui-scale)), 1px); }
+.pet-snack-svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
+
+.pet-crumbs { position: absolute; top: round(calc(10px * var(--ui-scale)), 1px); left: 0; }
+
+.pet-crumbs > span {
+  position: absolute;
+  width: round(calc(4px * var(--ui-scale)), 1px);
+  height: round(calc(4px * var(--ui-scale)), 1px);
+  background: var(--cream);
+  box-shadow: 0 0 0 round(calc(1px * var(--ui-scale)), 1px) var(--ink);
+  opacity: 0;
+}
+
+.pet-crumbs > span:nth-child(1) { left: round(calc(-20px * var(--ui-scale)), 1px); }
+.pet-crumbs > span:nth-child(2) { left: round(calc(-8px * var(--ui-scale)), 1px); }
+.pet-crumbs > span:nth-child(3) { left: round(calc(6px * var(--ui-scale)), 1px); }
+.pet-crumbs > span:nth-child(4) { left: round(calc(16px * var(--ui-scale)), 1px); }
+
+.pet-nom {
+  position: absolute;
+  top: round(calc(-40px * var(--ui-scale)), 1px);
+  left: round(calc(-28px * var(--ui-scale)), 1px);
+  width: round(calc(56px * var(--ui-scale)), 1px);
+  color: var(--green);
+  font-family: var(--font-pixel), monospace;
+  font-size: round(calc(12px * var(--ui-scale)), 1px);
+  line-height: 1;
+  text-align: center;
+  text-shadow: round(calc(1px * var(--ui-scale)), 1px) 0 0 var(--ink), round(calc(-1px * var(--ui-scale)), 1px) 0 0 var(--ink), 0 round(calc(1px * var(--ui-scale)), 1px) 0 var(--ink), 0 round(calc(-1px * var(--ui-scale)), 1px) 0 var(--ink);
+  opacity: 0;
+}
+
 
 /* ---------- animations v1: everything below runs only without reduced motion ---------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -1958,7 +2019,8 @@ main > section[class] { background: transparent; }
   }
 
   /* "burns." highlight pulses between the two NEAR greens. */
-  .burns { animation: burns-pulse 2.4s steps(1, end) infinite; }
+  .burns,
+  .cta-burn { animation: burns-pulse 2.4s steps(1, end) infinite; }
 
   /* Shared sparkles: loop twinkles forever; burst plays once on click (mascot) here and on
      hover (mint, desktop only) in the button block above. */
@@ -2118,4 +2180,59 @@ main > section[class] { background: transparent; }
   }
   .button[aria-disabled="true"]:hover,
   .button[aria-disabled="true"]:active { transform: none; }
+
+  /* /pet feed (~1.4s): drop 0–400ms (steps 4) → chomp ×2 + 3 bites + crumbs 400–1000ms →
+     "+nom" rises 16px and fades 1000–1400ms (steps 3). "full": drop, turn away 600ms, snack gone. */
+  .pet-feed { display: block; }
+  .pet-feed .pet-snack { animation: snack-drop 0.4s steps(4, end) both; }
+  .pet-feed.is-fed .pet-snack { animation: snack-drop 0.4s steps(4, end) both, snack-bite 0.6s steps(1, end) 0.4s both; }
+  .pet-feed.is-full .pet-snack { animation: snack-drop 0.4s steps(4, end) both, snack-gone 0.6s steps(1, end) 0.4s both; }
+  .pet-feed .pet-crumbs > span { animation: crumb-fall 0.45s steps(3, end) 0.4s forwards; }
+  .pet-feed .pet-crumbs > span:nth-child(2) { animation-delay: 0.55s; }
+  .pet-feed .pet-crumbs > span:nth-child(3) { animation-delay: 0.7s; }
+  .pet-feed .pet-crumbs > span:nth-child(4) { animation-delay: 0.85s; }
+  .pet-feed .pet-nom { animation: nom-rise 0.4s steps(3, end) 1s forwards; }
+  .pet-device-chew.is-fed { animation: pet-chew 0.6s steps(1, end) 0.4s forwards; }
+  .pet-device-chew.is-full { animation: pet-turn 0.6s steps(1, end) 0.4s forwards; }
+
+  @keyframes snack-drop {
+    from { transform: translateY(calc(-1 * var(--feed-drop))); }
+    to { transform: translateY(0); }
+  }
+
+  @keyframes snack-bite {
+    0% { clip-path: inset(0 0 0 0); }
+    25% { clip-path: inset(0 34% 0 0); }
+    50% { clip-path: inset(0 67% 0 0); }
+    75%, 100% { clip-path: inset(0 100% 0 0); }
+  }
+
+  @keyframes snack-gone {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes crumb-fall {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(round(calc(30px * var(--ui-scale)), 1px)); }
+  }
+
+  @keyframes nom-rise {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(round(calc(-16px * var(--ui-scale)), 1px)); }
+  }
+
+  /* happy sprite 1 → 1.06 → 1, twice */
+  @keyframes pet-chew {
+    0% { transform: scale(1.06); }
+    25% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    75%, 100% { transform: scale(1); }
+  }
+
+  /* not hungry: turns away for 600ms */
+  @keyframes pet-turn {
+    0% { transform: scaleX(-1); }
+    100% { transform: none; }
+  }
 }

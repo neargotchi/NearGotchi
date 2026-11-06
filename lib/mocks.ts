@@ -13,6 +13,8 @@ export type PetProfile = {
   spriteFolder: string;
   spriteWidth: number;
   spriteHeight: number;
+  /** Mouth in the happy sprite, as fractions of its width/height (/pet feed animation target). */
+  mouth: [number, number];
 };
 
 /** Approved pets (copy v1). */
@@ -25,6 +27,7 @@ export const pets: PetProfile[] = [
     spriteFolder: "pet1",
     spriteWidth: 489,
     spriteHeight: 431,
+    mouth: [0.3, 0.51],
   },
   {
     id: "pet2",
@@ -34,6 +37,7 @@ export const pets: PetProfile[] = [
     spriteFolder: "pet2",
     spriteWidth: 489,
     spriteHeight: 431,
+    mouth: [0.36, 0.45],
   },
   {
     id: "pet3",
@@ -43,6 +47,7 @@ export const pets: PetProfile[] = [
     spriteFolder: "pet3",
     spriteWidth: 489,
     spriteHeight: 431,
+    mouth: [0.37, 0.3],
   },
 ];
 
