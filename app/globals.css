@@ -1594,7 +1594,8 @@ main > section[class] { background: transparent; }
 .mint-loading { min-height: round(calc(480px * var(--ui-scale)), 1px); }
 
 /* Hatch stage: LCD box; the egg is two clip-path halves of the logo plus a pixel crack. */
-.mint-hatch { display: grid; justify-items: start; margin-top: round(calc(74px * var(--ui-scale)), 1px); }
+/* Stage, live text and the go button are centered in the content column at every size. */
+.mint-hatch { display: grid; justify-items: center; margin-top: round(calc(74px * var(--ui-scale)), 1px); text-align: center; }
 
 .hatch-stage {
   position: relative;
@@ -1672,7 +1673,7 @@ main > section[class] { background: transparent; }
   .pet-stub .mint-existing-body { margin-top: 32px; }
   .pet-stub > .mint-title + .mint-actions { margin-top: 28px; }
 
-  .mint-hatch { justify-items: stretch; margin-top: 40px; }
+  .mint-hatch { margin-top: 40px; }
   .hatch-stage { width: 100%; height: auto; padding: 24px 0; }
   .hatch-egg { width: clamp(160px, 30svh, 260px); }
   .hatch-pet { height: calc(clamp(160px, 30svh, 260px) * 0.85); }
