@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { header } from "../lib/copy";
-import ThemeToggle from "./theme-toggle";
 import WalletButton from "./wallet-button";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -117,7 +116,6 @@ export default function MobileMenu() {
           <Link className="button button-primary" href={header.cta.href}>
             {header.cta.label}
           </Link>
-          <ThemeToggle />
         </div>
       </div>
     </>

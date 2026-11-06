@@ -800,6 +800,9 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
 :root[data-theme="dark"] .theme-icon-moon { display: none; }
 :root[data-theme="dark"] .theme-icon-sun { display: block; }
 
+/* Header-bar copy of the toggle, left of the burger: only where the burger is used (≤1279px). */
+.header-theme-toggle { display: none; }
+
 .theme-toggle:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
 
 .site-brand:focus-visible,
@@ -1056,9 +1059,13 @@ main > section[class] { background: transparent; }
    height and side margins, so the panel opens under it at 79px. */
 @media (max-width: 1279px) {
   /* Logo + name left, pixel burger right; nav, actions and the theme toggle move into the panel. */
-  .site-header-inner { grid-template-columns: 1fr auto; gap: 16px; }
+  .site-header-inner { grid-template-columns: 1fr auto auto; gap: 10px; }
   .site-nav,
   .site-actions { display: none; }
+
+  /* Theme toggle in the bar, 10px left of the burger: same 48×48 pixel box and border. */
+  .header-theme-toggle { display: grid; width: 48px; height: 48px; border-width: 2px; }
+  .header-theme-toggle .theme-icon { width: 20px; height: 20px; }
 
   .menu-button {
     display: grid;
@@ -1137,9 +1144,6 @@ main > section[class] { background: transparent; }
     font-size: 0.5rem;
     line-height: 1;
   }
-
-  .mobile-menu .theme-toggle { justify-self: start; width: 52px; height: 52px; }
-  .mobile-menu .theme-icon { width: 20px; height: 20px; }
 
   .mobile-menu .wallet-note { position: static; margin-top: -4px; font-size: 1rem; white-space: normal; }
 }
@@ -1348,6 +1352,19 @@ main > section[class] { background: transparent; }
   .notfound-line { font-size: 1.125rem; }
 }
 
+/* Narrowest phones: logo only, so it never meets the toggle + burger. The wordmark stays as
+   the link's accessible name. */
+@media (max-width: 340px) {
+  .site-brand-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 /* Tablet: 2×2 steps, two wardrobe slots per row, hero copy centered under the egg. */
 @media (min-width: 600px) and (max-width: 1023px) {
   .steps-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1390,8 +1407,8 @@ main > section[class] { background: transparent; }
     .button-primary:active { transform: translate(round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px)); box-shadow: none; }
     .mobile-menu-actions .button-primary:active,
     .site-actions .button-primary:active { transform: translate(round(calc(4px * var(--ui-scale)), 1px), round(calc(4px * var(--ui-scale)), 1px)); box-shadow: none; }
-    .theme-toggle:hover,
-    .theme-toggle:active,
+    .site-actions .theme-toggle:hover,
+    .site-actions .theme-toggle:active,
     .button-secondary:active,
     .pet-mood:active { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); box-shadow: none; }
 

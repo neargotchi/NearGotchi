@@ -13,7 +13,7 @@ export default function SiteHeader() {
       <div className="site-header-inner">
         <Link className="site-brand" href="/">
           <Image src="/logo-transparent.png" alt="" width={40} height={40} />
-          {header.brand}
+          <span className="site-brand-name">{header.brand}</span>
         </Link>
         <nav className="site-nav" aria-label="sections">
           <ul>
@@ -42,6 +42,7 @@ export default function SiteHeader() {
             />
           </Link>
         </div>
+        <ThemeToggle className="header-theme-toggle" />
         <MobileMenu />
       </div>
     </header>

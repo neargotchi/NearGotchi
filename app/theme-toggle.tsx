@@ -55,7 +55,7 @@ const currentTheme = (): Theme =>
  * Pixel sun/moon button (header on desktop, burger panel on mobile). The icon shown is picked by
  * CSS from <html data-theme>, so it is right before hydration; labels follow once mounted.
  */
-export default function ThemeToggle() {
+export default function ThemeToggle({ className }: { className?: string }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
-      className="theme-toggle"
+      className={className ? `theme-toggle ${className}` : "theme-toggle"}
       aria-label={dark ? "switch to light mode" : "switch to dark mode"}
       aria-pressed={dark}
       onClick={() => {
