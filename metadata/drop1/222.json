@@ -1,0 +1,14 @@
+{
+  "title": "merk #222",
+  "description": "neargotchi drop 1 · #222 of 300 · rare meerkat wearing a top hat.",
+  "media": "222.png",
+  "media_hash": "SGe1b1aEzdXuXmGNLiXu65iAvpiVXZqTl289YNqhfBQ=",
+  "copies": 1,
+  "issued_at": null,
+  "expires_at": null,
+  "starts_at": null,
+  "updated_at": null,
+  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"r09-near-green\",\"tier\":\"rare\",\"accessory\":\"tophat\",\"drop\":1}",
+  "reference": null,
+  "reference_hash": null
+}

@@ -1,18 +1,18 @@
-"""Shared drop-1 compose code (docs/PLAN-COLLECTION.md §2–3).
-Used by check_anchors.py and (task C) compose_drop1.py; anchor-tuner.html mirrors place() in JS.
-Coordinates in data/anchors.json are nft.png canvas pixels (601×762)."""
-import json, math, os
+"""Shared drop-1 compose code (docs/PLAN-COLLECTION.md, "Update: dressed poses").
+Each token = background (1024²) + one dressed pose public/pets/<pet>/dressed/<item>.png (720×900, feet on y=880),
+pasted 1× (no resampling) at (152, 80) so the feet land on y=960. Used by build_manifest.py, compose_drop1.py,
+build_metadata.py and contact_sheet.py.
+(The layered-accessory anchors of task 032 were dropped by the owner on 2026-11-07; see git 59baf28 for that code.)"""
+import os
 from functools import lru_cache
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CANVAS = 1024
-PET_W, PET_H, PET_BASELINE = 601, 762, 746      # shared nft.png canvas + baseline row
-BASELINE_Y = 960                                 # where the pet baseline lands on the 1024 canvas
-PET_OFFSET = ((CANVAS - PET_W) // 2, BASELINE_Y - PET_BASELINE)  # (211, 214), 1× native
-SLOTS = ["head", "eyes", "neck", "body", "back"]
-Z_ORDER = ["back", "pet", "body", "neck", "eyes", "head"]           # bottom → top
-ALIGN = {"top": (0.5, 0.0), "center": (0.5, 0.5), "bottom": (0.5, 1.0)}
+DRESSED_W, DRESSED_H, DRESSED_BASELINE = 720, 900, 880
+BASELINE_Y = 960
+OFFSET = ((CANVAS - DRESSED_W) // 2, BASELINE_Y - DRESSED_BASELINE)   # (152, 80)
+TIERS = ["common", "rare", "epic", "legendary"]
 PETS = {  # mirrors lib/mocks.ts `pets`
     "pet1": {"name": "batman", "species": "corgi"},
     "pet2": {"name": "nightshade", "species": "dragon"},
@@ -26,13 +26,11 @@ def path(*p):
 
 @lru_cache(None)
 def items():
-    """{item_id: slot} from public/items/<slot>/<id>.png (the 14 wardrobe items)."""
-    out = {}
-    for slot in SLOTS:
-        for f in sorted(os.listdir(path("public", "items", slot))):
-            if f.endswith(".png"):
-                out[f[:-4]] = slot
-    return out
+    """Sorted item ids that exist as a dressed pose for EVERY pet (13 since task 033)."""
+    sets = [{f[:-4] for f in os.listdir(path("public", "pets", p, "dressed")) if f.endswith(".png")} for p in PETS]
+    common = set.intersection(*sets)
+    assert all(s == common for s in sets), "dressed item sets differ between pets"
+    return sorted(common)
 
 
 @lru_cache(None)
@@ -43,77 +41,28 @@ def backgrounds():
 
 
 @lru_cache(None)
-def load_anchors():
-    with open(path("data", "anchors.json")) as fh:
-        return json.load(fh)
-
-
-@lru_cache(None)
 def _img(rel):
     return Image.open(path(rel)).convert("RGBA")
 
 
-def pet_img(pet_id):
-    return _img(f"public/pets/{pet_id}/nft.png")
-
-
-def item_img(item_id):
-    return _img(f"public/items/{items()[item_id]}/{item_id}.png")
+def dressed_img(pet_id, item):
+    im = _img(f"public/pets/{pet_id}/dressed/{item}.png")
+    assert im.size == (DRESSED_W, DRESSED_H), f"{pet_id}/{item}: {im.size}"
+    return im
 
 
 def bg_img(bg_id):
-    return _img(f"assets-raw/backgrounds/{bg_id}.png")
+    im = _img(f"assets-raw/backgrounds/{bg_id}.png")
+    assert im.size == (CANVAS, CANVAS), f"{bg_id}: {im.size}"
+    return im
 
 
-def rnd(v):
-    """Round half up, like JS Math.round (anchor-tuner.html must match pixel for pixel)."""
-    return math.floor(v + 0.5)
-
-
-def placement(pet_id, item_id, anchors=None):
-    """-> (x, y, w, h) of the scaled item in nft.png canvas coords.
-    Slot anchor = where the item's align point lands; overrides: "<item>" (all pets) then "<pet>:<item>",
-    each may add dx/dy and multiply scale."""
-    a = anchors or load_anchors()
-    slot = items()[item_id]
-    base = a[pet_id][slot]
-    x, y, s = base["x"], base["y"], base["scale"]
-    ax, ay = ALIGN[base.get("align", "center")]
-    for key in (item_id, f"{pet_id}:{item_id}"):
-        o = a.get("overrides", {}).get(key)
-        if o:
-            x += o.get("dx", 0); y += o.get("dy", 0); s *= o.get("scale", 1)
-            if "align" in o:
-                ax, ay = ALIGN[o["align"]]
-    src = item_img(item_id)
-    w, h = max(1, rnd(src.width * s)), max(1, rnd(src.height * s))
-    return rnd(x - ax * w), rnd(y - ay * h), w, h
-
-
-def compose(pet_id, accessories, bg, anchors=None):
-    """accessories: {slot: item_id}; bg: background id, an RGB(A) tuple, or an Image (1024²).
-    Returns a 1024×1024 RGB image. Pet at 1× native, items NEAREST-scaled, fixed z-order."""
-    if isinstance(bg, str):
-        canvas = bg_img(bg).copy()
-    elif isinstance(bg, Image.Image):
-        canvas = bg.convert("RGBA").copy()
-    else:
-        canvas = Image.new("RGBA", (CANVAS, CANVAS), tuple(bg) + (255,) * (4 - len(bg)))
-    by_slot = {items()[i]: i for i in accessories.values()}
-    assert len(by_slot) == len(accessories), "max 1 item per slot"
-    ox, oy = PET_OFFSET
-    for layer in Z_ORDER:
-        if layer == "pet":
-            canvas.alpha_composite(pet_img(pet_id), (ox, oy))
-        elif layer in by_slot:
-            item_id = by_slot[layer]
-            x, y, w, h = placement(pet_id, item_id, anchors)
-            im = item_img(item_id).resize((w, h), Image.NEAREST)
-            layer_img = Image.new("RGBA", canvas.size)
-            layer_img.paste(im, (ox + x, oy + y))   # paste clips safely at canvas edges
-            canvas.alpha_composite(layer_img)
+def compose(pet_id, item, bg):
+    """bg: background id or an RGB tuple. Returns the 1024×1024 RGB token image (no scaling anywhere)."""
+    canvas = bg_img(bg).copy() if isinstance(bg, str) else Image.new("RGBA", (CANVAS, CANVAS), tuple(bg) + (255,))
+    canvas.alpha_composite(dressed_img(pet_id, item), OFFSET)
     return canvas.convert("RGB")
 
 
-def compose_token(token, anchors=None):
-    return compose(token["petId"], token["accessories"], token["background"], anchors)
+def compose_token(token):
+    return compose(token["petId"], token["accessory"], token["background"])

@@ -1,0 +1,14 @@
+{
+  "title": "merk #002",
+  "description": "neargotchi drop 1 · #002 of 300 · common meerkat wearing a top hat.",
+  "media": "2.png",
+  "media_hash": "5zJD8K7b3SUReIQKbYDbgJ0qiaE6t107uYQjSV+3vRI=",
+  "copies": 1,
+  "issued_at": null,
+  "expires_at": null,
+  "starts_at": null,
+  "updated_at": null,
+  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c04-pixel-grass\",\"tier\":\"common\",\"accessory\":\"tophat\",\"drop\":1}",
+  "reference": null,
+  "reference_hash": null
+}

@@ -1,0 +1,14 @@
+{
+  "title": "merk #023",
+  "description": "neargotchi drop 1 · #023 of 300 · common meerkat wearing sunglasses.",
+  "media": "23.png",
+  "media_hash": "jJ4jT0J7VKdO3i06KDVQq7cYMqWdE9j3xJdzaa7dVTY=",
+  "copies": 1,
+  "issued_at": null,
+  "expires_at": null,
+  "starts_at": null,
+  "updated_at": null,
+  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c06-cream-grid\",\"tier\":\"common\",\"accessory\":\"sunglasses\",\"drop\":1}",
+  "reference": null,
+  "reference_hash": null
+}

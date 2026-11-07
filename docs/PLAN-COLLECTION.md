@@ -111,3 +111,24 @@ NEP-177 `TokenMetadata` per token:
   - **Legendary glow.** l12's bright centre sits behind the pet's head, so the halo could vanish. Check halo on l12 specifically.
   - **Media hash drift.** If Pillow is upgraded, the hashes must be re-computed, which is why the version is pinned.
 - No exclusions are decided yet. The list starts empty in the config and gets filled from the B check sheet with the owner.
+
+## PLANNER REVIEW (2026-11-07)
+1. Approved as written: manifest rules + validation, name "<pet> #NNN" (global id), 1× pet at y-baseline 960, z-order, no baked frame, NEP-177 metadata, contact sheet, fallback order, same seed on re-runs.
+2. Defringe: agreed — add the "run once per fresh cut, not idempotent" comment now (task A).
+3. Anchors: Claude Code does the FIRST PASS itself (measure each pet's head top, eye line, neck, chest from nft.png alpha/pixels; place the 5 slot anchors; add overrides where an item clearly looks off). The owner only reviews the check sheet and may fine-tune with the tuner page. Don't wait for manual tuning before producing the sheet.
+4. Order: tasks A + B together (manifest + anchors + check sheet), then STOP for owner approval of docs/anchors-check.png. Task C (300 renders + metadata + contact sheet) only after the owner says ok.
+5. The check sheet must also include 9 sample tokens from the manifest (one per pet × common/rare/legendary) rendered with the real compositor code, so the owner sees real NFTs, not only single items.
+
+## Update: dressed poses (owner decision 2026-11-07, task 033)
+Replaces the accessory, anchor and stacking rules above (§1 accessories, §2 entirely, §3 layer order).
+- **Assets:** layered accessories looked like stickers, so each pet was AI-dressed per item. `public/pets/petN/dressed/<item>.png` is 720×900, feet on y=880, centred on the feet. 13 items (cape dropped). Prep: `scripts/prep_dressed.py` (once per fresh raw set).
+- **Token:** pet + background + **exactly 1** accessory (`"accessory": "crown"`). Tier = background tier; per pet 60/25/12/3. Each (bg, item) pair is used at most once per pet. Each item is used 7–8 times per pet. Same seed 20261107, same ordering guard, same names.
+- **Compose:** background + dressed pose at 1× (no resampling) at (152, 80), so the feet land on y=960.
+- **Pipeline:**
+  ```
+  build_manifest.py [--check]
+  → compose_drop1.py [--check]   (images/drop1/*.png gitignored; public/drop1/*.webp; metadata/hashes.json)
+  → build_metadata.py            (metadata/drop1/)
+  → contact_sheet.py             (docs/drop1-preview.png)
+  ```
+- **Removed:** `data/anchors.json`, `scripts/anchor-tuner.html`, `scripts/check_anchors.py` and the anchor code in `drop1_lib.py` (in git at 59baf28). `docs/anchors-check.png` is kept as history.

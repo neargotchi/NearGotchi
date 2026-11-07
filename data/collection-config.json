@@ -3,9 +3,7 @@
   "seed": 20261107,
   "pets": ["pet1", "pet2", "pet3"],
   "perPet": { "common": 60, "rare": 25, "epic": 12, "legendary": 3 },
-  "accessoriesPerTier": { "common": 1, "rare": 2, "epic": 3, "legendary": 3 },
   "exclusions": {
-    "petItem": [],
-    "itemPairs": []
+    "petItem": []
   }
 }

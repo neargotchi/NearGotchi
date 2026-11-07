@@ -1,0 +1,14 @@
+{
+  "title": "merk #015",
+  "description": "neargotchi drop 1 · #015 of 300 · common meerkat wearing a keffiyeh.",
+  "media": "15.png",
+  "media_hash": "/BXCBK82HY/rmp0JGEhg3K02lLU55vvhLY9uZZfLjss=",
+  "copies": 1,
+  "issued_at": null,
+  "expires_at": null,
+  "starts_at": null,
+  "updated_at": null,
+  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"keffiyeh\",\"drop\":1}",
+  "reference": null,
+  "reference_hash": null
+}

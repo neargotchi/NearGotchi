@@ -8,3 +8,4 @@ __pycache__/
 *.tsbuildinfo
 docs/NEXT.md
 docs/QUEUE-*.md
+images/

@@ -1,0 +1,14 @@
+{
+  "title": "merk #112",
+  "description": "neargotchi drop 1 · #112 of 300 · common meerkat wearing a crown.",
+  "media": "112.png",
+  "media_hash": "w78aoIXhxzMeERDvAVX3foulzaAv0W0zEiTSMn+a4GI=",
+  "copies": 1,
+  "issued_at": null,
+  "expires_at": null,
+  "starts_at": null,
+  "updated_at": null,
+  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"crown\",\"drop\":1}",
+  "reference": null,
+  "reference_hash": null
+}

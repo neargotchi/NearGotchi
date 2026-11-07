@@ -1,0 +1,66 @@
+{
+  "contract_metadata": {
+    "spec": "nft-1.0.0",
+    "name": "NEARGOTCHI",
+    "symbol": "NGOTCHI",
+    "icon": null,
+    "base_uri": "ipfs://TODO_CID",
+    "reference": null,
+    "reference_hash": null
+  },
+  "summary": {
+    "drop": 1,
+    "count": 300,
+    "seed": 20261107,
+    "manifest": "data/collection-drop1.json sha256:ed60228ebf41f268ff4f139f891dc3943377b93ae7d8ed826501fcee4850079e",
+    "per_pet_tier": {
+      "pet1": {
+        "rare": 25,
+        "common": 60,
+        "epic": 12,
+        "legendary": 3
+      },
+      "pet2": {
+        "rare": 25,
+        "common": 60,
+        "epic": 12,
+        "legendary": 3
+      },
+      "pet3": {
+        "common": 60,
+        "epic": 12,
+        "rare": 25,
+        "legendary": 3
+      }
+    },
+    "per_background": {
+      "c01-lcd-dots": 30,
+      "c02-desert": 30,
+      "c03-cozy-room": 30,
+      "c04-pixel-grass": 30,
+      "c05-soft-sky": 30,
+      "c06-cream-grid": 30,
+      "e10-golden-hour": 18,
+      "e11-cosmic": 18,
+      "l12-legendary-glow": 9,
+      "r07-night-pixel": 24,
+      "r08-sunset": 25,
+      "r09-near-green": 26
+    },
+    "per_accessory": {
+      "beanie": 23,
+      "cap": 23,
+      "chain": 23,
+      "crown": 23,
+      "halo": 24,
+      "headphones": 22,
+      "keffiyeh": 24,
+      "mask": 23,
+      "nerd": 23,
+      "pixel": 23,
+      "sunglasses": 23,
+      "tophat": 24,
+      "tshirt": 22
+    }
+  }
+}

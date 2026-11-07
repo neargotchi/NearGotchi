@@ -1,4 +1,4 @@
-"""Build + validate the drop-1 manifest (docs/PLAN-COLLECTION.md §1).
+"""Build + validate the drop-1 manifest (docs/PLAN-COLLECTION.md, rules updated by task 033: one dressed accessory).
   python3 scripts/build_manifest.py           build data/collection-drop1.json + docs/drop1-usage.txt
   python3 scripts/build_manifest.py --check   validate the committed manifest and confirm a rebuild is byte-identical
 Config (seed, quotas, exclusions): data/collection-config.json. Same seed + same config + same script → same bytes."""
@@ -11,8 +11,8 @@ import drop1_lib as L
 CONFIG = L.path("data", "collection-config.json")
 OUT = L.path("data", "collection-drop1.json")
 USAGE = L.path("docs", "drop1-usage.txt")
-TIERS = ["common", "rare", "epic", "legendary"]
-FILL_ORDER = ["legendary", "epic", "rare", "common"]  # rarest first; single-item commons even out the spread last
+TIERS = L.TIERS
+FILL_ORDER = ["legendary", "epic", "rare", "common"]  # rarest first; commons (most bg × item room) even out the spread
 
 
 def sha(path, n=12):
@@ -25,25 +25,8 @@ def load_config():
         return json.load(fh)
 
 
-def excluded(cfg, pet, item_set):
-    ex = cfg["exclusions"]
-    if any(f"{pet}:{i}" in ex["petItem"] for i in item_set):
-        return True
-    return any(set(pair) <= set(item_set) for pair in ex["itemPairs"])
-
-
-def candidate_sets(cfg, pet, k):
-    """All k-item sets with distinct slots and no excluded combo, sorted (deterministic)."""
-    by_slot = {}
-    for item, slot in L.items().items():
-        by_slot.setdefault(slot, []).append(item)
-    out = []
-    for slots in itertools.combinations(L.SLOTS, k):
-        for combo in itertools.product(*(sorted(by_slot[s]) for s in slots)):
-            s = tuple(sorted(combo))
-            if not excluded(cfg, pet, s):
-                out.append(s)
-    return sorted(out)
+def allowed_items(cfg, pet):
+    return [i for i in L.items() if f"{pet}:{i}" not in cfg["exclusions"]["petItem"]]
 
 
 def bgs_by_tier():
@@ -54,51 +37,56 @@ def bgs_by_tier():
 
 
 def capacity(cfg):
-    bgs = bgs_by_tier()
-    rows, ok = [], True
+    bgs, rows, ok = bgs_by_tier(), [], True
     for pet in cfg["pets"]:
         for tier in TIERS:
-            cap = len(candidate_sets(cfg, pet, cfg["accessoriesPerTier"][tier])) * len(bgs[tier])
-            need = cfg["perPet"][tier]
+            cap, need = len(allowed_items(cfg, pet)) * len(bgs[tier]), cfg["perPet"][tier]
             ok &= cap >= need
-            rows.append(f"  {pet} {tier:<9} capacity {cap:>4}  need {need:>3}  {'ok' if cap >= need else 'TOO LOW'}")
+            rows.append(f"  {pet} {tier:<9} capacity {cap:>3}  need {need:>3}  {'ok' if cap >= need else 'TOO LOW'}")
     return ok, rows
 
 
+def build_pet(cfg, pet, bgs, attempt):
+    """Greedy: per token take the least-used item (per pet) whose (bg, item) pair is still free; seeded ties."""
+    rng = random.Random(f"{cfg['seed']}:{pet}:{attempt}")
+    items, used, usage, out = allowed_items(cfg, pet), set(), Counter(), []
+    for tier in FILL_ORDER:
+        bg_cycle = sorted(bgs[tier]); rng.shuffle(bg_cycle)       # which bg gets the remainder is seeded
+        for i in range(cfg["perPet"][tier]):
+            bg = bg_cycle[i % len(bg_cycle)]
+            free = [it for it in items if (bg, it) not in used]
+            low = min(usage[it] for it in free)
+            pick = rng.choice([it for it in free if usage[it] == low])
+            used.add((bg, pick)); usage[pick] += 1
+            out.append({"petId": pet, "pet": L.PETS[pet]["name"], "species": L.PETS[pet]["species"],
+                        "tier": tier, "background": bg, "accessory": pick})
+    return out, usage
+
+
 def build(cfg):
-    seed, bgs, slot_of = cfg["seed"], bgs_by_tier(), L.items()
-    tokens = []
+    bgs, tokens, attempts = bgs_by_tier(), [], {}
     for pet in cfg["pets"]:
-        rng = random.Random(f"{seed}:{pet}")
-        used, usage = set(), Counter()
-        for tier in FILL_ORDER:
-            cands = candidate_sets(cfg, pet, cfg["accessoriesPerTier"][tier])
-            bg_cycle = sorted(bgs[tier]); rng.shuffle(bg_cycle)   # which bg gets the remainder is seeded
-            for i in range(cfg["perPet"][tier]):
-                bg = bg_cycle[i % len(bg_cycle)]
-                free = [s for s in cands if (bg, s) not in used]
-                best = min(sum(usage[it] for it in s) for s in free)
-                pick = rng.choice([s for s in free if sum(usage[it] for it in s) == best])
-                used.add((bg, pick)); usage.update(pick)
-                acc = {slot: it for slot in L.SLOTS for it in pick if slot_of[it] == slot}
-                tokens.append({"petId": pet, "pet": L.PETS[pet]["name"], "species": L.PETS[pet]["species"],
-                               "tier": tier, "background": bg, "accessories": acc})
-    attempt = 0
+        for attempt in range(100):   # retry (logged) only if a (bg, item) clash pushed the spread above 1
+            pet_tokens, usage = build_pet(cfg, pet, bgs, attempt)
+            vals = [usage[i] for i in allowed_items(cfg, pet)]
+            if max(vals) - min(vals) <= 1:
+                break
+        attempts[pet] = attempt
+        tokens += pet_tokens
+    order_attempt = 0
     while True:   # seeded shuffle + mix guard (no 5 same pet in a row, no legendary in ids 1–10)
         order = tokens[:]
-        random.Random(f"{seed}:order:{attempt}").shuffle(order)
+        random.Random(f"{cfg['seed']}:order:{order_attempt}").shuffle(order)
         runs = max(len(list(g)) for _, g in itertools.groupby(t["petId"] for t in order))
         if runs < 5 and all(t["tier"] != "legendary" for t in order[:10]):
             break
-        attempt += 1
-    out = []
-    for n, t in enumerate(order, 1):
-        out.append({"tokenId": n, **t, "name": f"{t['pet']} #{n:03d}"})
-    return attempt, out
+        order_attempt += 1
+    out = [{"tokenId": n, **t, "name": f"{t['pet']} #{n:03d}"} for n, t in enumerate(order, 1)]
+    return {"pets": attempts, "order": order_attempt}, out
 
 
-def serialize(cfg, attempt, tokens):
-    head = {"drop": cfg["drop"], "seed": cfg["seed"], "orderAttempt": attempt, "count": len(tokens),
+def serialize(cfg, attempts, tokens):
+    head = {"drop": cfg["drop"], "seed": cfg["seed"], "attempts": attempts, "count": len(tokens),
             "generator": f"scripts/build_manifest.py sha256:{sha(__file__)}",
             "config": f"data/collection-config.json sha256:{sha(CONFIG)}",
             "exclusions": cfg["exclusions"]}
@@ -108,7 +96,7 @@ def serialize(cfg, attempt, tokens):
 
 
 def validate(cfg, tokens):
-    errs, slot_of, bgs = [], L.items(), L.backgrounds()
+    errs, bgs = [], L.backgrounds()
     if [t["tokenId"] for t in tokens] != list(range(1, sum(cfg["perPet"].values()) * len(cfg["pets"]) + 1)):
         errs.append("tokenIds are not exactly 1..N")
     counts = Counter((t["petId"], t["tier"]) for t in tokens)
@@ -118,46 +106,35 @@ def validate(cfg, tokens):
                 errs.append(f"{pet} {tier}: {counts[(pet, tier)]} != {cfg['perPet'][tier]}")
     seen = set()
     for t in tokens:
-        tid, acc = t["tokenId"], t["accessories"]
+        tid = t["tokenId"]
         if bgs.get(t["background"]) != t["tier"]:
             errs.append(f"#{tid}: background {t['background']} is not {t['tier']}")
-        if len(acc) != cfg["accessoriesPerTier"][t["tier"]]:
-            errs.append(f"#{tid}: {len(acc)} accessories for {t['tier']}")
-        if any(slot_of.get(it) != slot for slot, it in acc.items()):
-            errs.append(f"#{tid}: item in wrong slot {acc}")
-        key = (t["petId"], t["background"], tuple(sorted(acc.values())))
+        if not isinstance(t["accessory"], str) or t["accessory"] not in allowed_items(cfg, t["petId"]):
+            errs.append(f"#{tid}: accessory {t['accessory']!r} is not an allowed dressed item")
+        key = (t["petId"], t["background"], t["accessory"])
         if key in seen:
-            errs.append(f"#{tid}: duplicate background + accessory set for {t['petId']}")
+            errs.append(f"#{tid}: duplicate background + accessory for {t['petId']}")
         seen.add(key)
-        if excluded(cfg, t["petId"], tuple(acc.values())):
-            errs.append(f"#{tid}: excluded combo {acc}")
         if t["name"] != f"{L.PETS[t['petId']]['name']} #{tid:03d}":
             errs.append(f"#{tid}: name {t['name']}")
-    for pet in cfg["pets"]:   # spread over head+eyes items: overall ≤ 3, within a slot ≤ 2
-        # single-item slots (neck/body/back) are report-only: exclusions can force them into most 3-item sets
-        allowed = [i for i in slot_of if f"{pet}:{i}" not in cfg["exclusions"]["petItem"] and slot_of[i] in ("head", "eyes")]
-        use = Counter(it for t in tokens if t["petId"] == pet for it in t["accessories"].values())
-        vals = [use[i] for i in allowed]
-        if max(vals) - min(vals) > 3:
-            errs.append(f"{pet}: item spread {min(vals)}..{max(vals)} (> 3)")
-        for slot in ("head", "eyes"):
-            v = [use[i] for i in allowed if slot_of[i] == slot]
-            if v and max(v) - min(v) > 2:
-                errs.append(f"{pet}: {slot} spread {min(v)}..{max(v)} (> 2)")
+    for pet in cfg["pets"]:   # spread: as even as possible (100 / 13 → every item 7 or 8 times)
+        use = Counter(t["accessory"] for t in tokens if t["petId"] == pet)
+        vals = [use[i] for i in allowed_items(cfg, pet)]
+        if max(vals) - min(vals) > 1:
+            errs.append(f"{pet}: item spread {min(vals)}..{max(vals)} (> 1)")
     return errs
 
 
 def usage_report(cfg, tokens, cap_rows):
-    slot_of = L.items()
-    lines = [f"drop 1 usage — seed {cfg['seed']}, {len(tokens)} tokens (generated by scripts/build_manifest.py)", "",
-             "capacity (bg × valid accessory sets, after exclusions):"] + cap_rows + [""]
+    lines = [f"drop 1 usage: seed {cfg['seed']}, {len(tokens)} tokens, 1 dressed accessory each "
+             "(scripts/build_manifest.py)", "", "capacity (bg × allowed items, after exclusions):"] + cap_rows + [""]
     for pet in cfg["pets"]:
         pt = [t for t in tokens if t["petId"] == pet]
         lines.append(f"{pet} ({L.PETS[pet]['name']}): " + ", ".join(f"{tier} {sum(t['tier'] == tier for t in pt)}" for tier in TIERS))
-        lines.append(f"  {'item':<12}{'slot':<6}" + "".join(f"{t[:4]:>6}" for t in TIERS) + f"{'total':>7}")
-        for item in sorted(slot_of, key=lambda i: (L.SLOTS.index(slot_of[i]), i)):
-            row = [sum(item in t["accessories"].values() for t in pt if t["tier"] == tier) for tier in TIERS]
-            lines.append(f"  {item:<12}{slot_of[item]:<6}" + "".join(f"{n:>6}" for n in row) + f"{sum(row):>7}")
+        lines.append(f"  {'item':<12}" + "".join(f"{t[:4]:>6}" for t in TIERS) + f"{'total':>7}")
+        for item in L.items():
+            row = [sum(t["accessory"] == item for t in pt if t["tier"] == tier) for tier in TIERS]
+            lines.append(f"  {item:<12}" + "".join(f"{n:>6}" for n in row) + f"{sum(row):>7}")
         bgc = Counter(t["background"] for t in pt)
         lines.append("  backgrounds: " + ", ".join(f"{b} {bgc[b]}" for b in sorted(L.backgrounds())))
         lines.append("")
@@ -172,8 +149,8 @@ def main():
     print("\n".join(["capacity:"] + cap_rows))
     if not ok:
         sys.exit("FAIL: capacity below quota after exclusions")
-    attempt, tokens = build(cfg)
-    text = serialize(cfg, attempt, tokens)
+    attempts, tokens = build(cfg)
+    text = serialize(cfg, attempts, tokens)
     if "--check" in sys.argv:
         with open(OUT) as fh:
             committed = fh.read()
@@ -191,7 +168,7 @@ def main():
         sys.exit("FAIL:\n  " + "\n  ".join(errs))
     with open(USAGE, "w") as fh:
         fh.write(usage_report(cfg, tokens, cap_rows))
-    print(f"ok: {len(tokens)} tokens, seed {cfg['seed']}, order attempt {attempt} → "
+    print(f"ok: {len(tokens)} tokens, seed {cfg['seed']}, attempts {attempts} → "
           f"{os.path.relpath(OUT, L.ROOT)}, {os.path.relpath(USAGE, L.ROOT)}")
 
 

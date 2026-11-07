@@ -1,0 +1,14 @@
+{
+  "title": "merk #020",
+  "description": "neargotchi drop 1 · #020 of 300 · common meerkat wearing headphones.",
+  "media": "20.png",
+  "media_hash": "RGxd7Oiupg1KuVfYJeuMLDKgyuVXvKmxUCB73Blt9PA=",
+  "copies": 1,
+  "issued_at": null,
+  "expires_at": null,
+  "starts_at": null,
+  "updated_at": null,
+  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"headphones\",\"drop\":1}",
+  "reference": null,
+  "reference_hash": null
+}

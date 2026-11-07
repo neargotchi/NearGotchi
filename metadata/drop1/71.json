@@ -1,0 +1,14 @@
+{
+  "title": "batman #071",
+  "description": "neargotchi drop 1 · #071 of 300 · common corgi wearing a keffiyeh.",
+  "media": "71.png",
+  "media_hash": "aeS2PIvgPjUEaZfYCS4v/O0GXsIED3TxLFKM8h6aFNw=",
+  "copies": 1,
+  "issued_at": null,
+  "expires_at": null,
+  "starts_at": null,
+  "updated_at": null,
+  "extra": "{\"pet\":\"batman\",\"species\":\"corgi\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"keffiyeh\",\"drop\":1}",
+  "reference": null,
+  "reference_hash": null
+}
