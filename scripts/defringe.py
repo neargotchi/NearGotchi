@@ -1,6 +1,9 @@
 """Remove the light halo left around sprites by background removal.
 Floods from transparent pixels through light pixels ((lum > LUM) & (rgb.max(-1) - rgb.min(-1) < 60))  # light AND greyish = halo and makes them transparent.
-The dark pixel outline of every sprite stops the flood. Re-runnable: python3 scripts/defringe.py"""
+The dark pixel outline of every sprite stops the flood.
+RUN ONCE PER FRESH CUT: python3 scripts/cut_assets.py && python3 scripts/defringe.py
+NOT idempotent: each pass floods DEPTH px deeper (a 2nd pass on clean files removed 1,212 more px in 17 files,
+tested 2026-11-07). Never re-run it on sprites that are already clean, e.g. public/pets/*/nft.png."""
 import numpy as np, glob, sys
 from PIL import Image
 from collections import deque

@@ -1,0 +1,33 @@
+{
+  "pet1": {
+    "head": { "x": 287, "y": 225, "scale": 1.0, "align": "bottom" },
+    "eyes": { "x": 283, "y": 278, "scale": 1.0, "align": "center" },
+    "neck": { "x": 287, "y": 390, "scale": 1.15, "align": "top" },
+    "body": { "x": 290, "y": 380, "scale": 1.55, "align": "top" },
+    "back": { "x": 300, "y": 740, "scale": 1.9, "align": "bottom" }
+  },
+  "pet2": {
+    "head": { "x": 293, "y": 185, "scale": 1.05, "align": "bottom" },
+    "eyes": { "x": 292, "y": 290, "scale": 1.1, "align": "center" },
+    "neck": { "x": 292, "y": 388, "scale": 1.05, "align": "top" },
+    "body": { "x": 292, "y": 395, "scale": 1.35, "align": "top" },
+    "back": { "x": 292, "y": 740, "scale": 2.1, "align": "bottom" }
+  },
+  "pet3": {
+    "head": { "x": 250, "y": 118, "scale": 1.0, "align": "bottom" },
+    "eyes": { "x": 248, "y": 160, "scale": 1.05, "align": "center" },
+    "neck": { "x": 248, "y": 255, "scale": 0.9, "align": "top" },
+    "body": { "x": 248, "y": 298, "scale": 1.2, "align": "top" },
+    "back": { "x": 252, "y": 735, "scale": 1.7, "align": "bottom" }
+  },
+  "overrides": {
+    "halo": { "dy": -40 },
+    "pixel": { "scale": 1.1 },
+    "pet1:headphones": { "dy": 0, "scale": 1.15 },
+    "pet2:headphones": { "dy": 42, "scale": 1.42 },
+    "pet3:headphones": { "dy": -18, "scale": 1.1 },
+    "pet1:keffiyeh": { "dy": 70, "scale": 1.15 },
+    "pet2:keffiyeh": { "dy": 52, "scale": 1.25 },
+    "pet3:keffiyeh": { "dy": 60, "scale": 1.15 }
+  }
+}
