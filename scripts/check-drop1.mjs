@@ -380,6 +380,11 @@ await test("sleep: recharges +3/min, wakes at 40; hunger keeps rising; 1 h alone
   assert.equal(mocks.baseMood({ hunger: 0, energy: 30, mood: "normal" }), "normal");
 });
 
+await test("chat: the 'who' line uses the pet's own name", async () => {
+  assert.equal(mocks.pickReply({ petId: "pet2", name: "pixel" }, "who are you", 0), "pixel. small dragon. big shards. bigger plans.");
+  assert.equal(mocks.pickReply({ petId: "pet1" }, "who are you", 0), "batman. corgi. legend. the real dog of this whole thing.");
+});
+
 console.log("shop");
 const shop = await import("../lib/shop.ts");
 const SKEY = shop.SHOP_STORAGE_KEY;

@@ -165,3 +165,10 @@ Selected card: `--green` card background with ink text (same in light and dark, 
 - **Errors:** sold out mid-draw → soldOut view; any other failure → back to ready with "the egg didn't crack. try again." (focus on hatch). Dev-only QA: `/mint?debughatch=slow|fail`.
 - **A11y:** the `role="status"` line goes hatching… → (waiting) → "it's out: {tier} {species}."; focus moves to it on hatch, then to the reveal heading "{token} hatched." (h2, tabIndex −1). Focus only moves after a user action.
 - **Copy:** `mintPage` in `lib/copy.ts`; rarity only, checked by `npm run check:drop1` (value/price/growth regex over mintPage, petPage.token, tier and item labels).
+
+## Update: demo v2 (tasks 038–048, docs/DEVLOG.md) — overrides the drop 1 update where they differ
+- **Wallet gate:** /mint needs the demo wallet (`lib/wallet.ts`, account `you.demo`). Not connected → "connect a demo wallet to hatch" + connect button, the egg shown but disabled.
+- **No "existing" view:** a connected account can always hatch another; every hatch is a new `DemoPet v4` owned by the account (`neargotchi-pets`). The ready view shows `DropProgress` "x / 300 hatched · y left · demo" (this browser only).
+- **Reveal:** TokenInfo + name field, then "share on x" (`x.com/intent/tweet`, url `/nft/{id}`, rarity-only text, new tab `rel="noopener"`) and "play with {name}" → saves the name → `/pet?id={tokenId}&tab=games`.
+- **/nft/[id]:** static share page for 1–300 (`dynamicParams = false`), TokenArt + TokenInfo + "demo token · not on chain" + "hatch your own"; 1200×630 OG per token; in the sitemap.
+- **Balance** lives on the account (100 to start, refill demo), not on the pet. Sold out + "reset demo drop" unchanged.

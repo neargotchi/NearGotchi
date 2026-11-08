@@ -82,6 +82,7 @@ export default function Home() {
               alt="NEARGOTCHI pixel pet device"
               width={1024}
               height={1024}
+              sizes="(max-width: 1023px) 70vw, 520px"
               priority
             />
             <span className="n-sweep" aria-hidden="true">

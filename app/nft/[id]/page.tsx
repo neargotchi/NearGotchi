@@ -58,7 +58,8 @@ export default async function NftPage({ params }: Props) {
   if (!token) notFound();
   return (
     <main className="mint-shell">
-      <section className="mint-section" aria-label={token.name}>
+      {/* Not a named landmark: the token card inside is the section named after the token. */}
+      <div className="mint-section">
         <div className="pets-grid" aria-hidden="true" />
         <div className="pets-content nft-page">
           <TokenCard tokenId={token.tokenId} heading="h1" />
@@ -72,7 +73,7 @@ export default async function NftPage({ params }: Props) {
             </Link>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

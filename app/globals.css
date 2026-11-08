@@ -1597,6 +1597,9 @@ main > section[class] { background: transparent; }
 .mint-confirm p { max-width: 42ch; margin: 0 0 round(calc(18px * var(--ui-scale)), 1px); font-size: 1.125rem; font-weight: 500; line-height: 1.45; }
 
 .mint-loading { min-height: round(calc(480px * var(--ui-scale)), 1px); }
+/* /pet fills the screen while it loads and after, so the footer starts below the fold and never jumps
+   when the pet (a much taller page) replaces the loading box (CLS 0.06–0.17 → 0, QC demo v2). */
+.pet-shell .mint-section { min-height: 100svh; }
 
 /* Hatch stage: LCD box; the egg is two clip-path halves of the logo plus a pixel crack. */
 /* Stage, live text and the go button are centered in the content column at every size. */
@@ -2959,8 +2962,9 @@ main > section[class] { background: transparent; }
 
 @media (max-width: 1023px) {
   .pets-list-drop .pet-card.is-drop { flex-basis: min(80vw, 330px); }
-  .pets-soon-list { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; }
-  .pets-soon-list .pet-card { flex: 0 0 140px; }
+  /* 3 small cards in a row, no scroll (a scroll box without focusable content fails axe). */
+  .pets-soon-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .pets-soon-list .pet-sprite-wrap { height: 72px; }
   .section-sub { font-size: 1.0625rem; }
   .section-cta { margin-top: 36px; }
   .section-cta .button { width: 100%; min-height: 56px; }

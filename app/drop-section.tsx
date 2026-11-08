@@ -48,7 +48,7 @@ export default function DropSection() {
               <li key={tier} className="drop-tier">
                 {sample ? (
                   <Link className="drop-tier-art" href={`/nft/${sample.tokenId}`} aria-label={sample.name}>
-                    <Image src={sample.image} alt="" width={512} height={512} unoptimized />
+                    <Image src={sample.image} alt="" width={512} height={512} sizes="112px" />
                   </Link>
                 ) : null}
                 <p className="drop-tier-name">
@@ -66,7 +66,7 @@ export default function DropSection() {
           {dropItems.map((item) => (
             <li key={item.id} className="item-card">
               <div className="item-sprite-wrap">
-                <Image className="item-sprite" src={item.src} alt="" width={item.width} height={item.height} />
+                <Image className="item-sprite" src={item.src} alt="" width={item.width} height={item.height} sizes="96px" />
               </div>
               <p className="drop-item-name">{itemLabels[item.id]}</p>
             </li>

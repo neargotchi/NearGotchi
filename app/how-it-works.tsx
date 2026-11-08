@@ -30,6 +30,7 @@ export default function HowItWorks() {
                   alt={step.sprite.alt}
                   width={step.sprite.width}
                   height={step.sprite.height}
+                  sizes="(max-width: 1023px) 60vw, 320px"
                 />
               </div>
               <h3 className="step-heading">

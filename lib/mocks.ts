@@ -718,7 +718,7 @@ export const petLines: Record<string, PetLines> = {
     greet: "gm. i was asleep on the couch. still am, mentally.",
     food: "snack? i heard snack. i always hear snack.",
     near: "near is fast. i am not. we balance out.",
-    who: "batman. corgi. legend. the real dog of this whole thing.",
+    who: "{name}. corgi. legend. the real dog of this whole thing.",
     love: "you may pet the loaf.",
     fallback: ["interesting. now feed me.", "i nodded. that's all you get."],
     hungry: "too hungry to talk. bowl first.",
@@ -727,7 +727,7 @@ export const petLines: Record<string, PetLines> = {
     greet: "rawr. that was a greeting. you're welcome.",
     food: "i eat shards. also snacks. mostly snacks.",
     near: "near has shards. i have shards. we're basically family.",
-    who: "near dragon. small dragon. big shards. bigger plans.",
+    who: "{name}. small dragon. big shards. bigger plans.",
     love: "my scales are blushing. you can't tell, they're green.",
     fallback: ["i breathed a tiny fire. it went out. anyway.", "noted. filed under dragon business."],
     hungry: "no fire without food.",
@@ -736,7 +736,7 @@ export const petLines: Record<string, PetLines> = {
     greet: "gm. i saw you coming three blocks ago.",
     food: "food detected. eyes open. mouth also open.",
     near: "new block. new block. new block. i love it here.",
-    who: "near kat. on watch since genesis.",
+    who: "{name}. on watch since genesis.",
     love: "i'll guard that compliment forever.",
     fallback: ["hm. scanning… nothing suspicious. carry on.", "noted. i never miss a block, or a message."],
     hungry: "can't watch on an empty stomach.",
@@ -752,12 +752,13 @@ const replyRules: [keyof Omit<PetLines, "fallback" | "hungry">, RegExp][] = [
   ["love", /\b(love|good|cute|best)\b/],
 ];
 
-/** Pure and deterministic: same pet + text + index → same line. */
-export function pickReply(pet: Pick<DemoPet, "petId">, text: string, index: number): string {
+/** Pure and deterministic: same pet + text + index → same line. "{name}" is the pet's own name (QC demo v2). */
+export function pickReply(pet: Pick<DemoPet, "petId"> & { name?: string }, text: string, index: number): string {
   const lines = petLines[pet.petId] ?? petLines.pet1;
   const lower = text.toLowerCase();
   const rule = replyRules.find(([, pattern]) => pattern.test(lower));
-  return rule ? lines[rule[0]] : lines.fallback[index % 2];
+  const line = rule ? lines[rule[0]] : lines.fallback[index % 2];
+  return line.replace("{name}", pet.name ?? findPet(pet.petId)?.name ?? "");
 }
 
 

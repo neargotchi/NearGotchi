@@ -39,6 +39,7 @@ function PetCard({ pet }: { pet: PetProfile }) {
           alt={`${name} in a ${mood} mood`}
           width={pet.spriteWidth}
           height={pet.spriteHeight}
+          sizes="(max-width: 1023px) 300px, 260px"
         />
       </div>
       <h3>{name}</h3>
@@ -73,7 +74,8 @@ function PetCard({ pet }: { pet: PetProfile }) {
                 aria-label={fill(petGallery.tierLink, { token: token.name, tier })}
               >
                 <span className="pet-tier-art">
-                  <Image src={token.image} alt="" width={512} height={512} unoptimized />
+                  {/* small thumbnail: optimised down from the 512 webp (Lighthouse: ~240 KB saved) */}
+                  <Image src={token.image} alt="" width={512} height={512} sizes="(max-width: 1023px) 160px, 120px" />
                 </span>
                 <TierBadge tier={tier} />
               </Link>
