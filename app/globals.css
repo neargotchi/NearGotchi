@@ -1461,7 +1461,8 @@ main > section[class] { background: transparent; }
   isolation: isolate;
   min-height: calc(100svh - round(calc(211px * var(--ui-scale)), 1px));
   padding: round(calc(140px * var(--ui-scale)), 1px) 0;
-  overflow: hidden;
+  /* clip, not hidden: hidden makes a scroll container and breaks the sticky /pet device. */
+  overflow: clip;
 }
 
 .mint-head {
@@ -1874,6 +1875,54 @@ main > section[class] { background: transparent; }
 .simon-controls .button { min-width: round(calc(200px * var(--ui-scale)), 1px); }
 .game-blocked { display: grid; justify-items: center; gap: round(calc(10px * var(--ui-scale)), 1px); text-align: center; }
 .game-blocked .snack-reason { margin: 0; }
+
+/* Catch the snack: the same console as simon; the LCD holds a 128×96 canvas scaled with crisp pixels
+   (fixed 4:3 box, so nothing moves when the game starts). HUD and banners are DOM text over it. */
+.catch-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: round(calc(10px * var(--ui-scale)), 1px) solid var(--green);
+  outline: round(calc(2px * var(--ui-scale)), 1px) solid var(--green-deep);
+  color: var(--ink);
+  background: var(--lcd);
+  box-shadow: inset round(calc(-4px * var(--ui-scale)), 1px) round(calc(-4px * var(--ui-scale)), 1px) 0 var(--lcd-shadow);
+}
+.catch-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.catch-hud { position: absolute; top: round(calc(6px * var(--ui-scale)), 1px); right: round(calc(8px * var(--ui-scale)), 1px); left: round(calc(8px * var(--ui-scale)), 1px); display: flex; justify-content: space-between; font-family: var(--font-pixel), monospace; font-size: 0.5625rem; line-height: 1; pointer-events: none; }
+.catch-banner {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  margin: 0;
+  padding: round(calc(6px * var(--ui-scale)), 1px) round(calc(10px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  background: var(--lcd);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.catch-over { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: round(calc(14px * var(--ui-scale)), 1px); background: var(--lcd); }
+.catch-over .simon-lcd-main { font-size: 2rem; }
+.catch-pads { gap: round(calc(40px * var(--ui-scale)), 1px); }
+.catch-pad { width: round(calc(76px * var(--ui-scale)), 1px); height: round(calc(60px * var(--ui-scale)), 1px); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.catch-pad:active > span { background: var(--cream); }
+/* Pixel arrow: three stacked bars narrowing to a point. */
+.catch-arrow {
+  display: block;
+  width: round(calc(12px * var(--ui-scale)), 1px);
+  height: round(calc(16px * var(--ui-scale)), 1px);
+  background:
+    linear-gradient(var(--ink), var(--ink)) 0 50% / round(calc(4px * var(--ui-scale)), 1px) round(calc(16px * var(--ui-scale)), 1px) no-repeat,
+    linear-gradient(var(--ink), var(--ink)) round(calc(4px * var(--ui-scale)), 1px) 50% / round(calc(4px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px) no-repeat,
+    linear-gradient(var(--ink), var(--ink)) round(calc(8px * var(--ui-scale)), 1px) 50% / round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) no-repeat;
+}
+.catch-arrow.is-left { transform: scaleX(-1); }
+.catch-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: round(calc(14px * var(--ui-scale)), 1px); }
+.catch-controls .button { min-width: round(calc(140px * var(--ui-scale)), 1px); }
 
 /* Snack shop (feed tab): the page's card language — 2px ink/cream frames, hard pixel shadows, LCD
    wells for the sprites, pixel-font labels, the shared .button hover/press. Unavailable = dashed + reason. */

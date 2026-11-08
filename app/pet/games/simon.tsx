@@ -142,8 +142,8 @@ export default function Simon({ canStart, blockedReason, active, happySprite, on
 
   // Keys 1 / 2 / 3 while a game runs (not while typing somewhere else).
   const onKey = useEffectEvent((event: KeyboardEvent) => {
-    const target = event.target as HTMLElement | null;
-    if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true']")) return;
     const pad = ["1", "2", "3"].indexOf(event.key);
     if (pad === -1) return;
     event.preventDefault();

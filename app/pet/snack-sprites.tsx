@@ -73,6 +73,26 @@ const SPRITES: Record<SnackId, string[]> = {
 
 type Paths = { width: number; height: number; layers: [string, string][] };
 
+/** One snack as coloured cells (x, y, colour), ink on the outside edge: for the catch-the-snack canvas. */
+export type SnackPixels = { width: number; height: number; cells: [number, number, string][] };
+
+export function snackPixels(id: SnackId): SnackPixels {
+  const rows = SPRITES[id];
+  const filled = (x: number, y: number) => {
+    const cell = rows[y]?.[x];
+    return !!cell && cell !== ".";
+  };
+  const cells: [number, number, string][] = [];
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (!filled(x, y)) continue;
+      const edge = !filled(x - 1, y) || !filled(x + 1, y) || !filled(x, y - 1) || !filled(x, y + 1);
+      cells.push([x, y, edge ? INK : COLORS[row[x]]]);
+    }
+  });
+  return { width: rows[0].length, height: rows.length, cells };
+}
+
 function build(rows: string[]): Paths {
   const filled = (x: number, y: number) => {
     const cell = rows[y]?.[x];
