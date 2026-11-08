@@ -1497,11 +1497,6 @@ main > section[class] { background: transparent; }
   letter-spacing: -0.02em;
 }
 
-.mint-form { margin-top: round(calc(74px * var(--ui-scale)), 1px); }
-.mint-form.is-loading { visibility: hidden; }
-
-.mint-step { min-width: 0; margin: 0; padding: 0; border: 0; }
-.mint-step + .mint-step { margin-top: round(calc(56px * var(--ui-scale)), 1px); }
 
 .mint-legend {
   display: block;
@@ -1510,13 +1505,6 @@ main > section[class] { background: transparent; }
   font-size: 0.875rem;
   line-height: 1.5;
 }
-
-.mint-step .pets-list { margin-top: round(calc(24px * var(--ui-scale)), 1px); }
-
-/* Selectable pet cards: native radios; the selected card turns NEAR green (ink text, both themes). */
-.mint-card { cursor: pointer; }
-.mint-card:has(input:focus-visible) { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(4px * var(--ui-scale)), 1px); }
-.mint-card.is-selected { color: var(--ink); background: var(--green); }
 
 .mint-card-name {
   display: flex;
@@ -1537,21 +1525,6 @@ main > section[class] { background: transparent; }
   line-height: 1.42;
   letter-spacing: -0.015em;
 }
-
-.mint-picked {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: round(calc(5px * var(--ui-scale)), 1px);
-  padding: round(calc(4px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px);
-  border: round(calc(1px * var(--ui-scale)), 1px) solid var(--ink);
-  color: var(--ink);
-  background: var(--cream);
-  font-size: 0.5rem;
-  line-height: 1;
-}
-
-.mint-picked svg { width: round(calc(14px * var(--ui-scale)), 1px); height: round(calc(10px * var(--ui-scale)), 1px); fill: currentColor; shape-rendering: crispEdges; }
 
 .mint-name-row { display: flex; gap: round(calc(18px * var(--ui-scale)), 1px); margin-top: round(calc(16px * var(--ui-scale)), 1px); }
 
@@ -1666,6 +1639,51 @@ main > section[class] { background: transparent; }
 .hatch-line { margin: 0; font-size: 1.375rem; font-weight: 500; line-height: 1.45; letter-spacing: -0.02em; }
 .hatch-go { margin-top: round(calc(24px * var(--ui-scale)), 1px); }
 
+/* Random hatch (docs/DEVLOG.md §2): the drawn NFT replaces the egg in the LCD stage. */
+.mint-hatch.is-loading { visibility: hidden; }
+.hatch-pet.hatch-nft { width: round(calc(320px * var(--ui-scale)), 1px); height: auto; aspect-ratio: 1; border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink); }
+
+.mint-ready { display: grid; justify-items: center; gap: round(calc(16px * var(--ui-scale)), 1px); margin-top: round(calc(8px * var(--ui-scale)), 1px); }
+.mint-ready .mint-hint { max-width: 46ch; margin: 0; }
+.mint-ready .mint-error { margin: 0; }
+.mint-hatch-button { min-width: round(calc(240px * var(--ui-scale)), 1px); }
+
+.mint-counter {
+  margin: 0;
+  padding: round(calc(8px * var(--ui-scale)), 1px) round(calc(10px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  color: var(--ink);
+  background: var(--lcd);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.625rem;
+  line-height: 1.4;
+}
+
+.mint-reveal {
+  display: grid;
+  width: min(round(calc(640px * var(--ui-scale)), 1px), 100%);
+  gap: round(calc(28px * var(--ui-scale)), 1px);
+  margin-top: round(calc(8px * var(--ui-scale)), 1px);
+  padding: round(calc(24px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+  text-align: left;
+}
+
+.mint-reveal .mint-name-row { margin-top: round(calc(12px * var(--ui-scale)), 1px); }
+.mint-reveal .mint-input { width: auto; min-width: 0; flex: 1 1 auto; }
+.mint-reveal .mint-name-row .button { flex: none; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.mint-soldout { display: grid; justify-items: start; gap: round(calc(18px * var(--ui-scale)), 1px); margin-top: round(calc(74px * var(--ui-scale)), 1px); }
+.mint-soldout .mint-card-text { font-size: 1.125rem; }
+.mint-soldout .mint-hint { margin: 0; }
+
+.mint-existing-body.has-token { flex-direction: column; align-items: stretch; gap: round(calc(28px * var(--ui-scale)), 1px); max-width: round(calc(860px * var(--ui-scale)), 1px); }
+.mint-existing-body.has-token .token-card { margin-bottom: 0; }
+.mint-existing-side { display: grid; justify-items: start; gap: round(calc(18px * var(--ui-scale)), 1px); }
+.mint-existing-side .mint-card-text { font-size: 1.125rem; }
+
 @media (max-width: 1023px) {
   .mint-section { min-height: calc(100svh - 71px - 151px); padding: 72px 0; }
   .mint-head { display: block; }
@@ -1674,10 +1692,7 @@ main > section[class] { background: transparent; }
   .mint-demo { display: inline-block; margin-top: 20px; white-space: normal; }
   .mint-sub { margin-top: 16px; font-size: 1.0625rem; }
 
-  .mint-form { margin-top: 40px; }
-  .mint-step + .mint-step { margin-top: 40px; }
   .mint-legend { font-size: 0.8125rem; }
-  .mint-step .pets-list { margin-top: 20px; }
   .mint-card-text { font-size: 1rem; }
 
   .mint-name-row { flex-direction: column; gap: 14px; }
@@ -1699,6 +1714,13 @@ main > section[class] { background: transparent; }
   .hatch-pet { height: calc(clamp(160px, 30svh, 260px) * 0.85); }
   .hatch-line { font-size: 1.125rem; }
   .hatch-go { width: 100%; min-height: 56px; }
+  .hatch-pet.hatch-nft { width: clamp(160px, 30svh, 260px); height: auto; }
+  .mint-ready { width: 100%; }
+  .mint-hatch-button { width: 100%; min-height: 56px; }
+  .mint-reveal { gap: 22px; padding: 16px; }
+  .mint-reveal .mint-name-row .button { max-width: none; }
+  .mint-soldout { margin-top: 40px; justify-items: stretch; }
+  .mint-existing-side { justify-items: stretch; }
 
   .pet-mint-link { display: inline-flex; min-height: 44px; align-items: center; margin-top: 8px; font-size: 1rem; line-height: 22px; }
 }
@@ -1844,9 +1866,9 @@ main > section[class] { background: transparent; }
 
 .token-card {
   display: grid;
-  grid-template-columns: round(calc(176px * var(--ui-scale)), 1px) minmax(0, 1fr);
+  grid-template-columns: round(calc(256px * var(--ui-scale)), 1px) minmax(0, 1fr);
   align-items: center;
-  gap: round(calc(24px * var(--ui-scale)), 1px);
+  gap: round(calc(28px * var(--ui-scale)), 1px);
   margin-bottom: round(calc(32px * var(--ui-scale)), 1px);
   padding: round(calc(20px * var(--ui-scale)), 1px);
   border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
@@ -1854,20 +1876,21 @@ main > section[class] { background: transparent; }
   box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
 }
 
-.token-card-art { border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink); background: var(--lcd); line-height: 0; }
-.token-card-art img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.token-art { border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink); background: var(--lcd); line-height: 0; }
+.token-art img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
 
-.token-card-info { display: grid; min-width: 0; gap: round(calc(10px * var(--ui-scale)), 1px); justify-items: start; }
-.token-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: round(calc(8px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px); }
-.token-card-demo { color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5rem; line-height: 1.4; }
-.token-card-name { margin: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; overflow-wrap: anywhere; }
-.token-card-rarity { display: grid; gap: round(calc(2px * var(--ui-scale)), 1px); margin: 0; font-size: 1rem; font-weight: 500; line-height: 1.4; }
-.token-card-rarity > span:first-child { color: var(--text-muted); }
+.token-info { display: grid; min-width: 0; gap: round(calc(10px * var(--ui-scale)), 1px); justify-items: start; }
+.token-info-top { display: flex; flex-wrap: wrap; align-items: center; gap: round(calc(8px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px); }
+.token-info-demo { color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5rem; line-height: 1.4; }
+.token-info-name { margin: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.token-info-name:focus { outline: none; }
+.token-info-rarity { display: grid; gap: round(calc(2px * var(--ui-scale)), 1px); margin: 0; font-size: 1rem; font-weight: 500; line-height: 1.4; }
+.token-info-rarity > span:first-child { color: var(--text-muted); }
 
-.token-card-traits { display: flex; flex-wrap: wrap; gap: round(calc(6px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); margin: 0; }
-.token-card-traits > div { display: flex; align-items: baseline; gap: round(calc(8px * var(--ui-scale)), 1px); }
-.token-card-traits dt { color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5rem; line-height: 1.4; }
-.token-card-traits dd { margin: 0; font-size: 1rem; font-weight: 600; line-height: 1.4; }
+.token-info-traits { display: flex; flex-wrap: wrap; gap: round(calc(6px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); margin: 0; }
+.token-info-traits > div { display: flex; align-items: baseline; gap: round(calc(8px * var(--ui-scale)), 1px); }
+.token-info-traits dt { color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5rem; line-height: 1.4; }
+.token-info-traits dd { margin: 0; font-size: 1rem; font-weight: 600; line-height: 1.4; }
 
 /* Chat */
 .pet-chat {
@@ -1928,6 +1951,12 @@ main > section[class] { background: transparent; }
 .pet-chat-form { display: flex; gap: round(calc(14px * var(--ui-scale)), 1px); margin-top: round(calc(16px * var(--ui-scale)), 1px); }
 .pet-chat-form .mint-input { width: auto; flex: 1 1 auto; min-width: 0; }
 
+/* Narrow desktop: the side column can't fit 256px art + text side by side. */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .token-card { grid-template-columns: minmax(0, 1fr); }
+  .token-card .token-art { max-width: round(calc(320px * var(--ui-scale)), 1px); }
+}
+
 @media (max-width: 1439px) {
   .pet-layout { grid-template-columns: round(calc(480px * var(--ui-scale)), 1px) minmax(0, 1fr); gap: round(calc(40px * var(--ui-scale)), 1px); }
   .pet-device-screen { --screen-h: round(calc(300px * var(--ui-scale)), 1px); --sprite-h: round(calc(250px * var(--ui-scale)), 1px); }
@@ -1944,11 +1973,11 @@ main > section[class] { background: transparent; }
   .pet-stats { padding: 18px 16px; gap: 16px; }
   .pet-meter { grid-template-columns: 68px minmax(0, 1fr) 32px; gap: 10px; font-size: 0.625rem; }
   .pet-meter-bar { gap: 3px; height: 20px; }
-  .token-card { grid-template-columns: 112px minmax(0, 1fr); align-items: start; gap: 16px; margin-bottom: 24px; padding: 14px; }
-  .token-card-info { gap: 8px; }
-  .token-card-name { font-size: 1.25rem; }
-  .token-card-rarity { font-size: 0.9375rem; }
-  .token-card-traits dd { font-size: 0.9375rem; }
+  .token-card { grid-template-columns: minmax(0, 1fr); gap: 16px; margin-bottom: 24px; padding: 14px; }
+  .token-info { gap: 8px; }
+  .token-info-name { font-size: 1.25rem; }
+  .token-info-rarity,
+  .token-info-traits dd { font-size: 0.9375rem; }
   .pet-balance { font-size: 0.6875rem; }
   .pet-actions { display: grid; gap: 14px; margin-top: 24px; }
   .pet-actions .button,
@@ -2142,6 +2171,8 @@ main > section[class] { background: transparent; }
 
   /* /mint hatch (docs/PLAN-MINT.md §4): phase classes from app/mint/hatch-stage.tsx start each step. */
   .hatch-stage.is-shake .hatch-egg { animation: hatch-shake 1s steps(1, end) both; }
+  /* draw slower than the shake: ±4px wobble until the token is there */
+  .hatch-stage.is-wait .hatch-egg { animation: hatch-wobble 0.6s steps(1, end) infinite; }
   .hatch-stage.is-crack .hatch-crack { animation: hatch-crack 0.3s steps(1, end) both; }
   .hatch-stage.is-split .hatch-top { animation: hatch-top 0.3s steps(1, end) both; }
   .hatch-stage.is-split .hatch-bottom { animation: hatch-bottom 0.3s steps(1, end) both; }
@@ -2187,6 +2218,14 @@ main > section[class] { background: transparent; }
     95% { transform: translate(-8px, 2px); }
     97.5% { transform: translate(8px, -2px); }
     100% { transform: translate(0, 0); }
+  }
+
+  @keyframes hatch-wobble {
+    0% { transform: translate(0px, 0); }
+    25% { transform: translate(-4px, 0); }
+    50% { transform: translate(0px, 0); }
+    75% { transform: translate(4px, 0); }
+    100% { transform: translate(0px, 0); }
   }
 
   /* crack grows across the egg in 3 frames */

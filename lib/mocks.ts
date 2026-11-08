@@ -272,12 +272,18 @@ export async function getPet(): Promise<DemoPet | null> {
   return memoryPet;
 }
 
-/** Validates, creates and saves the demo pet with a drop-1 token. Throws MintError on a bad name or unknown pet. */
-export async function mintPet(input: { petId: string; name: string }): Promise<DemoPet> {
-  const profile = findPet(input.petId);
-  if (!profile) throw new MintError("no_pet");
-  const checked = validatePetName(input.name, input.petId);
+/**
+ * Saves the demo pet for a drop-1 token that hatchRandom() just drew (docs/DEVLOG.md §2).
+ * Saved right after the draw with the pet's own name, so leaving during the reveal keeps it; the
+ * reveal's name field then calls renamePet. Throws MintError on a bad name or a token that isn't in the drop.
+ */
+export async function mintPet(input: { token: Pick<Drop1Token, "tokenId">; name?: string }): Promise<DemoPet> {
+  const token = findToken(input.token.tokenId);
+  const profile = findPet(token?.petId);
+  if (!token || !profile) throw new MintError("no_pet");
+  const checked = validatePetName(input.name ?? "", profile.id);
   if (!checked.ok) throw new MintError(checked.error);
+  ensureMinted(token.tokenId);
   const now = new Date().toISOString();
   const pet: DemoPet = {
     v: 3,
@@ -292,14 +298,22 @@ export async function mintPet(input: { petId: string; name: string }): Promise<D
     outfit: {},
     mintedAt: now,
     lastUpdated: now,
-    // Until /mint draws from the whole pool (task 036): a random free token of the picked pet.
-    token: toPetToken(claimRandomToken(profile.id)),
+    token: toPetToken(token),
     demo: true,
   };
   memoryPet = pet;
   writeStored(JSON.stringify(pet));
   notify(pet);
   return pet;
+}
+
+/** Reveal name field: validates (empty → the pet's own name) and saves. Throws MintError. */
+export async function renamePet(raw: string): Promise<DemoPet> {
+  const current = await getPet();
+  if (!current) throw new MintError("no_pet");
+  const checked = validatePetName(raw, current.petId);
+  if (!checked.ok) throw new MintError(checked.error);
+  return checked.name === current.name ? current : updatePet({ name: checked.name });
 }
 
 /** For /pet: merges a patch into the saved pet. */

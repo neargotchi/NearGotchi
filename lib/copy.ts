@@ -133,30 +133,46 @@ export const fill = (text: string, values: Record<string, string>) =>
 /** "mint {name}" link under the mood buttons of the 3 real pet cards → plain /mint (the pet comes from the drop-1 draw). */
 export const petGallery = { mintLink: "mint {name}" };
 
-/** /mint (docs/PLAN-MINT.md §5). Demo only: no real mint, no wallet. */
+/**
+ * /mint (docs/PLAN-MINT.md §5, random hatch since task 036: docs/DEVLOG.md §2).
+ * Demo only: no real mint, no wallet. Rarity only, never value (checked by scripts/check-drop1.mjs).
+ */
 export const mintPage = {
   metaTitle: "mint — NEARGOTCHI",
-  metaDescription: "pick a gotchi, name it, watch it hatch. demo, no real mint.",
+  metaDescription: "hatch an egg, meet one of 300 gotchis, name it. demo, no real mint.",
   title: "hatch your gotchi",
-  sub: "pick a pet. give it a name. watch it hatch.",
+  sub: "one egg. one of 300 gotchis inside. name it when it's out.",
   demo: "demo · no real mint, no wallet",
   mascot: { name: "nightshade", spriteFolder: "pet2", line: "i hatched once. it was a lot." },
-  pickLegend: "1. pick your pet",
-  picked: "picked",
-  nameLabel: "2. name it",
-  nameHint: "2–12 characters. letters, numbers, spaces, - and _.",
+  /** Counts this browser's demo hatches only, so "demo" always sits next to it. */
+  counter: "{minted} / {total} hatched · demo",
+  hatchButton: "hatch",
+  hatchTag: "demo",
+  readyHint: "you don't pick the pet. the egg does. common, rare, epic or legendary.",
+  hatchError: "the egg didn't crack. try again.",
+  hatching: "hatching…",
+  waiting: "almost… the egg is still wobbling.",
+  /** role=status line once the pet is out. */
+  hatched: "it's out: {tier} {species}.",
+  reveal: {
+    /** h2 of the reveal, focused when it appears. */
+    title: "{token} hatched.",
+    nameLabel: "name it",
+  },
+  nameHint: "2–12 characters. letters, numbers, spaces, - and _. empty keeps {pet}.",
   errors: {
     too_short: "too short. 2 characters at least.",
     too_long: "too long. 12 characters max.",
     bad_chars: "letters, numbers, spaces, - and _ only.",
-    no_pet: "pick a pet first.",
+    no_pet: "that gotchi is gone. hatch again.",
   },
-  mintButton: "mint",
-  mintTag: "demo",
-  hatching: "hatching…",
-  hatched: "{name} hatched.",
-  redirecting: "taking you to {name}…",
   goTo: "go to {name}",
+  soldOut: {
+    title: "all {total} hatched.",
+    body: "every egg in this demo drop is out. in this browser, anyway.",
+    reset: "reset demo drop",
+    note: "demo only: puts all {total} eggs back in this browser.",
+  },
   existing: {
     title: "you already have a gotchi.",
     body: "{name} the {species} is waiting.",
@@ -201,6 +217,7 @@ export const petPage = {
     demo: "demo token · not on chain",
     number: "#{id} of {total}",
     rarity: "one of {count} {tier} {pet}s",
+    pet: "pet",
     background: "background",
     item: "item",
     alt: "{token}: a {tier} {species} on a {background} background, wearing {item}.",

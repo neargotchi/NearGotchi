@@ -107,7 +107,7 @@ function randomIndex(n: number) {
 /**
  * Sync claim of a random free token (optionally of one pet). Re-reads the list right before the draw,
  * so another tab's mint is seen. Null when none are left. Used by hatchRandom and by lib/mocks.ts
- * (v1/v2 pet migration, mintPet until /mint draws from the whole pool in task 036).
+ * (v1/v2 pet migration: a token of the same pet).
  */
 export function claimRandomToken(petId?: string): Drop1Token | null {
   const minted = readMinted();

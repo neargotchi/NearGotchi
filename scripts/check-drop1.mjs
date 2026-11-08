@@ -1,4 +1,5 @@
-// Checks for lib/drop1.ts + the DemoPet v3 migration in lib/mocks.ts (docs/DEVLOG.md §5 steps 1–2).
+// Checks for lib/drop1.ts, DemoPet v3 (migration, mint from a drawn token, rename) and the rarity-only copy
+// rule (docs/DEVLOG.md §5).
 //   node --experimental-transform-types scripts/check-drop1.mjs
 // No test runner, no deps: Node runs the TS directly; two hooks let it load the bundler-style imports
 // (extensionless "./drop1", JSON without an import attribute). window.localStorage is an in-memory stub.
@@ -163,18 +164,45 @@ await test("v3 pet whose id fell off the minted list puts it back", async () => 
   assert.deepEqual(minted(), [t.tokenId]);
 });
 
-await test("mintPet → v3 with a token of the picked pet; update keeps it; reset keeps it minted", async () => {
-  const pet = await mocks.mintPet({ petId: "pet3", name: "scout" });
+await test("mintPet saves the drawn token; rename; update keeps it; reset keeps it minted", async () => {
+  const drawn = await drop.hatchRandom();
+  const pet = await mocks.mintPet({ token: drawn });
   assert.equal(pet.v, 3);
-  assert.ok(idsOf("pet3").includes(pet.token.tokenId));
+  assert.equal(pet.petId, drawn.petId);
+  assert.equal(pet.name, tokens.find((t) => t.tokenId === drawn.tokenId).name.split(" #")[0], "default = the pet's own name");
+  assert.equal(pet.token.tokenId, drawn.tokenId);
+  assert.deepEqual(minted(), [drawn.tokenId], "mintPet claims nothing extra");
+  assert.equal((await mocks.renamePet("  Scout  ")).name, "scout");
+  await assert.rejects(mocks.renamePet("x"), (e) => e.code === "too_short");
+  assert.equal((await mocks.renamePet("")).name, pet.name, "empty → the pet's own name");
   const fed = await mocks.updatePet({ hunger: 50 });
   assert.deepEqual(fed.token, pet.token);
   assert.equal(stored().v, 3);
   await mocks.resetPet();
   assert.equal(await mocks.getPet(), null);
-  assert.deepEqual(minted(), [pet.token.tokenId]);
-  await assert.rejects(mocks.mintPet({ petId: "pet3", name: "x" }), (e) => e.code === "too_short");
-  assert.equal(minted().length, 1, "a rejected mint claims nothing");
+  assert.deepEqual(minted(), [drawn.tokenId]);
+  await assert.rejects(mocks.mintPet({ token: { tokenId: 999 } }), (e) => e.code === "no_pet");
+  await assert.rejects(mocks.renamePet("scout"), (e) => e.code === "no_pet");
+});
+
+console.log("copy");
+const copy = await import("../lib/copy.ts");
+await test("rarity only: no value / price / growth words in the drop-1 and /mint strings", async () => {
+  // build_metadata.py BANNED + a few more; checked on the values, never the keys.
+  const banned = /value|price|profit|moon|grow|invest|x\d|worth|floor|resale|resell|\bflip|\bpump|\breturns?\b|\bgains?\b|cheap|expensive|\brich\b/i;
+  const strings = [];
+  const walk = (node, path) => {
+    if (typeof node === "string") strings.push([path, node]);
+    else if (node && typeof node === "object") for (const [k, v] of Object.entries(node)) walk(v, `${path}.${k}`);
+  };
+  walk(copy.mintPage, "mintPage");
+  walk(copy.petPage.token, "petPage.token");
+  walk(copy.tierLabels, "tierLabels");
+  walk(copy.itemLabels, "itemLabels");
+  walk(copy.petGallery, "petGallery");
+  assert.ok(strings.length > 30);
+  const hits = strings.filter(([, text]) => banned.test(text));
+  assert.deepEqual(hits, []);
 });
 
 console.log(`\n${passed} checks passed`);

@@ -1,14 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import Sparkles from "../../components/Sparkles";
-import { fill, mintPage } from "../../lib/copy";
-import { petSpriteSrc, type PetProfile } from "../../lib/mocks";
+import type { Drop1Token } from "../../lib/drop1";
 
-type Phase = "shake" | "crack" | "split" | "pet" | "hold";
+export type HatchPhase = "idle" | "shake" | "wait" | "crack" | "split" | "pet" | "hold";
 
 /** Pixel crack across the egg, between the screen and the buttons of logo-transparent.png. */
 const CRACK_Y = [66, 68];
@@ -31,91 +29,130 @@ const TOP_CLIP = `polygon(0% 0%, 100% 0%, ${pts([...edge].reverse())})`;
 const BOTTOM_CLIP = `polygon(${pts(edge)}, 100% 100%, 0% 100%)`;
 const CRACK_CLIP = `polygon(${pts(crackLine(CRACK_X, false))}, ${pts(crackLine(CRACK_X, false, 1.4).reverse())})`;
 
-type HatchStageProps = { profile: PetProfile; name: string; onDone: () => void };
+/** The reveal waits at most this long for the webp to decode, then shows it anyway. */
+const DECODE_WAIT_MS = 2000;
+
+/** Resolves once the image is decoded (or failed, or took too long), so the split never shows an empty frame. */
+function preload(src: string) {
+  return new Promise<void>((resolve) => {
+    const img = new window.Image();
+    const timer = setTimeout(resolve, DECODE_WAIT_MS);
+    const done = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    img.src = src;
+    img.decode().then(done, done);
+  });
+}
+
+type HatchStageProps = {
+  /** false: the egg sits still (ready view). true: the hatch runs. */
+  started: boolean;
+  /** The drawn token; null while the draw is pending (the egg keeps wobbling). */
+  token: Drop1Token | null;
+  /** Wobble loop started (the draw is slower than the 1s shake). */
+  onWaiting?: () => void;
+  /** The NFT is on screen. */
+  onHatched: () => void;
+};
 
 /**
- * Hatch (docs/PLAN-MINT.md §4): wobble 0–600ms, hard shake to 1000, crack 1000–1300, split + flash +
- * NEAR burst 1300–1600, happy pet 1600–2000, hold, redirect at 3200. Phase classes drive CSS steps();
- * with reduced motion the egg swaps to the pet at once and the redirect comes at 1500ms.
+ * Hatch (docs/PLAN-MINT.md §4, random draw since task 036): wobble + hard shake 0–1000ms; if the token
+ * (and its decoded webp) isn't there yet the egg wobbles in a loop; then crack 300ms, split + flash +
+ * burst 300ms, the NFT appears and bobs. With reduced motion the egg swaps to the NFT as soon as it is ready.
+ * There is no redirect: the reveal (name + go) follows below the stage.
  */
-export default function HatchStage({ profile, name, onDone }: HatchStageProps) {
-  const [phase, setPhase] = useState<Phase>("shake");
-  const [line, setLine] = useState(mintPage.hatching);
-  const [showGo, setShowGo] = useState(false);
-  const lineRef = useRef<HTMLParagraphElement>(null);
-  const goRef = useRef<HTMLAnchorElement>(null);
-  const done = useRef(onDone);
-  done.current = onDone;
+export default function HatchStage({ started, token, onWaiting, onHatched }: HatchStageProps) {
+  const [phase, setPhase] = useState<HatchPhase>("idle");
+  const [shaken, setShaken] = useState(false);
+  const [ready, setReady] = useState<Drop1Token | null>(null);
+  const callbacks = useRef({ onWaiting, onHatched });
+  callbacks.current = { onWaiting, onHatched };
+  const reduce = useRef(false);
 
+  // Start: shake for 1s (skipped with reduced motion).
   useEffect(() => {
-    lineRef.current?.focus();
+    if (!started) return;
+    reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce.current) {
+      setShaken(true);
+      return;
+    }
+    setPhase("shake");
+    const timer = setTimeout(() => setShaken(true), 1000);
+    return () => clearTimeout(timer);
+  }, [started]);
+
+  // Token drawn → wait for its webp to decode.
+  useEffect(() => {
+    if (!token) return;
+    let live = true;
+    preload(token.image).then(() => live && setReady(token));
+    return () => {
+      live = false;
+    };
+  }, [token]);
+
+  // Shake done but nothing to show yet → wobble loop.
+  useEffect(() => {
+    if (shaken && !ready && !reduce.current) {
+      setPhase("wait");
+      callbacks.current.onWaiting?.();
+    }
+  }, [shaken, ready]);
+
+  // Both ready → crack, split, NFT.
+  useEffect(() => {
+    if (!shaken || !ready) return;
+    if (reduce.current) {
+      setPhase("hold");
+      callbacks.current.onHatched();
+      return;
+    }
     const timers: ReturnType<typeof setTimeout>[] = [];
     const at = (ms: number, run: () => void) => timers.push(setTimeout(run, ms));
-    const hatched = () => {
+    setPhase("crack");
+    at(300, () => setPhase("split"));
+    at(600, () => setPhase("pet"));
+    at(1000, () => {
       setPhase("hold");
-      setLine(fill(mintPage.hatched, { name }));
-      setShowGo(true);
-    };
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      hatched();
-      at(700, () => setLine(fill(mintPage.redirecting, { name })));
-      at(1500, () => done.current());
-    } else {
-      at(1000, () => setPhase("crack"));
-      at(1300, () => setPhase("split"));
-      at(1600, () => setPhase("pet"));
-      at(2000, hatched);
-      at(2600, () => setLine(fill(mintPage.redirecting, { name })));
-      at(3200, () => done.current());
-    }
+      callbacks.current.onHatched();
+    });
     return () => timers.forEach(clearTimeout);
-  }, [name]);
-
-  useEffect(() => {
-    if (showGo) goRef.current?.focus();
-  }, [showGo]);
+  }, [shaken, ready]);
 
   const burst = phase === "split" || phase === "pet" || phase === "hold";
 
   return (
-    <div className="mint-hatch">
-      <div className={`hatch-stage is-${phase}`} aria-hidden="true">
-        <div className="hatch-egg">
-          <Image className="hatch-half hatch-top" src="/logo-transparent.png" alt="" width={1024} height={1024} style={{ clipPath: TOP_CLIP }} priority />
-          <Image className="hatch-half hatch-bottom" src="/logo-transparent.png" alt="" width={1024} height={1024} style={{ clipPath: BOTTOM_CLIP }} priority />
-          {/* the wrapper's clip-path grows the crack; the inner span carries the zig-zag shape */}
-          <span className="hatch-crack">
-            <span style={{ clipPath: CRACK_CLIP }} />
-          </span>
-        </div>
-        <Image className="hatch-pet" src={petSpriteSrc(profile, "happy")} alt="" width={profile.spriteWidth} height={profile.spriteHeight} priority />
-        <span className="hatch-flash" />
-        {burst ? (
-          <Sparkles
-            count={8}
-            colors={["var(--green)", "var(--sparkle-alt)"]}
-            area={[
-              { x: [14, 30], y: [8, 30] },
-              { x: [70, 86], y: [8, 30] },
-              { x: [8, 24], y: [50, 78] },
-              { x: [76, 92], y: [50, 78] },
-            ]}
-            seed={`hatch-${profile.id}`}
-            size={20}
-            mode="burst"
-          />
-        ) : null}
+    <div className={`hatch-stage is-${phase}`} aria-hidden="true">
+      <div className="hatch-egg">
+        <Image className="hatch-half hatch-top" src="/logo-transparent.png" alt="" width={1024} height={1024} style={{ clipPath: TOP_CLIP }} priority />
+        <Image className="hatch-half hatch-bottom" src="/logo-transparent.png" alt="" width={1024} height={1024} style={{ clipPath: BOTTOM_CLIP }} priority />
+        {/* the wrapper's clip-path grows the crack; the inner span carries the zig-zag shape */}
+        <span className="hatch-crack">
+          <span style={{ clipPath: CRACK_CLIP }} />
+        </span>
       </div>
-      <div className="hatch-status" role="status">
-        <p ref={lineRef} className="hatch-line" tabIndex={-1}>
-          {line}
-        </p>
-      </div>
-      {showGo ? (
-        <Link ref={goRef} className="button button-primary hatch-go" href="/pet">
-          {fill(mintPage.goTo, { name })}
-        </Link>
+      {ready ? (
+        // unoptimized: the same URL preload() decoded, so it comes from cache
+        <Image className="hatch-pet hatch-nft" src={ready.image} alt="" width={512} height={512} unoptimized priority />
+      ) : null}
+      <span className="hatch-flash" />
+      {burst && ready ? (
+        <Sparkles
+          count={8}
+          colors={["var(--green)", "var(--sparkle-alt)"]}
+          area={[
+            { x: [6, 20], y: [8, 30] },
+            { x: [80, 94], y: [8, 30] },
+            { x: [4, 18], y: [50, 78] },
+            { x: [82, 96], y: [50, 78] },
+          ]}
+          seed={`hatch-${ready.tokenId % 7}`}
+          size={20}
+          mode="burst"
+        />
       ) : null}
     </div>
   );

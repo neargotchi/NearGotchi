@@ -177,7 +177,7 @@ export default function PetView() {
         </div>
 
         <div className="pet-side">
-          {pet.token ? <TokenCard token={pet.token} profile={profile} /> : null}
+          {pet.token ? <TokenCard tokenId={pet.token.tokenId} /> : null}
           <StatBars hunger={shown.hunger} energy={shown.energy} balance={shown.balance} />
           <div className="pet-actions">
             <button type="button" className="button button-primary" onClick={feed}>
