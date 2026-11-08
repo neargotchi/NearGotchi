@@ -54,11 +54,16 @@ const basePet = (v, extra = {}) => ({
 });
 
 console.log("drop1");
-await test("slim list: ids 1..300, unique, every token has its webp", async () => {
+await test("slim list: ids 1..300, unique, every token has its webp and its og card", async () => {
   assert.equal(drop.DROP1_TOTAL, 300);
   assert.deepEqual(tokens.map((t) => t.tokenId), Array.from({ length: 300 }, (_, i) => i + 1));
   for (const t of tokens) assert.equal((await drop.getToken(t.tokenId)).image, `/drop1/${t.tokenId}.webp`);
   readFileSync(new URL("../public/drop1/300.webp", import.meta.url));
+  // /nft/[id] share cards (scripts/build_og.py): one 1200×630 JPEG per token.
+  for (const t of tokens) {
+    const jpg = readFileSync(new URL(`../public/og/drop1/${t.tokenId}.jpg`, import.meta.url));
+    assert.equal(jpg.readUInt16BE(0), 0xffd8, `og ${t.tokenId} is a JPEG`);
+  }
 });
 
 await test("300 hatches: no repeated id, then sold out", async () => {
@@ -334,6 +339,34 @@ await test("chat: an answered message costs 4 energy and 3 hunger; hungry / asle
   assert.equal(c.pet.stats.messages, 3);
 });
 
+await test("sleep: recharges +3/min, wakes at 40; hunger keeps rising; 1 h alone → awake and hungry", async () => {
+  const start = Date.parse("2026-11-02T10:00:00.000Z");
+  const at = (min) => start + min * 60000;
+  const base = { ...basePet(4), owner: "you.demo", happyUntil: null, lastUpdated: new Date(start).toISOString() };
+  const asleep = { ...base, hunger: 30, energy: 10, mood: "sleep" };
+  const five = mocks.simulatePet(asleep, at(5));
+  assert.equal(five.energy, 25);
+  assert.equal(five.hunger, 55);
+  assert.equal(five.mood, "sleep", "still recharging below 40");
+  const ten = mocks.simulatePet(asleep, at(10));
+  assert.equal(ten.energy, 40);
+  assert.notEqual(ten.mood, "sleep", "wakes up at 40");
+  const fresh = { ...base, hunger: 20, energy: 100, mood: "normal" };
+  const hour = mocks.simulatePet(fresh, at(60));
+  assert.equal(hour.hunger, 100);
+  assert.equal(hour.energy, 40, "a hungry pet sulks down to 40, not into sleep");
+  assert.equal(hour.mood, "hungry");
+  const tired = { ...base, hunger: 0, energy: 30, mood: "normal" };
+  const nap = mocks.simulatePet(tired, at(3));
+  assert.equal(nap.energy, 15);
+  assert.equal(nap.mood, "sleep", "not hungry + tired → falls asleep");
+  const later = mocks.simulatePet(tired, at(60));
+  assert.notEqual(later.mood, "sleep", "…and wakes up by itself");
+  assert.ok(later.energy >= 15 && later.hunger === 100);
+  assert.equal(mocks.baseMood({ hunger: 0, energy: 30, mood: "sleep" }), "sleep", "between 15 and 40: still asleep if it was");
+  assert.equal(mocks.baseMood({ hunger: 0, energy: 30, mood: "normal" }), "normal");
+});
+
 console.log("shop");
 const shop = await import("../lib/shop.ts");
 const SKEY = shop.SHOP_STORAGE_KEY;
@@ -501,6 +534,7 @@ await test("rarity only: no value / price / growth words in the drop-1, /mint an
   walk(copy.petPage.shop, "petPage.shop");
   walk(copy.petPage.games, "petPage.games");
   walk(copy.snackLabels, "snackLabels");
+  walk(copy.nftPage, "nftPage");
   assert.ok(strings.length > 30);
   const hits = strings.filter(([, text]) => banned.test(text));
   assert.deepEqual(hits, []);

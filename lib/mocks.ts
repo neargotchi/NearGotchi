@@ -575,11 +575,17 @@ export const PET_RULES = {
   hungerPerMin: 5,
   /** Slow drain … */
   energyPerMin: 5,
-  /** … twice as fast while hunger ≥ 70 ("it gets sad and slowly loses energy"). */
+  /** … twice as fast while hunger ≥ 70 ("it gets sad and slowly loses energy"), but a hungry pet only
+      sulks down to wakeAt: hunger alone never puts it to sleep (task 046: a pet left alone comes back
+      awake and hungry, not stuck asleep). */
   energyPerMinHungry: 10,
   hungryAt: 70,
-  /** energy ≤ 15 → asleep, doesn't talk. */
+  /** energy ≤ 15 → asleep, doesn't talk or play … */
   sleepAt: 15,
+  /** … recharges +3/min while asleep (hunger keeps rising) … */
+  sleepRegenPerMin: 3,
+  /** … and wakes up by itself at energy ≥ 40. */
+  wakeAt: 40,
   chatEnergy: 4,
   /** Each answered message also uses food (step 6 of docs/DEVLOG.md): hunger +3. */
   chatHunger: 3,
@@ -593,15 +599,24 @@ const clampLevel = (value: number) => Math.round(Math.min(100, Math.max(0, value
 /** Displayed and compared as whole numbers so the bars, numbers and moods always agree. */
 export const levelOf = (value: number) => Math.round(value);
 
+/**
+ * Asleep: energy ≤ 15, or still recharging (the stored mood is "sleep" and energy hasn't reached 40).
+ * Without a stored mood only the first rule applies.
+ */
+export function isAsleep(pet: Pick<DemoPet, "energy"> & { mood?: Mood }): boolean {
+  const energy = levelOf(pet.energy);
+  return energy <= PET_RULES.sleepAt || (pet.mood === "sleep" && energy < PET_RULES.wakeAt);
+}
+
 /** Mood without the UI-only happy timer. */
-export function baseMood(pet: Pick<DemoPet, "hunger" | "energy">): Mood {
-  if (levelOf(pet.energy) <= PET_RULES.sleepAt) return "sleep";
+export function baseMood(pet: Pick<DemoPet, "hunger" | "energy"> & { mood?: Mood }): Mood {
+  if (isAsleep(pet)) return "sleep";
   if (levelOf(pet.hunger) >= PET_RULES.hungryAt) return "hungry";
   return "normal";
 }
 
 /** Sprite mood: sleep > happy (UI timer) > hungry > normal (docs/DEVLOG.md §4). */
-export function moodOf(pet: Pick<DemoPet, "hunger" | "energy">, now: number, happyUntil: number): Mood {
+export function moodOf(pet: Pick<DemoPet, "hunger" | "energy"> & { mood?: Mood }, now: number, happyUntil: number): Mood {
   const base = baseMood(pet);
   if (base === "sleep") return "sleep";
   if (now < happyUntil) return "happy";
@@ -609,20 +624,57 @@ export function moodOf(pet: Pick<DemoPet, "hunger" | "energy">, now: number, hap
 }
 
 /**
- * Pure: hunger and energy from lastUpdated to now (also covers a closed tab). Energy drains at
- * 5/min until hunger reaches 70, then at 10/min. A clock that moved backwards changes nothing.
+ * Pure: hunger and energy from lastUpdated to now (also covers a closed tab), piece by piece:
+ * - hunger +5/min all the time (max 100);
+ * - awake, not hungry: energy −5/min; at ≤ 15 it falls asleep;
+ * - awake, hungry (≥ 70): energy −10/min but not below 40 (sulks, doesn't faint);
+ * - asleep: energy +3/min; at ≥ 40 it wakes up.
+ * A clock that moved backwards changes nothing.
  */
 export function simulatePet(pet: DemoPet, now: number): DemoPet {
   const last = Date.parse(pet.lastUpdated);
   const stamp = new Date(now).toISOString();
   if (!Number.isFinite(last) || now <= last) return { ...pet, lastUpdated: stamp };
-  const minutes = (now - last) / 60000;
   const R = PET_RULES;
-  const hunger = Math.min(100, pet.hunger + R.hungerPerMin * minutes);
-  const untilHungry = pet.hunger >= R.hungryAt ? 0 : (R.hungryAt - pet.hunger) / R.hungerPerMin;
-  const energy =
-    pet.energy - R.energyPerMin * Math.min(minutes, untilHungry) - R.energyPerMinHungry * Math.max(0, minutes - untilHungry);
-  const next = { ...pet, hunger: clampLevel(hunger), energy: clampLevel(energy), lastUpdated: stamp };
+  let left = (now - last) / 60000;
+  let hunger = pet.hunger;
+  let energy = pet.energy;
+  let asleep = isAsleep(pet);
+  const eat = (minutes: number) => {
+    hunger = Math.min(100, hunger + R.hungerPerMin * minutes);
+    left -= minutes;
+  };
+  for (let guard = 0; left > 1e-9 && guard < 1000; guard++) {
+    if (asleep) {
+      const toWake = Math.max(0, (R.wakeAt - energy) / R.sleepRegenPerMin);
+      const span = Math.min(left, toWake);
+      energy += R.sleepRegenPerMin * span;
+      eat(span);
+      if (span === toWake) asleep = false;
+    } else if (energy <= R.sleepAt) {
+      asleep = true;
+    } else if (hunger >= R.hungryAt) {
+      // Hungry: drain to the floor, then hold (it can't fall asleep from hunger alone).
+      const toFloor = energy > R.wakeAt ? (energy - R.wakeAt) / R.energyPerMinHungry : 0;
+      const span = Math.min(left, toFloor);
+      energy -= R.energyPerMinHungry * span;
+      eat(left > toFloor ? left : span);
+    } else {
+      const toHungry = (R.hungryAt - hunger) / R.hungerPerMin;
+      const toSleep = Math.max(0, (energy - R.sleepAt) / R.energyPerMin);
+      const span = Math.min(left, toHungry, toSleep);
+      energy -= R.energyPerMin * span;
+      eat(span);
+      if (span === toSleep && span < toHungry) asleep = true;
+    }
+  }
+  const next = {
+    ...pet,
+    hunger: clampLevel(hunger),
+    energy: clampLevel(energy),
+    lastUpdated: stamp,
+    mood: (asleep ? "sleep" : "normal") as Mood,
+  };
   return { ...next, mood: baseMood(next) };
 }
 

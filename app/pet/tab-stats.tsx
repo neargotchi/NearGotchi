@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { fill, mintPage, petPage, petTraits } from "../../lib/copy";
+import { findToken } from "../../lib/drop1";
 import {
   MintError,
   PET_NAME_MAX,
@@ -14,6 +15,7 @@ import {
   type DemoPet,
   type NameError,
 } from "../../lib/mocks";
+import { shareOnXUrl } from "../../lib/share";
 import StatBars from "./stat-bars";
 import TokenCard from "./token-card";
 
@@ -44,6 +46,7 @@ type TabStatsProps = {
 export default function TabStats({ pet, shown, balance, now, onReleased }: TabStatsProps) {
   const profile = findPet(pet.petId)!;
   const traits = petTraits[pet.petId] ?? [];
+  const shareToken = pet.token ? findToken(pet.token.tokenId) : null;
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<NameError | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -86,6 +89,12 @@ export default function TabStats({ pet, shown, balance, now, onReleased }: TabSt
   return (
     <div className="pet-stats-tab">
       {pet.token ? <TokenCard tokenId={pet.token.tokenId} /> : null}
+      {shareToken ? (
+        <a className="button button-secondary token-share" href={shareOnXUrl(shareToken)} target="_blank" rel="noopener noreferrer">
+          {mintPage.reveal.share}
+          <span className="visually-hidden"> {mintPage.reveal.shareNewTab}</span>
+        </a>
+      ) : null}
 
       <section className="pet-card-block" aria-labelledby="pet-character-title">
         <h2 id="pet-character-title" className="mint-subtitle">

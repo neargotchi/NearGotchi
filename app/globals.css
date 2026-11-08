@@ -1781,6 +1781,19 @@ main > section[class] { background: transparent; }
 .pet-stats-tab .pet-reset { margin-top: 0; }
 .pet-feed-tab .pet-result { min-height: round(calc(26px * var(--ui-scale)), 1px); margin: round(calc(-14px * var(--ui-scale)), 1px) 0; }
 
+/* /nft/[id]: the token card at page size (art 420px next to the info), demo note, CTAs. */
+.nft-page { display: grid; justify-items: start; gap: round(calc(28px * var(--ui-scale)), 1px); }
+.nft-page .token-card { width: 100%; max-width: round(calc(1040px * var(--ui-scale)), 1px); grid-template-columns: round(calc(420px * var(--ui-scale)), 1px) minmax(0, 1fr); margin-bottom: 0; }
+.nft-page .token-info-name { font-size: 2rem; }
+.nft-sub { max-width: 60ch; margin: 0; font-size: 1.125rem; font-weight: 500; line-height: 1.45; }
+@media (max-width: 1023px) {
+  .nft-page .token-card { grid-template-columns: minmax(0, 1fr); }
+  .nft-page .token-info-name { font-size: 1.5rem; }
+  .nft-page .mint-actions { display: grid; width: 100%; gap: 14px; }
+  .nft-page .mint-actions .button { width: 100%; min-height: 56px; }
+}
+.token-share { justify-self: start; }
+
 /* Games tab (app/pet/tab-games.tsx). */
 .pet-games-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: round(calc(28px * var(--ui-scale)), 1px); }
 .pet-games-tab > * { min-width: 0; }

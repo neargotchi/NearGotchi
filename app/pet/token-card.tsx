@@ -6,7 +6,7 @@ import { fill, itemLabels, petPage } from "../../lib/copy";
 import { DROP1_TOTAL, backgroundLabel, findToken, tierCount, type Drop1Token } from "../../lib/drop1";
 import { findPet } from "../../lib/mocks";
 
-type Heading = "h2" | "h3";
+type Heading = "h1" | "h2" | "h3";
 
 /** Labels shared by the art's alt text and the info block. */
 function describe(token: Drop1Token) {

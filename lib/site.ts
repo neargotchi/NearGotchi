@@ -6,7 +6,8 @@ export const SITE_NAME = "NEARGOTCHI";
 /** Default meta description (copy v1 META). */
 export const SITE_DESCRIPTION = "mint an ai pet on near. feed it, dress it, talk to it.";
 
-type PageMetaInput = { path: string; title: string; description: string; noindex?: boolean };
+type ShareImage = { url: string; width: number; height: number; alt: string };
+type PageMetaInput = { path: string; title: string; description: string; noindex?: boolean; image?: ShareImage };
 
 /**
  * Canonical + Open Graph + Twitter for one page, always with the share image.
@@ -20,13 +21,18 @@ const SHARE_IMAGE = {
   alt: "NEARGOTCHI: your pet lives on near. pixel egg device with the near logo.",
 };
 
-export function pageMeta({ path, title, description, noindex = false }: PageMetaInput): Metadata {
+export function pageMeta({ path, title, description, noindex = false, image }: PageMetaInput): Metadata {
   return {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { type: "website", siteName: SITE_NAME, url: path, title, description, images: [SHARE_IMAGE] },
-    twitter: { card: "summary_large_image", title, description, images: [{ ...SHARE_IMAGE, url: "/twitter-image.png" }] },
+    openGraph: { type: "website", siteName: SITE_NAME, url: path, title, description, images: [image ?? SHARE_IMAGE] },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image ?? { ...SHARE_IMAGE, url: "/twitter-image.png" }],
+    },
     ...(noindex ? { robots: { index: false, follow: true } } : {}),
   };
 }

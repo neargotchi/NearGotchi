@@ -257,7 +257,7 @@ export const petPage = {
     stop: "stop",
     blocked: {
       hungry: "{name} is too hungry to play.",
-      asleep: "{name} is asleep. no games now.",
+      asleep: "{name} is recharging. back at 40 energy.",
     },
     feedFirst: "feed it first",
     finished: "+15 hunger · {name} is happy. score {score}.",
@@ -303,7 +303,7 @@ export const petPage = {
   sub: "the {species} · hatched {date}",
   tapLabel: "pet {name}",
   status: {
-    sleep: "{name} is asleep. zzz…",
+    sleep: "zzz… {name} is recharging.",
     happy: "{name} is happy.",
     hungry: "{name} is hungry.",
     normal: "{name} is chilling.",
@@ -361,9 +361,18 @@ export const petPage = {
     empty: "no messages yet. say hi.",
     tooLong: "140 characters max.",
     blank: "type something first.",
-    asleep: "zzz… {name} is asleep. feed it to wake it up.",
+    asleep: "zzz… {name} is recharging. a snack with energy wakes it up.",
     you: "you",
   },
+};
+
+/** Public token page /nft/[id] (app/nft/[id]/page.tsx). Rarity only, never value. */
+export const nftPage = {
+  metaTitle: "{token} — NEARGOTCHI",
+  imageAlt: "{token}: a {tier} {species} from neargotchi drop 1, on its tier colour.",
+  sub: "one of {total} gotchis in drop 1. a demo token: it lives in this site, not on chain yet.",
+  cta: "hatch your own",
+  pets: "meet the pets",
 };
 
 /** Shop snacks (lib/shop.ts ids). */
