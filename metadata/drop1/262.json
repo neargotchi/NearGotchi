@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #262",
+  "title": "near dragon #262",
   "description": "neargotchi drop 1 · #262 of 300 · common dragon wearing a keffiyeh.",
   "media": "262.png",
   "media_hash": "UctaYqy7dI70zl7P4rp/Ahkdl1jcCJJXonQRufACNT4=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c06-cream-grid\",\"tier\":\"common\",\"accessory\":\"keffiyeh\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c06-cream-grid\",\"tier\":\"common\",\"accessory\":\"keffiyeh\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

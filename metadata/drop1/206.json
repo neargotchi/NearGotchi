@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #206",
+  "title": "near dragon #206",
   "description": "neargotchi drop 1 · #206 of 300 · common dragon wearing pixel shades.",
   "media": "206.png",
   "media_hash": "UvAsBN9P2n339ihvOVaUHXC5prCk1GYxe/ciEcLxPbE=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c06-cream-grid\",\"tier\":\"common\",\"accessory\":\"pixel\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c06-cream-grid\",\"tier\":\"common\",\"accessory\":\"pixel\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

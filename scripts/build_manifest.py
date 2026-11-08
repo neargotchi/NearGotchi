@@ -34,7 +34,7 @@ def bg_excluded(cfg, pet, bg):
 
 
 def bgs_by_tier(cfg, pet):
-    """{tier: [bg]} this pet may sit on, after exclusions.petBackground (task 034: nightshade × r09-near-green)."""
+    """{tier: [bg]} this pet may sit on, after exclusions.petBackground (task 034: pet2 × r09-near-green)."""
     out = {t: [] for t in TIERS}
     for bg, tier in L.backgrounds().items():
         if not bg_excluded(cfg, pet, bg):

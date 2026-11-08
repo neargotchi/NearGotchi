@@ -1,5 +1,5 @@
 {
-  "title": "merk #169",
+  "title": "near kat #169",
   "description": "neargotchi drop 1 · #169 of 300 · rare meerkat wearing pixel shades.",
   "media": "169.png",
   "media_hash": "kZGV+ABa0rLJeQb4r0LQ4hiMItUQw9Lqe5oMcdZVpck=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"pixel\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"pixel\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

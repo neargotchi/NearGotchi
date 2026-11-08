@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #041",
+  "title": "near dragon #041",
   "description": "neargotchi drop 1 · #041 of 300 · epic dragon wearing a cap.",
   "media": "41.png",
   "media_hash": "6vFIzh5Xl52cxuKrnGOByITXKSoPjLpOfvT9oHL7XXM=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"e10-golden-hour\",\"tier\":\"epic\",\"accessory\":\"cap\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"e10-golden-hour\",\"tier\":\"epic\",\"accessory\":\"cap\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

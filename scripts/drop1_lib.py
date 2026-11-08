@@ -15,8 +15,8 @@ OFFSET = ((CANVAS - DRESSED_W) // 2, BASELINE_Y - DRESSED_BASELINE)   # (152, 80
 TIERS = ["common", "rare", "epic", "legendary"]
 PETS = {  # mirrors lib/mocks.ts `pets`
     "pet1": {"name": "batman", "species": "corgi"},
-    "pet2": {"name": "nightshade", "species": "dragon"},
-    "pet3": {"name": "merk", "species": "meerkat"},
+    "pet2": {"name": "near dragon", "species": "dragon"},
+    "pet3": {"name": "near kat", "species": "meerkat"},
 }
 
 

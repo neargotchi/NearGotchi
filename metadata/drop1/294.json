@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #294",
+  "title": "near dragon #294",
   "description": "neargotchi drop 1 · #294 of 300 · common dragon wearing nerd glasses.",
   "media": "294.png",
   "media_hash": "UC8Vld9yd57KxkHku+OKGi0kL4rGLA8rIQEVqp5kbBc=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"nerd\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"nerd\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

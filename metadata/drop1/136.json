@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #136",
+  "title": "near dragon #136",
   "description": "neargotchi drop 1 · #136 of 300 · common dragon wearing sunglasses.",
   "media": "136.png",
   "media_hash": "B9H1Qd/TN/QuCnL0ko7HzH2JV4JMVyp4LBH/4D01BO8=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"sunglasses\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"sunglasses\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

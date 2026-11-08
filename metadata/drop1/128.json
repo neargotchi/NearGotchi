@@ -1,5 +1,5 @@
 {
-  "title": "merk #128",
+  "title": "near kat #128",
   "description": "neargotchi drop 1 · #128 of 300 · rare meerkat wearing headphones.",
   "media": "128.png",
   "media_hash": "tdhSw+L8wi+P+Q0Bk7rug0EEP1FcLp86IKfiJJ6RCgY=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"headphones\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"headphones\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

@@ -1,5 +1,5 @@
 {
-  "title": "merk #152",
+  "title": "near kat #152",
   "description": "neargotchi drop 1 · #152 of 300 · rare meerkat wearing a crown.",
   "media": "152.png",
   "media_hash": "YMfO3g7FLxYLtT9TI+pjy8P1q/Et9CeRd6v8Pniby8g=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"r09-near-green\",\"tier\":\"rare\",\"accessory\":\"crown\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"r09-near-green\",\"tier\":\"rare\",\"accessory\":\"crown\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

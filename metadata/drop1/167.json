@@ -1,5 +1,5 @@
 {
-  "title": "merk #167",
+  "title": "near kat #167",
   "description": "neargotchi drop 1 · #167 of 300 · common meerkat wearing headphones.",
   "media": "167.png",
   "media_hash": "44w56U5F2Ya6ZpcIMv1S8tT+CDXMM4Gmpb+b9naHEHY=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"headphones\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"headphones\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

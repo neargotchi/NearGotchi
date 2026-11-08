@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Ref } from "react";
 
-import TierBadge from "../../components/TierBadge";
+import TierBadge, { TierText } from "../../components/TierBadge";
 import { fill, itemLabels, petPage } from "../../lib/copy";
 import { DROP1_TOTAL, backgroundLabel, findToken, tierCount, type Drop1Token } from "../../lib/drop1";
 import { findPet } from "../../lib/mocks";
@@ -56,6 +56,9 @@ export function TokenInfo({
 }) {
   const { profile, id, background, item } = describe(token);
   const Title = heading;
+  // "one of {count} {tier} {pet}s": the tier word is rendered as coloured TierText.
+  const [rarityBefore, rarityAfter = ""] = petPage.token.rarity.split("{tier}");
+  const rarityValues = { count: String(tierCount(token.petId, token.tier)), pet: profile.name };
   return (
     <div className="token-info">
       <div className="token-info-top">
@@ -68,7 +71,9 @@ export function TokenInfo({
       <p className="token-info-rarity">
         <span>{fill(petPage.token.number, { id, total: String(DROP1_TOTAL) })}</span>
         <span>
-          {fill(petPage.token.rarity, { count: String(tierCount(token.petId, token.tier)), tier: token.tier, pet: profile.name })}
+          {fill(rarityBefore, rarityValues)}
+          <TierText tier={token.tier} />
+          {fill(rarityAfter, rarityValues)}
         </span>
       </p>
       <dl className="token-info-traits">

@@ -1,5 +1,5 @@
 {
-  "title": "merk #098",
+  "title": "near kat #098",
   "description": "neargotchi drop 1 · #098 of 300 · rare meerkat wearing a chain.",
   "media": "98.png",
   "media_hash": "QskZsHPNKdmFEot7WtLmo4RW9a7m+MNaWdvH+OK6VYA=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"chain\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"chain\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

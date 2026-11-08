@@ -30,7 +30,7 @@ export type PetProfile = {
   mouth: [number, number];
 };
 
-/** Approved pets (copy v1). */
+/** Approved pets (copy v1; pet2/pet3 renamed to "near dragon" / "near kat" by the owner, 2026-11-08). */
 export const pets: PetProfile[] = [
   {
     id: "pet1",
@@ -45,7 +45,7 @@ export const pets: PetProfile[] = [
   {
     id: "pet2",
     species: "dragon",
-    name: "nightshade",
+    name: "near dragon",
     description: "small dragon. big shards.",
     spriteFolder: "pet2",
     spriteWidth: 489,
@@ -55,7 +55,7 @@ export const pets: PetProfile[] = [
   {
     id: "pet3",
     species: "meerkat",
-    name: "merk",
+    name: "near kat",
     description: "always on watch. never misses a block.",
     spriteFolder: "pet3",
     spriteWidth: 489,
@@ -275,6 +275,20 @@ function parseLegacy(raw: string): LegacyPet | null {
   }
 }
 
+/**
+ * Owner rename (2026-11-08): a pet still called by its old default name gets the new one; names the
+ * user picked stay. Applied to every stored pet (v1–v4) on read; the old names live only here.
+ */
+const RENAMED_DEFAULTS: Record<string, [string, string]> = {
+  pet2: ["nightshade", "near dragon"],
+  pet3: ["merk", "near kat"],
+};
+
+const currentName = (petId: string, name: string) => {
+  const renamed = RENAMED_DEFAULTS[petId];
+  return renamed && name === renamed[0] ? renamed[1] : name;
+};
+
 const emptyStats = (): PetStats => ({ games: 0, snacks: 0, messages: 0, best: { simon: 0, snack: 0 } });
 
 /** v3 → v4: owned by the demo account, one more try for a token if it had none (the balance goes to the wallet in loadStore). */
@@ -286,7 +300,7 @@ function fromLegacy(old: LegacyPet): DemoPet {
     owner: DEMO_ACCOUNT_ID,
     petId: old.petId,
     species: old.species,
-    name: old.name,
+    name: currentName(old.petId, old.name),
     hunger: old.hunger,
     energy: old.energy,
     mood: old.mood,
@@ -322,7 +336,7 @@ function parseStoredPet(value: unknown): DemoPet | null {
     owner: pet.owner,
     petId: pet.petId,
     species: pet.species,
-    name: pet.name,
+    name: currentName(pet.petId, pet.name),
     hunger: pet.hunger,
     energy: pet.energy,
     mood: pet.mood,
@@ -703,7 +717,7 @@ export const petLines: Record<string, PetLines> = {
     greet: "rawr. that was a greeting. you're welcome.",
     food: "i eat shards. also snacks. mostly snacks.",
     near: "near has shards. i have shards. we're basically family.",
-    who: "nightshade. small dragon. big shards. bigger plans.",
+    who: "near dragon. small dragon. big shards. bigger plans.",
     love: "my scales are blushing. you can't tell, they're green.",
     fallback: ["i breathed a tiny fire. it went out. anyway.", "noted. filed under dragon business."],
     hungry: "no fire without food.",
@@ -712,7 +726,7 @@ export const petLines: Record<string, PetLines> = {
     greet: "gm. i saw you coming three blocks ago.",
     food: "food detected. eyes open. mouth also open.",
     near: "new block. new block. new block. i love it here.",
-    who: "merk. on watch since genesis.",
+    who: "near kat. on watch since genesis.",
     love: "i'll guard that compliment forever.",
     fallback: ["hm. scanning… nothing suspicious. carry on.", "noted. i never miss a block, or a message."],
     hungry: "can't watch on an empty stomach.",

@@ -131,10 +131,10 @@ export const footer = {
 /** Section mascots: pet sprite folder (lib/mocks.ts) + speech bubble line, keyed by section. */
 export const mascots = {
   pets: { name: "batman", spriteFolder: "pet1", line: "pick me. i'm the real one." },
-  howItWorks: { name: "merk", spriteFolder: "pet3", line: "it's easy. i watched." },
-  wardrobe: { name: "nightshade", spriteFolder: "pet2", line: "i look good in a crown." },
+  howItWorks: { name: "near kat", spriteFolder: "pet3", line: "it's easy. i watched." },
+  wardrobe: { name: "near dragon", spriteFolder: "pet2", line: "i look good in a crown." },
   tokenomics: { name: "batman", spriteFolder: "pet1", line: "every snack burns. feed me." },
-  faq: { name: "merk", spriteFolder: "pet3", line: "ask away. i never sleep." },
+  faq: { name: "near kat", spriteFolder: "pet3", line: "ask away. i never sleep." },
 };
 
 /** Replaces {name}-style placeholders. */
@@ -154,7 +154,7 @@ export const mintPage = {
   title: "hatch your gotchi",
   sub: "one egg. one of 300 gotchis inside. name it when it's out.",
   demo: "demo · no real mint, demo wallet only",
-  mascot: { name: "nightshade", spriteFolder: "pet2", line: "i hatched once. it was a lot." },
+  mascot: { name: "near dragon", spriteFolder: "pet2", line: "i hatched once. it was a lot." },
   /** Counts this browser's demo hatches only, so "demo" always sits next to it. */
   counter: "{minted} / {total} hatched · demo",
   hatchButton: "hatch",

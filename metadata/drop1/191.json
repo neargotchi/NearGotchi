@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #191",
+  "title": "near dragon #191",
   "description": "neargotchi drop 1 · #191 of 300 · common dragon wearing a cap.",
   "media": "191.png",
   "media_hash": "50RVssCK73adaD/nOj/QhQwH9iB3wmjnlaawt/kUz5U=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"cap\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"cap\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

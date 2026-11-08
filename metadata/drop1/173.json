@@ -1,5 +1,5 @@
 {
-  "title": "merk #173",
+  "title": "near kat #173",
   "description": "neargotchi drop 1 · #173 of 300 · epic meerkat wearing a top hat.",
   "media": "173.png",
   "media_hash": "U3vsH1dRztzGCdtySKlMznF/y2W+Wqkv5eCpXm7aTfw=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"e10-golden-hour\",\"tier\":\"epic\",\"accessory\":\"tophat\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"e10-golden-hour\",\"tier\":\"epic\",\"accessory\":\"tophat\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

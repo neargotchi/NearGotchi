@@ -156,6 +156,23 @@ await test("v1 → v4: lastUpdated now, token of the same pet, minted, owner you
   assert.deepEqual(pet.stats, { games: 0, snacks: 0, messages: 0, best: { simon: 0, snack: 0 } });
 });
 
+await test("rename: old default names become near dragon / near kat; picked names stay", async () => {
+  await wallet.connect();
+  save(basePet(2, { lastUpdated: "2026-11-02T10:00:00.000Z" })); // pet2 "nightshade"
+  assert.equal((await mocks.getPet()).name, "near dragon");
+  assert.equal(pets().pets[0].name, "near dragon", "saved under the new name");
+  const t3 = tokens.find((x) => x.petId === "pet3");
+  const t1 = tokens.find((x) => x.petId === "pet1");
+  const asToken = (t) => ({ tokenId: t.tokenId, tier: t.tier, background: t.background, accessory: t.accessory });
+  const stored = pets();
+  const v4 = (id, petId, species, name, t) => ({ ...stored.pets[0], id, petId, species, name, token: asToken(t) });
+  store.set(PKEY, JSON.stringify({ ...stored, pets: [...stored.pets, v4("k", "pet3", "meerkat", "merk", t3), v4("c", "pet1", "corgi", "merk", t1)] }));
+  const names = (await mocks.getPets()).map((p) => [p.id, p.name]);
+  assert.deepEqual(names.slice(1), [["k", "near kat"], ["c", "merk"]], "a corgi the user named merk keeps it");
+  assert.equal(tokens.filter((t) => /merk|nightshade/.test(t.name)).length, 0);
+  assert.equal(tokens.find((t) => t.petId === "pet2").name.split(" #")[0], "near dragon");
+});
+
 await test("v2 → v4 keeps lastUpdated; migrates once; works before the wallet is connected", async () => {
   save(basePet(2, { lastUpdated: "2026-11-02T10:00:00.000Z", balance: 140 }));
   assert.equal(await mocks.getPet(), null, "no wallet → no pet shown");

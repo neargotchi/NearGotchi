@@ -12,7 +12,7 @@
     "drop": 1,
     "count": 300,
     "seed": 20261107,
-    "manifest": "data/collection-drop1.json sha256:3f5a719c0d8a6eaca41f8bcd01801269244ee86722fed74c9a5d8d3a981d9fc2",
+    "manifest": "data/collection-drop1.json sha256:132b0af9c6e69f4c0f4a5825da8aeb3c1e558bb7caed5d2d0c0c3346069f9f19",
     "per_pet_tier": {
       "pet1": {
         "rare": 25,

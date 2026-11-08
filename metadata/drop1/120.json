@@ -1,5 +1,5 @@
 {
-  "title": "merk #120",
+  "title": "near kat #120",
   "description": "neargotchi drop 1 · #120 of 300 · epic meerkat wearing a keffiyeh.",
   "media": "120.png",
   "media_hash": "kCwXHiNhWoK2+DptyI03buWp92qEjGoxlhwhHBXajpA=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"e10-golden-hour\",\"tier\":\"epic\",\"accessory\":\"keffiyeh\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"e10-golden-hour\",\"tier\":\"epic\",\"accessory\":\"keffiyeh\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

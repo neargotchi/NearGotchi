@@ -31,7 +31,7 @@ pet1 (batman): common 60, rare 25, epic 12, legendary 3
   tshirt           5     2     1     0      8
   backgrounds: c01-lcd-dots 10, c02-desert 10, c03-cozy-room 10, c04-pixel-grass 10, c05-soft-sky 10, c06-cream-grid 10, e10-golden-hour 6, e11-cosmic 6, l12-legendary-glow 3, r07-night-pixel 8, r08-sunset 9, r09-near-green 8
 
-pet2 (nightshade): common 60, rare 25, epic 12, legendary 3
+pet2 (near dragon): common 60, rare 25, epic 12, legendary 3
   item          comm  rare  epic  lege  total
   beanie           4     2     2     0      8
   cap              5     2     1     0      8
@@ -48,7 +48,7 @@ pet2 (nightshade): common 60, rare 25, epic 12, legendary 3
   tshirt           5     2     0     1      8
   backgrounds: c01-lcd-dots 10, c02-desert 10, c03-cozy-room 10, c04-pixel-grass 10, c05-soft-sky 10, c06-cream-grid 10, e10-golden-hour 6, e11-cosmic 6, l12-legendary-glow 3, r07-night-pixel 12, r08-sunset 13, r09-near-green 0
 
-pet3 (merk): common 60, rare 25, epic 12, legendary 3
+pet3 (near kat): common 60, rare 25, epic 12, legendary 3
   item          comm  rare  epic  lege  total
   beanie           4     2     1     0      7
   cap              5     2     1     0      8

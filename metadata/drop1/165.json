@@ -1,5 +1,5 @@
 {
-  "title": "merk #165",
+  "title": "near kat #165",
   "description": "neargotchi drop 1 · #165 of 300 · common meerkat wearing nerd glasses.",
   "media": "165.png",
   "media_hash": "gdWgFYM8FqCEpsA8Ed0MJjI1fJl4hqPcg/EToHmGJx8=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"nerd\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"nerd\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

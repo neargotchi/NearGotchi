@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #277",
+  "title": "near dragon #277",
   "description": "neargotchi drop 1 · #277 of 300 · legendary dragon wearing a t-shirt.",
   "media": "277.png",
   "media_hash": "VCljLlAqdWGG6zRPRT7+QybnLs7s2x3iQbsYyU2LcOM=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"l12-legendary-glow\",\"tier\":\"legendary\",\"accessory\":\"tshirt\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"l12-legendary-glow\",\"tier\":\"legendary\",\"accessory\":\"tshirt\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

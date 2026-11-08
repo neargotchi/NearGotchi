@@ -37,7 +37,7 @@ export class DropError extends Error {
 export const findToken = (tokenId: unknown): Drop1Token | null =>
   (typeof tokenId === "number" && byId.get(tokenId)) || null;
 
-/** How many tokens of this pet share the tier: "one of {n} rare nightshades". */
+/** How many tokens of this pet share the tier: "one of {n} rare near dragons". */
 export const tierCount = (petId: string, tier: Tier) => rows.filter((row) => row.petId === petId && row.tier === tier).length;
 
 /** "r08-sunset" → "sunset". */

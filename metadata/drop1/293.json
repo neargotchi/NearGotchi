@@ -1,5 +1,5 @@
 {
-  "title": "merk #293",
+  "title": "near kat #293",
   "description": "neargotchi drop 1 · #293 of 300 · rare meerkat wearing a cap.",
   "media": "293.png",
   "media_hash": "VW56uhV+7sDfN2dMUqAm5A0lO8FNT9WePfTPnhw9+TY=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"cap\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"cap\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

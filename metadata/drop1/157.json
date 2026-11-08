@@ -1,5 +1,5 @@
 {
-  "title": "merk #157",
+  "title": "near kat #157",
   "description": "neargotchi drop 1 · #157 of 300 · common meerkat wearing a chain.",
   "media": "157.png",
   "media_hash": "BhG/aJ05ZWQUdbyfEQ6iqMc6RyEEV69gqU7eyG3fEi0=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"chain\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"chain\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

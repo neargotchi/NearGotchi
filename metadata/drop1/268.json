@@ -1,5 +1,5 @@
 {
-  "title": "merk #268",
+  "title": "near kat #268",
   "description": "neargotchi drop 1 · #268 of 300 · rare meerkat wearing a beanie.",
   "media": "268.png",
   "media_hash": "3dqPJ5E3nlTW2LKSqUgK5Q9lO5uRza8uQXtG46DE+QY=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"beanie\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"beanie\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #049",
+  "title": "near dragon #049",
   "description": "neargotchi drop 1 · #049 of 300 · common dragon wearing a chain.",
   "media": "49.png",
   "media_hash": "UWpg/Flq67w5TCRP//s3BwVkjnzXYsypsrV+0PYXk98=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c04-pixel-grass\",\"tier\":\"common\",\"accessory\":\"chain\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c04-pixel-grass\",\"tier\":\"common\",\"accessory\":\"chain\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

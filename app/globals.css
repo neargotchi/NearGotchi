@@ -31,6 +31,12 @@
   --sparkle-alt: var(--green-deep);
   --html-bg: var(--ink);
   --footer-bg: var(--ink);
+  /* Drop-1 tier text (TierBadge, "one of N {tier} …"): every colour ≥ 4.5:1 on the page and surface. */
+  --tier-common: #66625b;
+  --tier-rare: #a35c00;
+  --tier-epic: #7b3fd6;
+  --tier-rainbow: linear-gradient(90deg, #d0342c, #a35c00, #7d6b00, #1a7d36, #1f63c7, #7b3fd6,
+    #d0342c, #a35c00, #7d6b00, #1a7d36, #1f63c7, #7b3fd6, #d0342c);
 }
 
 /* Dark mode: set on <html> before paint by the inline script in app/layout.tsx
@@ -53,6 +59,11 @@
   --sparkle-alt: #fff;
   --html-bg: #000;
   --footer-bg: #000;
+  --tier-common: #b5b0a6;
+  --tier-rare: #ffb340;
+  --tier-epic: #c79bff;
+  --tier-rainbow: linear-gradient(90deg, #ff6b6b, #ffa94d, #ffd43b, #69db7c, #4dabf7, #b197fc,
+    #ff6b6b, #ffa94d, #ffd43b, #69db7c, #4dabf7, #b197fc, #ff6b6b);
 }
 
 * { box-sizing: border-box; }
@@ -1845,24 +1856,38 @@ main > section[class] { background: transparent; }
 
 .pet-reset { margin-top: round(calc(40px * var(--ui-scale)), 1px); padding-top: round(calc(28px * var(--ui-scale)), 1px); border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--divider); }
 
-/* Drop-1 token card + tier badge (docs/DEVLOG.md §3). Badge fills keep ink text in both themes. */
+/* Drop-1 token card + tier badge (docs/DEVLOG.md §3). The badge is a pixel tag on the surface;
+   the tier name inside carries the tier colour (.tier-text). */
 .tier-badge {
-  --tier: #ddd5c3;
   display: inline-block;
   padding: round(calc(5px * var(--ui-scale)), 1px) round(calc(7px * var(--ui-scale)), 1px);
-  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
-  color: var(--ink);
-  background: var(--tier);
-  box-shadow: inset round(calc(-3px * var(--ui-scale)), 1px) round(calc(-3px * var(--ui-scale)), 1px) 0 rgb(20 20 20 / 0.18);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: inset round(calc(-3px * var(--ui-scale)), 1px) round(calc(-3px * var(--ui-scale)), 1px) 0 var(--divider);
   font-family: var(--font-pixel), monospace;
   font-size: 0.5625rem;
   line-height: 1;
   text-transform: lowercase;
 }
 
-.tier-badge.is-rare { --tier: #7fb2ff; }
-.tier-badge.is-epic { --tier: #c79bff; }
-.tier-badge.is-legendary { --tier: #ffd04a; }
+/* Tier name colour (owner decision 2026-11-08): common grey, rare orange-gold, epic purple, legendary
+   a rainbow clipped to the text that steps sideways (motion block below; reduced motion keeps it still). */
+.tier-text { color: var(--text); }
+.tier-text.is-common { color: var(--tier-common); }
+.tier-text.is-rare { color: var(--tier-rare); }
+.tier-text.is-epic { color: var(--tier-epic); }
+.tier-text.is-legendary {
+  color: transparent;
+  background-image: var(--tier-rainbow);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.token-info-rarity .tier-text { font-weight: 700; }
+
+@media (forced-colors: active) {
+  .tier-text.is-legendary { color: CanvasText; background: none; }
+}
 
 .token-card {
   display: grid;
@@ -2046,6 +2071,13 @@ main > section[class] { background: transparent; }
 
 /* ---------- animations v1: everything below runs only without reduced motion ---------- */
 @media (prefers-reduced-motion: no-preference) {
+  /* Legendary tier text: the 2-period rainbow slides one period (= the text width) in 12 pixel steps. */
+  .tier-text.is-legendary { animation: tier-rainbow 2.4s steps(12) infinite; }
+
+  @keyframes tier-rainbow {
+    to { background-position: 100% 0; }
+  }
+
   /* Hero: green/white pixel sweep over the black N strokes (0.5s sweep, 2s pause). */
   .n-sweep-box > span { animation: n-sweep 2.5s infinite; }
 

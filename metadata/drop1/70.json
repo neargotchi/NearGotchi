@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #070",
+  "title": "near dragon #070",
   "description": "neargotchi drop 1 · #070 of 300 · common dragon wearing a mask.",
   "media": "70.png",
   "media_hash": "H+FMB1PQCcUqomsOHv+MXFoqNNhLmWaahXHymS1M3Sg=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"mask\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"mask\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

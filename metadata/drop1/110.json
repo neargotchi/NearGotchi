@@ -1,5 +1,5 @@
 {
-  "title": "merk #110",
+  "title": "near kat #110",
   "description": "neargotchi drop 1 · #110 of 300 · common meerkat wearing a t-shirt.",
   "media": "110.png",
   "media_hash": "13g8DSEJknxtRkHzL+a/g7BTY3RYZ5V1RqBnQukBhHA=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"tshirt\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"c01-lcd-dots\",\"tier\":\"common\",\"accessory\":\"tshirt\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

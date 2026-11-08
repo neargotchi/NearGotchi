@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #099",
+  "title": "near dragon #099",
   "description": "neargotchi drop 1 · #099 of 300 · legendary dragon wearing a chain.",
   "media": "99.png",
   "media_hash": "Rd0sbCsvNPeAtl/oVz9wXnAtsQDRNTBQimbqdz6uATY=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"l12-legendary-glow\",\"tier\":\"legendary\",\"accessory\":\"chain\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"l12-legendary-glow\",\"tier\":\"legendary\",\"accessory\":\"chain\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

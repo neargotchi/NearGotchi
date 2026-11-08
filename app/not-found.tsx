@@ -11,11 +11,11 @@ export default function NotFound() {
         <div className="pets-grid" aria-hidden="true" />
         <div className="notfound-content">
           <div className="notfound-scene">
-            {/* merk sitting by its empty bowl (the bowl is part of the hungry sprite) */}
+            {/* near kat sitting by its empty bowl (the bowl is part of the hungry sprite) */}
             <Image
               className="notfound-sprite"
               src="/pets/pet3/hungry.png"
-              alt="merk, sad, next to an empty bowl"
+              alt="near kat, sad, next to an empty bowl"
               width={489}
               height={431}
               priority

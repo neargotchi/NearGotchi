@@ -1,5 +1,5 @@
 {
-  "title": "merk #276",
+  "title": "near kat #276",
   "description": "neargotchi drop 1 · #276 of 300 · legendary meerkat wearing a top hat.",
   "media": "276.png",
   "media_hash": "2nJicOgPqGCJfigno2V0L7eP8rFpfSRM7xV1RqeipXQ=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"merk\",\"species\":\"meerkat\",\"background\":\"l12-legendary-glow\",\"tier\":\"legendary\",\"accessory\":\"tophat\",\"drop\":1}",
+  "extra": "{\"pet\":\"near kat\",\"species\":\"meerkat\",\"background\":\"l12-legendary-glow\",\"tier\":\"legendary\",\"accessory\":\"tophat\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

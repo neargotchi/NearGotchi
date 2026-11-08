@@ -1,5 +1,5 @@
 {
-  "title": "nightshade #271",
+  "title": "near dragon #271",
   "description": "neargotchi drop 1 · #271 of 300 · common dragon wearing a t-shirt.",
   "media": "271.png",
   "media_hash": "Zh37xbitTojB+946NQ39XEwYdmBSCJz4xyv5OHhMs+8=",
@@ -8,7 +8,7 @@
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c06-cream-grid\",\"tier\":\"common\",\"accessory\":\"tshirt\",\"drop\":1}",
+  "extra": "{\"pet\":\"near dragon\",\"species\":\"dragon\",\"background\":\"c06-cream-grid\",\"tier\":\"common\",\"accessory\":\"tshirt\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }
