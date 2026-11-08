@@ -305,7 +305,7 @@ export const petPage = {
     note: "demo · near ai soon",
     label: "message",
     placeholder: "say something to {name}",
-    hint: "each message uses 4 energy.",
+    hint: "each message uses 4 energy and 3 food.",
     send: "send",
     typing: "{name} is typing…",
     empty: "no messages yet. say hi.",

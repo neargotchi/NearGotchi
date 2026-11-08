@@ -313,6 +313,27 @@ await test("hunger tempo: 20 → 70 (hungry) in 10 min, energy unchanged", async
   assert.equal(later.mood, "hungry");
 });
 
+await test("chat: an answered message costs 4 energy and 3 hunger; hungry / asleep answers are free", async () => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
+  const a = await mocks.chatWithPet("gm", pet.id);
+  assert.equal(a.kind, "reply");
+  assert.ok(Math.abs(a.pet.energy - 76) < 0.1, String(a.pet.energy));
+  assert.ok(Math.abs(a.pet.hunger - 23) < 0.1, String(a.pet.hunger));
+  assert.equal(a.pet.stats.messages, 1);
+  assert.equal(mocks.PET_RULES.chatHunger, 3);
+  await mocks.updatePet({ hunger: 90, energy: 80 }, pet.id);
+  const b = await mocks.chatWithPet("gm", pet.id);
+  assert.equal(b.kind, "hungry");
+  assert.ok(Math.abs(b.pet.hunger - 90) < 0.1 && Math.abs(b.pet.energy - 80) < 0.1);
+  await mocks.updatePet({ hunger: 20, energy: 10 }, pet.id);
+  const c = await mocks.chatWithPet("gm", pet.id);
+  assert.equal(c.kind, "asleep");
+  assert.ok(Math.abs(c.pet.hunger - 20) < 0.1 && Math.abs(c.pet.energy - 10) < 0.1);
+  assert.equal(c.pet.stats.messages, 3);
+});
+
 console.log("shop");
 const shop = await import("../lib/shop.ts");
 const SKEY = shop.SHOP_STORAGE_KEY;

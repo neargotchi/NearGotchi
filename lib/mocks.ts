@@ -581,6 +581,8 @@ export const PET_RULES = {
   /** energy ≤ 15 → asleep, doesn't talk. */
   sleepAt: 15,
   chatEnergy: 4,
+  /** Each answered message also uses food (step 6 of docs/DEVLOG.md): hunger +3. */
+  chatHunger: 3,
   happyMs: 3000,
   chatMax: 30,
   messageMax: 140,
@@ -782,7 +784,8 @@ const chatMessage = (from: ChatMessage["from"], text: string, now: number): Chat
 
 /**
  * Stores your message and the reply. Asleep → "asleep" note, hungry → its hungry line (both free);
- * otherwise a personality line for 4 energy. Throws on an empty message.
+ * otherwise a personality line for 4 energy and 3 hunger. Every sent message counts in stats.messages.
+ * Throws on an empty message.
  */
 export async function chatWithPet(
   text: string,
@@ -809,7 +812,11 @@ export async function chatWithPet(
   } else {
     reply = chatMessage("pet", pickReply(pet, clean, sent), now);
     kind = "reply";
-    const spent = { ...pet, energy: clampLevel(pet.energy - PET_RULES.chatEnergy) };
+    const spent = {
+      ...pet,
+      energy: clampLevel(pet.energy - PET_RULES.chatEnergy),
+      hunger: clampLevel(pet.hunger + PET_RULES.chatHunger),
+    };
     pet = { ...spent, mood: baseMood(spent) };
   }
   pet = { ...pet, stats: { ...pet.stats, messages: pet.stats.messages + 1 } };

@@ -1767,7 +1767,15 @@ main > section[class] { background: transparent; }
 .pet-panel:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(6px * var(--ui-scale)), 1px); }
 
 .pet-stats-tab,
-.pet-feed-tab { display: grid; gap: round(calc(28px * var(--ui-scale)), 1px); }
+.pet-feed-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: round(calc(28px * var(--ui-scale)), 1px); }
+.pet-stats-tab > *,
+.pet-feed-tab > * { min-width: 0; }
+/* The token card follows the tab's width (container query), not the viewport: stacked art in a narrow column. */
+.pet-stats-tab { container-type: inline-size; }
+@container (max-width: 559px) {
+  .pet-stats-tab .token-card { grid-template-columns: minmax(0, 1fr); }
+  .pet-stats-tab .token-card .token-art { max-width: round(calc(320px * var(--ui-scale)), 1px); }
+}
 .pet-stats-tab .token-card { margin-bottom: 0; }
 .pet-stats-tab .pet-reset { margin-top: 0; }
 .pet-feed-tab .pet-result { min-height: round(calc(26px * var(--ui-scale)), 1px); margin: round(calc(-14px * var(--ui-scale)), 1px) 0; }
@@ -1776,7 +1784,13 @@ main > section[class] { background: transparent; }
    wells for the sprites, pixel-font labels, the shared .button hover/press. Unavailable = dashed + reason. */
 .shop-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: round(calc(14px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px); }
 .shop-note { margin: round(calc(8px * var(--ui-scale)), 1px) 0 0; color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5625rem; line-height: 1.5; }
-.shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: round(calc(24px * var(--ui-scale)), 1px); margin: 0; padding: 0; list-style: none; }
+/* Two columns only when the tab itself is wide enough (container query): at 1024–1279 the right column
+   of /pet is narrow even though the viewport is wide (QA 042). */
+.pet-feed-tab { container-type: inline-size; }
+.shop-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: round(calc(24px * var(--ui-scale)), 1px); margin: 0; padding: 0; list-style: none; }
+@container (min-width: 600px) {
+  .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .snack-card {
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;
@@ -1816,7 +1830,7 @@ main > section[class] { background: transparent; }
 .snack-effects .is-happy { display: inline-flex; align-items: center; gap: round(calc(6px * var(--ui-scale)), 1px); }
 .snack-effects .is-happy::before { width: round(calc(8px * var(--ui-scale)), 1px); height: round(calc(8px * var(--ui-scale)), 1px); content: ""; background: var(--pink); box-shadow: 0 0 0 round(calc(1px * var(--ui-scale)), 1px) var(--line); }
 .snack-stock { display: flex; flex-wrap: wrap; justify-content: space-between; gap: round(calc(4px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px); margin: 0; color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5625rem; line-height: 1.5; }
-.snack-buy { width: 100%; }
+.snack-buy { width: 100%; min-width: 0; padding-inline: round(calc(12px * var(--ui-scale)), 1px); white-space: normal; }
 /* Always one line tall, so a reason appearing never pushes the grid around. */
 .snack-reason { display: flex; align-items: baseline; gap: round(calc(8px * var(--ui-scale)), 1px); min-height: 1.45em; margin: round(calc(-4px * var(--ui-scale)), 1px) 0 0; font-size: 0.9375rem; font-weight: 600; line-height: 1.45; }
 .snack-reason:not(:empty)::before { flex: none; width: round(calc(8px * var(--ui-scale)), 1px); height: round(calc(8px * var(--ui-scale)), 1px); content: ""; background: var(--pink); }
@@ -2188,10 +2202,6 @@ main > section[class] { background: transparent; }
 .pet-chat-form .mint-input { width: auto; flex: 1 1 auto; min-width: 0; }
 
 /* Narrow desktop: the side column can't fit 256px art + text side by side. */
-@media (max-width: 599px) {
-  .shop-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-}
-
 @media (min-width: 1024px) and (max-width: 1199px) {
   .token-card { grid-template-columns: minmax(0, 1fr); }
   .token-card .token-art { max-width: round(calc(320px * var(--ui-scale)), 1px); }
