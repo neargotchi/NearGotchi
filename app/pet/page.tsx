@@ -7,7 +7,7 @@ import PetView from "./pet-view";
 // Personal demo state: not indexed.
 export const metadata: Metadata = pageMeta({ path: "/pet", title: petPage.metaTitle, description: SITE_DESCRIPTION, noindex: true });
 
-/** /pet (docs/DEVLOG.md): demo pet with stats, feed and local chat. No wallet, no network. */
+/** /pet (docs/DEVLOG.md, docs/DEVLOG.md): the demo account's pet with stats, feed and local chat. No network. */
 export default function PetPage() {
   return (
     <main className="mint-shell">

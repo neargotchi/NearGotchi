@@ -8,7 +8,7 @@ import MintFlow from "./mint-flow";
 
 export const metadata: Metadata = pageMeta({ path: "/mint", title: mintPage.metaTitle, description: mintPage.metaDescription });
 
-/** /mint: demo hatch (docs/PLAN-MINT.md). No wallet, no network, no real mint. */
+/** /mint: demo hatch (docs/PLAN-MINT.md, docs/DEVLOG.md). Demo wallet only, no network, no real mint. */
 export default function MintPage() {
   return (
     <main className="mint-shell">

@@ -2337,3 +2337,65 @@ main > section[class] { background: transparent; }
     100% { transform: none; }
   }
 }
+
+/* ---------- Demo wallet (task 038: app/wallet-menu.tsx, app/wallet-gate.tsx) ----------
+   One button for both states: "connect wallet · demo" and "● you.demo ▾" share a grid cell
+   (.cta-labels), so the header never shifts when it connects. Connected, it opens a small panel. */
+.wallet-menu { position: relative; display: inline-flex; }
+.button .wallet-account { display: inline-flex; align-items: center; justify-content: center; gap: round(calc(9px * var(--ui-scale)), 1px); }
+.button .wallet-dot {
+  flex: none;
+  width: round(calc(8px * var(--ui-scale)), 1px);
+  height: round(calc(8px * var(--ui-scale)), 1px);
+  margin: 0;
+  background: var(--green);
+  box-shadow: 0 0 0 round(calc(2px * var(--ui-scale)), 1px) var(--line);
+}
+/* Pixel caret: two stacked bars (8px over 4px), flipped when open. */
+.button .wallet-caret {
+  flex: none;
+  width: round(calc(8px * var(--ui-scale)), 1px);
+  height: round(calc(6px * var(--ui-scale)), 1px);
+  margin: 0;
+  background: linear-gradient(currentColor, currentColor) top / 100% 50% no-repeat,
+    linear-gradient(currentColor, currentColor) bottom / 50% 50% no-repeat;
+}
+.button .wallet-caret.is-open { transform: scaleY(-1); }
+
+.wallet-panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + round(calc(10px * var(--ui-scale)), 1px));
+  left: 0;
+  display: grid;
+  gap: round(calc(10px * var(--ui-scale)), 1px);
+  min-width: 100%;
+  padding: round(calc(14px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+.wallet-panel .button { width: 100%; }
+.wallet-panel-note {
+  margin: 0 0 round(calc(4px * var(--ui-scale)), 1px);
+  color: var(--text-muted);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5625rem;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.wallet-note:empty { display: none; }
+
+.wallet-gate { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: round(calc(14px * var(--ui-scale)), 1px); text-align: center; }
+/* "connect a demo wallet" is longer than the 17-character titles the mobile .mint-title size is tuned for: let it wrap. */
+.wallet-gate .mint-title { white-space: normal; text-wrap: balance; }
+.wallet-gate .mint-card-text { max-width: 46ch; }
+.wallet-gate .mint-hint { max-width: 46ch; margin: 0; }
+.wallet-gate.is-page { justify-items: start; text-align: left; }
+.wallet-gate.is-page .mint-card-text { margin-top: round(calc(12px * var(--ui-scale)), 1px); font-size: 1.125rem; }
+.wallet-gate.is-page .wallet-gate-button { margin-top: round(calc(14px * var(--ui-scale)), 1px); }
+
+/* Burger: full-width chip, the panel opens in the flow under it. */
+.mobile-menu .wallet-menu { display: grid; }
+.mobile-menu .wallet-panel { position: static; min-width: 0; margin-top: 10px; box-shadow: none; }
+.mobile-menu .wallet-panel-note { white-space: normal; font-size: 0.625rem; }

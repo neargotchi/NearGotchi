@@ -11,12 +11,14 @@ import {
   isPersistent,
   moodOf,
   refillBalance,
-  resetPet,
+  releasePet,
   simulatePet,
   subscribePet,
   tickPet,
   type DemoPet,
 } from "../../lib/mocks";
+import { useWallet } from "../../lib/use-wallet";
+import WalletGate from "../wallet-gate";
 import PetChat from "./pet-chat";
 import PetDevice, { type FeedAnim } from "./pet-device";
 import StatBars from "./stat-bars";
@@ -29,6 +31,7 @@ const SAVE_EVERY_MS = 15000;
  * while visible and when the tab is hidden (docs/DEVLOG.md §2).
  */
 export default function PetView() {
+  const { ready: walletReady, account } = useWallet();
   const [ready, setReady] = useState(false);
   const [pet, setPet] = useState<DemoPet | null>(null);
   const [now, setNow] = useState(0);
@@ -45,6 +48,9 @@ export default function PetView() {
   const refillRef = useRef<HTMLButtonElement>(null);
   const confirmRef = useRef<HTMLParagraphElement>(null);
   const emptyRef = useRef<HTMLHeadingElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  /** After connecting from the gate: focus the h1 that replaces it (pet name or "no pet yet."). */
+  const focusTitle = useRef(false);
 
   useEffect(() => {
     let live = true;
@@ -98,7 +104,23 @@ export default function PetView() {
     if (broke) refillRef.current?.focus();
   }, [broke]);
 
-  if (!ready) return <div className="mint-loading" aria-busy="true" />;
+  useEffect(() => {
+    if (!focusTitle.current || !ready || !account) return;
+    (pet ? titleRef : emptyRef).current?.focus();
+    focusTitle.current = false;
+  }, [ready, account, pet]);
+
+  if (!ready || !walletReady) return <div className="mint-loading" aria-busy="true" />;
+
+  if (!account) {
+    return (
+      <div className="pet-stub">
+        <WalletGate context="pet" heading onConnected={() => {
+            focusTitle.current = true;
+          }} />
+      </div>
+    );
+  }
 
   if (!pet) {
     return (
@@ -147,7 +169,7 @@ export default function PetView() {
   };
 
   const refill = async () => {
-    setPet(await refillBalance());
+    await refillBalance();
     setBroke(false);
     setResult(petPage.refill.done);
   };
@@ -162,7 +184,7 @@ export default function PetView() {
     <div className="pet-page">
       <header className="mint-head">
         <div className="section-head">
-          <h1 id="pet-title" className="mint-title">
+          <h1 id="pet-title" ref={titleRef} className="mint-title" tabIndex={-1}>
             {pet.name}
           </h1>
         </div>
@@ -178,7 +200,7 @@ export default function PetView() {
 
         <div className="pet-side">
           {pet.token ? <TokenCard tokenId={pet.token.tokenId} /> : null}
-          <StatBars hunger={shown.hunger} energy={shown.energy} balance={shown.balance} />
+          <StatBars hunger={shown.hunger} energy={shown.energy} balance={account.balance} />
           <div className="pet-actions">
             <button type="button" className="button button-primary" onClick={feed}>
               {petPage.feed.label}
@@ -214,7 +236,7 @@ export default function PetView() {
                     type="button"
                     className="button button-secondary"
                     onClick={async () => {
-                      await resetPet();
+                      await releasePet(pet.id);
                       setConfirming(false);
                       setFocusEmpty(true);
                     }}
@@ -235,7 +257,7 @@ export default function PetView() {
         </div>
 
         <div className="pet-talk">
-          <PetChat name={pet.name} onPet={setPet} onReply={makeHappy} />
+          <PetChat key={pet.id} name={pet.name} onPet={setPet} onReply={makeHappy} />
         </div>
       </div>
     </div>

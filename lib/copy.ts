@@ -93,7 +93,18 @@ export const header = {
     { label: "tokenomics", href: "#tokenomics" },
     { label: "faq", href: "#faq" },
   ],
-  wallet: { label: "connect wallet", tag: "demo", note: "demo only, no wallet connected" },
+  /** Demo wallet (app/wallet-menu.tsx, lib/wallet.ts): one fake account per browser, nothing is signed. */
+  wallet: {
+    label: "connect wallet",
+    tag: "demo",
+    /** Chip label once connected; the button opens a small panel. */
+    chipLabel: "wallet {account}, demo. open menu",
+    note: "demo wallet · nothing is signed",
+    connected: "connected as {account}. demo wallet, nothing is signed.",
+    disconnected: "disconnected. your gotchis wait in this browser.",
+    myPets: "my gotchis",
+    disconnect: "disconnect",
+  },
   // One primary CTA for hero, header and burger panel (app/pet-cta.tsx): no pet → /mint …
   cta: { label: "hatch a gotchi", href: "/mint" },
   // … demo pet exists → /pet.
@@ -108,7 +119,7 @@ export type SocialLink = { label: string; url: string | null };
 export const footer = {
   disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value.",
   // No cookies, no analytics: only functional localStorage (theme, demo pet, chat).
-  privacy: "no tracking. your demo pet lives only in your browser.",
+  privacy: "no tracking. your demo wallet and pets live only in your browser.",
   copyright: "© 2026 neargotchi",
   // URLs not approved yet (copy v1 §7 has [URL]); null links are not rendered.
   socials: [
@@ -142,7 +153,7 @@ export const mintPage = {
   metaDescription: "hatch an egg, meet one of 300 gotchis, name it. demo, no real mint.",
   title: "hatch your gotchi",
   sub: "one egg. one of 300 gotchis inside. name it when it's out.",
-  demo: "demo · no real mint, no wallet",
+  demo: "demo · no real mint, demo wallet only",
   mascot: { name: "nightshade", spriteFolder: "pet2", line: "i hatched once. it was a lot." },
   /** Counts this browser's demo hatches only, so "demo" always sits next to it. */
   counter: "{minted} / {total} hatched · demo",
@@ -165,6 +176,7 @@ export const mintPage = {
     too_long: "too long. 12 characters max.",
     bad_chars: "letters, numbers, spaces, - and _ only.",
     no_pet: "that gotchi is gone. hatch again.",
+    no_wallet: "connect the demo wallet first.",
   },
   goTo: "go to {name}",
   soldOut: {
@@ -186,6 +198,15 @@ export const mintPage = {
   },
   storageNote: "this browser won't save your pet. it stays until you close the tab.",
   noscript: "turn on javascript to hatch a pet.",
+};
+
+/** Shown on /pet and /mint without a connected demo wallet (app/wallet-gate.tsx). */
+export const walletGate = {
+  title: "connect a demo wallet",
+  pet: "your gotchis belong to an account. connect the demo wallet to see them.",
+  mint: "hatching needs an account. connect the demo wallet first.",
+  button: "connect demo wallet",
+  note: "a fake account, you.demo. nothing is signed, nothing leaves this browser.",
 };
 
 /** /pet (docs/DEVLOG.md §5). Demo only: balance is always "demo", chat is local. */

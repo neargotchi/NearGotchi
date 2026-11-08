@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { header, navHref } from "../lib/copy";
 import PetCta from "./pet-cta";
-import WalletButton from "./wallet-button";
+import WalletMenu from "./wallet-menu";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -112,7 +112,7 @@ export default function MobileMenu() {
           </ul>
         </nav>
         <div className="mobile-menu-actions">
-          <WalletButton noteId="wallet-note-mobile" />
+          <WalletMenu variant="burger" />
           <PetCta variant="burger" />
         </div>
       </div>

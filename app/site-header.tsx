@@ -6,7 +6,7 @@ import Sparkles from "../components/Sparkles";
 import MobileMenu from "./mobile-menu";
 import PetCta from "./pet-cta";
 import ThemeToggle from "./theme-toggle";
-import WalletButton from "./wallet-button";
+import WalletMenu from "./wallet-menu";
 
 export default function SiteHeader() {
   return (
@@ -26,7 +26,7 @@ export default function SiteHeader() {
           </ul>
         </nav>
         <div className="site-actions">
-          <WalletButton />
+          <WalletMenu />
           <ThemeToggle />
           <PetCta variant="header">
             <Sparkles

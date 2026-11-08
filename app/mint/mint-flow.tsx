@@ -24,14 +24,16 @@ import {
   mintPet,
   normalizePetName,
   petSpriteSrc,
+  releasePet,
   renamePet,
-  resetPet,
   subscribePet,
   validatePetName,
   type DemoPet,
   type NameError,
 } from "../../lib/mocks";
+import { useWallet } from "../../lib/use-wallet";
 import TokenCard, { TokenInfo } from "../pet/token-card";
+import WalletGate from "../wallet-gate";
 import HatchStage from "./hatch-stage";
 
 /** loading → ready | soldOut | existing; ready → hatching (draw, animation, reveal) → /pet. */
@@ -57,9 +59,11 @@ async function debugHatch() {
  * /mint (docs/DEVLOG.md §2): one random token from the 300 per hatch. The pet is saved as soon
  * as the token is drawn (with its own name), so leaving during the animation or the reveal keeps it;
  * the reveal's name field renames it. No pet picker: a `?pet=` parameter from old links is ignored.
+ * Hatching needs the demo wallet (docs/DEVLOG.md §2): without it the hatch button is a connect gate.
  */
 export default function MintFlow() {
   const router = useRouter();
+  const { ready: walletReady, account } = useWallet();
   const [view, setView] = useState<View>("loading");
   const viewRef = useRef<View>("loading");
   const [status, setStatus] = useState<Status>({ minted: 0, total: DROP1_TOTAL, soldOut: false });
@@ -163,7 +167,7 @@ export default function MintFlow() {
   };
 
   const hatch = async () => {
-    if (viewRef.current !== "ready") return;
+    if (viewRef.current !== "ready" || !account) return;
     setHatchError(false);
     go("hatching");
     setStarted(true);
@@ -211,13 +215,13 @@ export default function MintFlow() {
       setLeaving(true);
       router.push("/pet");
     } catch (error) {
-      if (error instanceof MintError) setNameError(error.code);
+      if (error instanceof MintError) setNameError(error.code === "no_wallet" ? "no_pet" : error.code);
       inputRef.current?.focus();
     }
   };
 
   const startOver = async () => {
-    await resetPet();
+    if (pet) await releasePet(pet.id);
     setConfirming(false);
     resetHatch();
     applyStatus(await getDropStatus());
@@ -347,10 +351,14 @@ export default function MintFlow() {
         {!started ? (
           <div className="mint-ready">
             <p className="mint-counter">{counter}</p>
-            <button ref={hatchRef} type="button" className="button button-primary mint-hatch-button" onClick={hatch}>
-              {mintPage.hatchButton}
-              <span className="mint-tag">{mintPage.hatchTag}</span>
-            </button>
+            {walletReady && !account ? (
+              <WalletGate context="mint" onConnected={() => getPet().then((saved) => setFocus(saved ? "existing" : "hatch"))} />
+            ) : (
+              <button ref={hatchRef} type="button" className="button button-primary mint-hatch-button" onClick={hatch}>
+                {mintPage.hatchButton}
+                <span className="mint-tag">{mintPage.hatchTag}</span>
+              </button>
+            )}
             {hatchError ? (
               <p className="mint-error" role="alert">
                 {mintPage.hatchError}

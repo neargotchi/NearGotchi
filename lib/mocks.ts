@@ -2,6 +2,17 @@
 // chat replies and simulation rules. All values here are demonstration data.
 
 import { claimRandomToken, ensureMinted, findToken, type Drop1Token } from "./drop1";
+import {
+  DEMO_ACCOUNT_ID,
+  WalletError,
+  absorbBalance,
+  connectedAccountId,
+  getAccount,
+  refill,
+  spend,
+  subscribeAccount,
+  type DemoAccount,
+} from "./wallet";
 
 export const moods = ["normal", "hungry", "happy", "sleep"] as const;
 export type Mood = (typeof moods)[number];
@@ -88,37 +99,52 @@ export const items: Item[] = [
   { id: "cape", slot: "back", src: "/items/back/cape.png", width: 280, height: 256 },
 ];
 
-// ---------- Demo pet store (PLAN-MINT.md §2) ----------
+// ---------- Demo pet store (docs/DEVLOG.md §1: pets v4, a collection per account) ----------
 // Async on purpose: a future backend swaps these bodies and keeps the same calls.
 // Browser-only; every storage access is guarded. Nothing here is a real mint.
 
 /** The drop-1 token a pet hatched as (docs/DEVLOG.md §3). Always matches lib/drop1-tokens.json. */
 export type PetToken = Pick<Drop1Token, "tokenId" | "tier" | "background" | "accessory">;
 
+/** Counters for the stats tab; best scores per game. */
+export type PetStats = { games: number; snacks: number; messages: number; best: { simon: number; snack: number } };
+
 export type DemoPet = {
-  /** 3 since drop 1 (adds token); v1 (/mint) and v2 (/pet) pets are migrated on read. */
-  v: 3;
-  /** "demo-" + petId + "-" + Date.now() */
+  /** 4 since demo v2: one of many pets of an account; the balance moved to the wallet. v1–v3 are migrated on read. */
+  v: 4;
+  /** "demo-" + petId + "-" + tokenId + "-" + Date.now(); the pet's key in the collection (stable across migrations). */
   id: string;
+  /** Account that hatched it (lib/wallet.ts). Only the connected account's pets are visible. */
+  owner: string;
   petId: PetProfile["id"];
   species: string;
   name: string;
-  /** Demo $NEARGotchi, display only ("100 demo $NEARGotchi"). */
-  balance: number;
   /** 0–100 */
   hunger: number;
   /** 0–100 */
   energy: number;
   mood: Mood;
-  outfit: Partial<Record<Slot, Item["id"] | null>>;
   /** ISO date */
   mintedAt: string;
   /** ISO date: hunger/energy are simulated from here to "now" (docs/DEVLOG.md §2). */
   lastUpdated: string;
-  /** null only when no free token of this pet was left (migration or mint); /pet then shows no token card. */
+  /** ISO date until which the pet stays happy (games, snacks); null = no timer. */
+  happyUntil: string | null;
+  stats: PetStats;
+  /** null only when no free token of this pet was left during a migration; no token card then. */
   token: PetToken | null;
   demo: true;
 };
+
+type PetStore = {
+  v: 4;
+  pets: DemoPet[];
+  /** accountId → id of the pet shown on /pet */
+  active: Record<string, string>;
+};
+
+/** The v1–v3 single pet, read only to migrate it (it had its own balance and an unused outfit). */
+type LegacyPet = Omit<DemoPet, "v" | "owner" | "happyUntil" | "stats"> & { v: 3; balance: number };
 
 const toPetToken = (token: Drop1Token | null): PetToken | null =>
   token && { tokenId: token.tokenId, tier: token.tier, background: token.background, accessory: token.accessory };
@@ -126,7 +152,7 @@ const toPetToken = (token: Drop1Token | null): PetToken | null =>
 /** A stored token must be the manifest's token of the same pet, field for field. */
 function checkToken(value: unknown, petId: string): { ok: true; token: PetToken | null } | { ok: false } {
   if (value === null) return { ok: true, token: null };
-  if (typeof value !== "object") return { ok: false };
+  if (!value || typeof value !== "object") return { ok: false };
   const stored = value as Partial<PetToken>;
   const known = findToken(stored.tokenId);
   const same =
@@ -138,7 +164,9 @@ function checkToken(value: unknown, petId: string): { ok: true; token: PetToken 
   return same ? { ok: true, token: toPetToken(known) } : { ok: false };
 }
 
-export const PET_STORAGE_KEY = "neargotchi-pet";
+export const PETS_STORAGE_KEY = "neargotchi-pets";
+/** v1–v3: one pet, no owner. Migrated into the collection on read, then removed. */
+export const LEGACY_PET_STORAGE_KEY = "neargotchi-pet";
 
 export const PET_NAME_MIN = 2;
 export const PET_NAME_MAX = 12;
@@ -146,7 +174,7 @@ export const PET_NAME_MAX = 12;
 export type NameError = "too_short" | "too_long" | "bad_chars" | "no_pet";
 
 export class MintError extends Error {
-  constructor(public readonly code: NameError) {
+  constructor(public readonly code: NameError | "no_wallet") {
     super(code);
     this.name = "MintError";
   }
@@ -172,28 +200,23 @@ export function validatePetName(
   return { ok: true, name };
 }
 
-// Blocked storage: the pet lives here (survives client navigation, gone on reload).
-let memoryPet: DemoPet | null = null;
-const listeners = new Set<(pet: DemoPet | null) => void>();
-const notify = (pet: DemoPet | null) => listeners.forEach((listener) => listener(pet));
-
 const inBrowser = () => typeof window !== "undefined";
 
 /** undefined = storage unavailable. */
-function readStored(): string | null | undefined {
+function readKey(key: string): string | null | undefined {
   if (!inBrowser()) return undefined;
   try {
-    return window.localStorage.getItem(PET_STORAGE_KEY);
+    return window.localStorage.getItem(key);
   } catch {
     return undefined;
   }
 }
 
-function writeStored(value: string | null): boolean {
+function writeKey(key: string, value: string | null): boolean {
   if (!inBrowser()) return false;
   try {
-    if (value === null) window.localStorage.removeItem(PET_STORAGE_KEY);
-    else window.localStorage.setItem(PET_STORAGE_KEY, value);
+    if (value === null) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, value);
     return true;
   } catch {
     return false;
@@ -201,51 +224,198 @@ function writeStored(value: string | null): boolean {
 }
 
 const isLevel = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
+const isCount = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value >= 0;
+const isDate = (value: unknown) => typeof value === "string" && Number.isFinite(Date.parse(value));
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === "object" && !Array.isArray(value);
+
+/** Fields every version shares. */
+function commonValid(data: Record<string, unknown>): boolean {
+  const name = data.name;
+  const petId = data.petId as string;
+  return (
+    data.demo === true &&
+    typeof data.id === "string" &&
+    data.id.length > 0 &&
+    typeof name === "string" &&
+    !!findPet(petId) &&
+    validatePetName(name, petId).ok &&
+    normalizePetName(name) === name &&
+    isLevel(data.hunger) &&
+    isLevel(data.energy) &&
+    moods.includes(data.mood as Mood) &&
+    typeof data.mintedAt === "string"
+  );
+}
 
 /**
- * Parses a stored pet. Migrations: v1 (from /mint before /pet existed) gets lastUpdated = now; v1 and v2
- * (before drop 1) get a random free drop-1 token of the same pet, marked minted, or token null when that
- * pet has none left. A v3 token must match the manifest, otherwise the record counts as corrupt.
- * Claims a token, so only getPet() calls it (and saves the migrated pet right away).
+ * Parses the old single pet. v1 (from /mint before /pet existed) gets lastUpdated = now; v1 and v2 (before
+ * drop 1) get a random free drop-1 token of the same pet, marked minted, or token null when that pet has
+ * none left. A v3 token must match the manifest, otherwise the record counts as corrupt.
  */
-function parsePetRecord(raw: string | null | undefined): { pet: DemoPet; migrated: boolean } | null {
-  if (!raw) return null;
+function parseLegacy(raw: string): LegacyPet | null {
   try {
-    const data = JSON.parse(raw) as (Omit<Partial<DemoPet>, "v" | "token"> & { v?: number; token?: unknown }) | null;
-    if (
-      !data ||
-      (data.v !== 1 && data.v !== 2 && data.v !== 3) ||
-      (data.v !== 1 && (typeof data.lastUpdated !== "string" || !Number.isFinite(Date.parse(data.lastUpdated)))) ||
-      data.demo !== true ||
-      typeof data.id !== "string" ||
-      typeof data.name !== "string" ||
-      !findPet(data.petId) ||
-      !validatePetName(data.name, data.petId).ok ||
-      normalizePetName(data.name) !== data.name ||
-      typeof data.balance !== "number" ||
-      !Number.isFinite(data.balance) ||
-      !isLevel(data.hunger) ||
-      !isLevel(data.energy) ||
-      !moods.includes(data.mood as Mood) ||
-      typeof data.outfit !== "object" ||
-      data.outfit === null ||
-      typeof data.mintedAt !== "string"
-    ) {
-      return null;
-    }
+    const data = JSON.parse(raw) as unknown;
+    if (!isObject(data) || (data.v !== 1 && data.v !== 2 && data.v !== 3) || !commonValid(data)) return null;
+    if (data.v !== 1 && !isDate(data.lastUpdated)) return null;
+    if (typeof data.balance !== "number" || !Number.isFinite(data.balance)) return null;
     const petId = data.petId as string;
+    let token: PetToken | null;
     if (data.v === 3) {
       const checked = checkToken(data.token, petId);
       if (!checked.ok) return null;
-      if (checked.token) ensureMinted(checked.token.tokenId);
-      return { pet: { ...(data as unknown as DemoPet), token: checked.token }, migrated: false };
+      token = checked.token;
+    } else {
+      token = toPetToken(claimRandomToken(petId));
     }
     const lastUpdated = data.v === 1 ? new Date().toISOString() : (data.lastUpdated as string);
-    const token = toPetToken(claimRandomToken(petId));
-    return { pet: { ...(data as unknown as DemoPet), v: 3, lastUpdated, token }, migrated: true };
+    return { ...(data as unknown as LegacyPet), v: 3, lastUpdated, token };
   } catch {
     return null;
   }
+}
+
+const emptyStats = (): PetStats => ({ games: 0, snacks: 0, messages: 0, best: { simon: 0, snack: 0 } });
+
+/** v3 → v4: owned by the demo account, one more try for a token if it had none (the balance goes to the wallet in loadStore). */
+function fromLegacy(old: LegacyPet): DemoPet {
+  const token = old.token ?? toPetToken(claimRandomToken(old.petId));
+  return {
+    v: 4,
+    id: old.id,
+    owner: DEMO_ACCOUNT_ID,
+    petId: old.petId,
+    species: old.species,
+    name: old.name,
+    hunger: old.hunger,
+    energy: old.energy,
+    mood: old.mood,
+    mintedAt: old.mintedAt,
+    lastUpdated: old.lastUpdated,
+    happyUntil: null,
+    stats: emptyStats(),
+    token,
+    demo: true,
+  };
+}
+
+function parseStats(value: unknown): PetStats | null {
+  if (!isObject(value) || !isObject(value.best)) return null;
+  const { games, snacks, messages } = value;
+  const { simon, snack } = value.best;
+  if (![games, snacks, messages, simon, snack].every(isCount)) return null;
+  return { games, snacks, messages, best: { simon, snack } } as PetStats;
+}
+
+/** One v4 pet, rebuilt field by field (unknown fields dropped), or null when anything is off. */
+function parseStoredPet(value: unknown): DemoPet | null {
+  if (!isObject(value) || value.v !== 4 || !commonValid(value)) return null;
+  if (typeof value.owner !== "string" || !value.owner || !isDate(value.lastUpdated)) return null;
+  if (value.happyUntil !== null && !isDate(value.happyUntil)) return null;
+  const stats = parseStats(value.stats);
+  const checked = checkToken(value.token, value.petId as string);
+  if (!stats || !checked.ok) return null;
+  const pet = value as unknown as DemoPet;
+  return {
+    v: 4,
+    id: pet.id,
+    owner: pet.owner,
+    petId: pet.petId,
+    species: pet.species,
+    name: pet.name,
+    hunger: pet.hunger,
+    energy: pet.energy,
+    mood: pet.mood,
+    mintedAt: pet.mintedAt,
+    lastUpdated: pet.lastUpdated,
+    happyUntil: pet.happyUntil,
+    stats,
+    token: checked.token,
+    demo: true,
+  };
+}
+
+const emptyStore = (): PetStore => ({ v: 4, pets: [], active: {} });
+
+/** Adds a pet unless its id or token is already in the collection. */
+function addPet(store: PetStore, pet: DemoPet): boolean {
+  const clash = store.pets.some(
+    (other) => other.id === pet.id || (pet.token && other.token?.tokenId === pet.token.tokenId),
+  );
+  if (!clash) store.pets.push(pet);
+  return !clash;
+}
+
+/** Bad pets, duplicates and dangling `active` entries are dropped one by one; a bad shape resets the store. */
+function parseStore(raw: string | null): PetStore {
+  const store = emptyStore();
+  if (!raw) return store;
+  try {
+    const data = JSON.parse(raw) as unknown;
+    if (!isObject(data) || data.v !== 4 || !Array.isArray(data.pets) || !isObject(data.active)) return store;
+    for (const value of data.pets) {
+      const pet = parseStoredPet(value);
+      if (pet) addPet(store, pet);
+    }
+    for (const [owner, id] of Object.entries(data.active)) {
+      if (store.pets.some((pet) => pet.id === id && pet.owner === owner)) store.active[owner] = id as string;
+    }
+  } catch {
+    // corrupt JSON: empty store
+  }
+  return store;
+}
+
+// Blocked storage: the collection lives here (survives client navigation, gone on reload).
+let memoryStore: PetStore | null = null;
+let loading = false;
+const listeners = new Set<() => void>();
+const notify = () => listeners.forEach((listener) => listener());
+
+/**
+ * Reads the collection. Rewrites it when anything was dropped or migrated; an old single pet
+ * (neargotchi-pet, v1–v3, also one written later by an outdated tab) joins the collection and its
+ * key is removed only after the collection was saved. Every token is re-marked as minted (self-heal).
+ */
+function loadStore(): PetStore {
+  const raw = readKey(PETS_STORAGE_KEY);
+  if (raw === undefined) {
+    memoryStore ??= emptyStore();
+    return memoryStore;
+  }
+  // Re-entry (a listener reading pets while a migration runs) gets the last known state, never a second migration.
+  if (loading) return memoryStore ?? parseStore(raw);
+  loading = true;
+  try {
+    const store = parseStore(raw);
+    const legacyRaw = readKey(LEGACY_PET_STORAGE_KEY);
+    const legacy = legacyRaw ? parseLegacy(legacyRaw) : null;
+    if (legacy) addPet(store, fromLegacy(legacy));
+    for (const pet of store.pets) if (pet.token) ensureMinted(pet.token.tokenId);
+    const serialized = JSON.stringify(store);
+    const saved = serialized === raw || (raw === null && store.pets.length === 0) || writeKey(PETS_STORAGE_KEY, serialized);
+    if (legacyRaw && saved) writeKey(LEGACY_PET_STORAGE_KEY, null);
+    memoryStore = store;
+    // Last, so the wallet's listeners (which read pets again) see the finished migration.
+    if (legacy && saved) absorbBalance(legacy.balance);
+    return store;
+  } finally {
+    loading = false;
+  }
+}
+
+function commit(store: PetStore) {
+  memoryStore = store;
+  writeKey(PETS_STORAGE_KEY, JSON.stringify(store));
+  notify();
+}
+
+const ownedBy = (store: PetStore, owner: string) => store.pets.filter((pet) => pet.owner === owner);
+
+/** The account's chosen pet, else its newest one. */
+function activeOf(store: PetStore, owner: string): DemoPet | null {
+  const mine = ownedBy(store, owner);
+  return mine.find((pet) => pet.id === store.active[owner]) ?? mine[mine.length - 1] ?? null;
 }
 
 /** False when localStorage is blocked (private mode, blocked site data). */
@@ -261,23 +431,43 @@ export function isPersistent(): boolean {
   }
 }
 
-/** The saved demo pet, or null (none / corrupt / old version / unknown pet — corrupt data is cleared). */
-export async function getPet(): Promise<DemoPet | null> {
-  const raw = readStored();
-  if (raw === undefined) return memoryPet;
-  const record = parsePetRecord(raw);
-  if (!record && raw !== null) writeStored(null);
-  if (record?.migrated) writeStored(JSON.stringify(record.pet));
-  memoryPet = record?.pet ?? null;
-  return memoryPet;
+/** The connected account's pets, oldest first; [] when no wallet is connected. */
+export async function getPets(): Promise<DemoPet[]> {
+  const owner = connectedAccountId();
+  const store = loadStore();
+  return owner ? ownedBy(store, owner) : [];
 }
 
 /**
- * Saves the demo pet for a drop-1 token that hatchRandom() just drew (docs/DEVLOG.md §2).
- * Saved right after the draw with the pet's own name, so leaving during the reveal keeps it; the
- * reveal's name field then calls renamePet. Throws MintError on a bad name or a token that isn't in the drop.
+ * One pet of the connected account: by id, or the active one when no id is given.
+ * null without a wallet, without pets, or for an id the account doesn't own.
+ */
+export async function getPet(id?: string): Promise<DemoPet | null> {
+  const owner = connectedAccountId();
+  const store = loadStore();
+  if (!owner) return null;
+  if (id === undefined) return activeOf(store, owner);
+  return ownedBy(store, owner).find((pet) => pet.id === id) ?? null;
+}
+
+/** Picks the pet /pet shows for the connected account. */
+export async function setActivePet(id: string): Promise<void> {
+  const owner = connectedAccountId();
+  const store = loadStore();
+  if (!owner || !ownedBy(store, owner).some((pet) => pet.id === id)) throw new MintError("no_pet");
+  if (store.active[owner] === id) return;
+  commit({ ...store, active: { ...store.active, [owner]: id } });
+}
+
+/**
+ * Saves a pet for a drop-1 token that hatchRandom() just drew (docs/DEVLOG.md §2) and makes it
+ * the active one. Saved right after the draw with the pet's own name, so leaving during the reveal keeps
+ * it; the reveal's name field then calls renamePet. Throws MintError: "no_wallet" without a connected
+ * account, a name error, or "no_pet" for a token that isn't in the drop or already has a pet.
  */
 export async function mintPet(input: { token: Pick<Drop1Token, "tokenId">; name?: string }): Promise<DemoPet> {
+  const owner = connectedAccountId();
+  if (!owner) throw new MintError("no_wallet");
   const token = findToken(input.token.tokenId);
   const profile = findPet(token?.petId);
   if (!token || !profile) throw new MintError("no_pet");
@@ -286,78 +476,99 @@ export async function mintPet(input: { token: Pick<Drop1Token, "tokenId">; name?
   ensureMinted(token.tokenId);
   const now = new Date().toISOString();
   const pet: DemoPet = {
-    v: 3,
-    id: `demo-${profile.id}-${Date.now()}`,
+    v: 4,
+    id: `demo-${profile.id}-${token.tokenId}-${Date.now()}`,
+    owner,
     petId: profile.id,
     species: profile.species,
     name: checked.name,
-    balance: 100,
     hunger: 20,
     energy: 100,
     mood: "happy",
-    outfit: {},
     mintedAt: now,
     lastUpdated: now,
+    happyUntil: null,
+    stats: emptyStats(),
     token: toPetToken(token),
     demo: true,
   };
-  memoryPet = pet;
-  writeStored(JSON.stringify(pet));
-  notify(pet);
+  const store = loadStore();
+  if (!addPet(store, pet)) throw new MintError("no_pet");
+  commit({ ...store, active: { ...store.active, [owner]: pet.id } });
   return pet;
 }
 
-/** Reveal name field: validates (empty → the pet's own name) and saves. Throws MintError. */
-export async function renamePet(raw: string): Promise<DemoPet> {
-  const current = await getPet();
+/** Validates (empty → the pet's own name) and saves. Throws MintError. */
+export async function renamePet(raw: string, id?: string): Promise<DemoPet> {
+  const current = await getPet(id);
   if (!current) throw new MintError("no_pet");
   const checked = validatePetName(raw, current.petId);
   if (!checked.ok) throw new MintError(checked.error);
-  return checked.name === current.name ? current : updatePet({ name: checked.name });
+  return checked.name === current.name ? current : updatePet({ name: checked.name }, current.id);
 }
 
-/** For /pet: merges a patch into the saved pet. */
-export async function updatePet(patch: Partial<Omit<DemoPet, "v" | "id" | "demo" | "token">>): Promise<DemoPet> {
-  const current = await getPet();
+/** Merges a patch into one of the connected account's pets (the active one by default). */
+export async function updatePet(
+  patch: Partial<Omit<DemoPet, "v" | "id" | "owner" | "demo" | "token">>,
+  id?: string,
+): Promise<DemoPet> {
+  const current = await getPet(id);
   if (!current) throw new Error("no pet");
-  return savePet({ ...current, ...patch, v: 3, id: current.id, token: current.token, demo: true } as DemoPet);
+  return savePet({ ...current, ...patch, v: 4, id: current.id, owner: current.owner, token: current.token, demo: true });
 }
 
+/** Replaces the stored pet with the same id; a pet released meanwhile (e.g. in another tab) is not brought back. */
 function savePet(pet: DemoPet): DemoPet {
-  memoryPet = pet;
-  writeStored(JSON.stringify(pet));
-  notify(pet);
+  const store = loadStore();
+  const index = store.pets.findIndex((other) => other.id === pet.id);
+  if (index === -1) return pet;
+  const nextPets = store.pets.slice();
+  nextPets[index] = pet;
+  commit({ ...store, pets: nextPets });
   return pet;
 }
 
-/** Removes the demo pet and its chat log. Its drop-1 token stays minted (the counter only goes up). */
-export async function resetPet(): Promise<void> {
-  memoryPet = null;
-  writeStored(null);
-  clearChat();
-  notify(null);
+/**
+ * Removes one pet (the active one by default) and its chat log; the account's newest remaining pet
+ * becomes active. Its drop-1 token stays minted (the counter only goes up).
+ */
+export async function releasePet(id?: string): Promise<void> {
+  const current = await getPet(id);
+  if (!current) return;
+  const store = loadStore();
+  const active = { ...store.active };
+  if (active[current.owner] === current.id) delete active[current.owner];
+  clearChat(current.id);
+  commit({ ...store, pets: store.pets.filter((pet) => pet.id !== current.id), active });
 }
 
-/** Calls back on mint/update/reset in this tab and on storage changes from other tabs. */
-export function subscribePet(callback: (pet: DemoPet | null) => void): () => void {
+/** Calls back on any change to the collection or the wallet, in this tab and from other tabs. */
+export function subscribePets(callback: () => void): () => void {
   listeners.add(callback);
-  // Re-read through getPet so an old (v1/v2) pet written by an outdated tab is migrated and saved once.
+  const offAccount = subscribeAccount(() => callback());
   const onStorage = (event: StorageEvent) => {
-    if (event.key !== PET_STORAGE_KEY && event.key !== null) return;
-    getPet().then(callback);
+    if (event.key === PETS_STORAGE_KEY || event.key === LEGACY_PET_STORAGE_KEY || event.key === null) callback();
   };
   if (inBrowser()) window.addEventListener("storage", onStorage);
   return () => {
     listeners.delete(callback);
+    offAccount();
     if (inBrowser()) window.removeEventListener("storage", onStorage);
   };
 }
 
-// ---------- /pet simulation (docs/DEVLOG.md §2, numbers approved in its review) ----------
+/** The active pet (or null) after any change; re-read through getPet so migrations run once. */
+export function subscribePet(callback: (pet: DemoPet | null) => void): () => void {
+  return subscribePets(() => {
+    getPet().then(callback);
+  });
+}
+
+// ---------- /pet simulation (docs/DEVLOG.md §2; hunger tempo from PLANNER REVIEW 037) ----------
 
 export const PET_RULES = {
-  /** 20 → 70 (hungry) in 2.5 min; never above 100. */
-  hungerPerMin: 20,
+  /** 20 → 70 (hungry) in 10 min; never above 100. */
+  hungerPerMin: 5,
   /** Slow drain … */
   energyPerMin: 5,
   /** … twice as fast while hunger ≥ 70 ("it gets sad and slowly loses energy"). */
@@ -370,7 +581,6 @@ export const PET_RULES = {
   feedEnergy: 10,
   chatEnergy: 4,
   happyMs: 3000,
-  startBalance: 100,
   chatMax: 30,
   messageMax: 140,
 } as const;
@@ -413,37 +623,41 @@ export function simulatePet(pet: DemoPet, now: number): DemoPet {
   return { ...next, mood: baseMood(next) };
 }
 
-/** Simulates to now and saves (on actions, every 15s while visible, on hide). */
-export async function tickPet(): Promise<DemoPet | null> {
-  const current = await getPet();
+/** Simulates one pet (the active one by default) to now and saves (on actions, every 15s while visible, on hide). */
+export async function tickPet(id?: string): Promise<DemoPet | null> {
+  const current = await getPet(id);
   return current ? savePet(simulatePet(current, Date.now())) : null;
 }
 
 export type FeedResult = "fed" | "full" | "broke";
 
-/** Costs 5 demo balance: −30 hunger, +10 energy. Not hungry at all → "full"; can't pay → "broke". */
-export async function feedPet(): Promise<{ pet: DemoPet; result: FeedResult }> {
-  const current = await getPet();
+/** Costs 5 demo $NEARGotchi from the wallet: −30 hunger, +10 energy. Not hungry at all → "full"; can't pay → "broke". */
+export async function feedPet(id?: string): Promise<{ pet: DemoPet; result: FeedResult }> {
+  const current = await getPet(id);
   if (!current) throw new Error("no pet");
   const pet = simulatePet(current, Date.now());
   const R = PET_RULES;
   if (levelOf(pet.hunger) <= 0) return { pet: savePet(pet), result: "full" };
-  if (pet.balance < R.feedPrice) return { pet: savePet(pet), result: "broke" };
+  try {
+    await spend(R.feedPrice);
+  } catch (error) {
+    if (error instanceof WalletError && error.code === "broke") return { pet: savePet(pet), result: "broke" };
+    throw error;
+  }
   const fed = {
     ...pet,
-    balance: pet.balance - R.feedPrice,
     hunger: clampLevel(pet.hunger - R.feedHunger),
     energy: clampLevel(pet.energy + R.feedEnergy),
+    stats: { ...pet.stats, snacks: pet.stats.snacks + 1 },
   };
   return { pet: savePet({ ...fed, mood: baseMood(fed) }), result: "fed" };
 }
 
-/** Demo only: back to 100 when a snack can't be paid; otherwise a no-op. */
-export async function refillBalance(): Promise<DemoPet> {
-  const current = await getPet();
-  if (!current) throw new Error("no pet");
-  const pet = simulatePet(current, Date.now());
-  return savePet(pet.balance < PET_RULES.feedPrice ? { ...pet, balance: PET_RULES.startBalance } : pet);
+/** Demo only: the wallet back to 100 when a snack can't be paid; otherwise unchanged. */
+export async function refillBalance(): Promise<DemoAccount> {
+  const account = await getAccount();
+  if (!account) throw new WalletError("not_connected");
+  return account.balance < PET_RULES.feedPrice ? refill() : account;
 }
 
 // ---------- Chat (deterministic local replies; "demo · near ai soon") ----------
@@ -461,7 +675,8 @@ export type ChatKind = "reply" | "hungry" | "asleep";
 
 export const CHAT_STORAGE_KEY = "neargotchi-chat";
 
-type ChatLog = { v: 1; petInstanceId: string; messages: ChatMessage[] };
+/** v2: one log per pet (pet id → last 30 messages). A v1 log (one pet) becomes that pet's entry. */
+type ChatStore = { v: 2; logs: Record<string, ChatMessage[]> };
 
 type PetLines = {
   greet: string;
@@ -521,67 +736,70 @@ export function pickReply(pet: Pick<DemoPet, "petId">, text: string, index: numb
   return rule ? lines[rule[0]] : lines.fallback[index % 2];
 }
 
-let memoryChat: ChatLog | null = null;
 
-function readChatLog(petInstanceId: string): ChatMessage[] {
-  let log: ChatLog | null = memoryChat;
-  if (inBrowser()) {
+const isMessage = (m: unknown): m is ChatMessage =>
+  isObject(m) &&
+  typeof m.id === "string" &&
+  (m.from === "you" || m.from === "pet" || m.from === "note") &&
+  typeof m.text === "string" &&
+  typeof m.at === "string";
+
+// Blocked storage: the logs live here until reload.
+let memoryChat: ChatStore | null = null;
+
+/** Reads all logs; a v1 log is converted, bad logs are dropped, and the result is saved when it changed. */
+function readChats(): ChatStore {
+  const raw = readKey(CHAT_STORAGE_KEY);
+  if (raw === undefined) {
+    memoryChat ??= { v: 2, logs: {} };
+    return memoryChat;
+  }
+  const store: ChatStore = { v: 2, logs: {} };
+  if (raw) {
     try {
-      const raw = window.localStorage.getItem(CHAT_STORAGE_KEY);
-      log = null;
-      if (raw) {
-        try {
-          const data = JSON.parse(raw) as ChatLog;
-          const valid =
-            data?.v === 1 &&
-            typeof data.petInstanceId === "string" &&
-            Array.isArray(data.messages) &&
-            data.messages.every(
-              (m) =>
-                m &&
-                typeof m.id === "string" &&
-                (m.from === "you" || m.from === "pet" || m.from === "note") &&
-                typeof m.text === "string" &&
-                typeof m.at === "string",
-            );
-          if (valid) log = data;
-          else window.localStorage.removeItem(CHAT_STORAGE_KEY);
-        } catch {
-          window.localStorage.removeItem(CHAT_STORAGE_KEY);
+      const data = JSON.parse(raw) as unknown;
+      if (isObject(data) && data.v === 2 && isObject(data.logs)) {
+        for (const [id, messages] of Object.entries(data.logs)) {
+          if (Array.isArray(messages) && messages.every(isMessage)) store.logs[id] = messages.slice(-PET_RULES.chatMax);
         }
+      } else if (
+        isObject(data) &&
+        data.v === 1 &&
+        typeof data.petInstanceId === "string" &&
+        Array.isArray(data.messages) &&
+        data.messages.every(isMessage)
+      ) {
+        store.logs[data.petInstanceId] = data.messages.slice(-PET_RULES.chatMax);
       }
     } catch {
-      log = memoryChat; // storage blocked
+      // corrupt JSON: no logs
     }
+    const serialized = JSON.stringify(store);
+    if (serialized !== raw) writeKey(CHAT_STORAGE_KEY, Object.keys(store.logs).length ? serialized : null);
   }
-  if (!log || log.petInstanceId !== petInstanceId) return [];
-  return log.messages.slice(-PET_RULES.chatMax);
+  memoryChat = store;
+  return store;
 }
 
-function writeChatLog(petInstanceId: string, messages: ChatMessage[]) {
-  memoryChat = { v: 1, petInstanceId, messages: messages.slice(-PET_RULES.chatMax) };
-  if (!inBrowser()) return;
-  try {
-    window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(memoryChat));
-  } catch {
-    // storage blocked: memoryChat keeps it until reload
-  }
+function writeChatLog(petId: string, messages: ChatMessage[]) {
+  const store = readChats();
+  memoryChat = { v: 2, logs: { ...store.logs, [petId]: messages.slice(-PET_RULES.chatMax) } };
+  writeKey(CHAT_STORAGE_KEY, JSON.stringify(memoryChat));
 }
 
-function clearChat() {
-  memoryChat = null;
-  if (!inBrowser()) return;
-  try {
-    window.localStorage.removeItem(CHAT_STORAGE_KEY);
-  } catch {
-    // storage blocked
-  }
+function clearChat(petId: string) {
+  const store = readChats();
+  if (!(petId in store.logs)) return;
+  const logs = { ...store.logs };
+  delete logs[petId];
+  memoryChat = { v: 2, logs };
+  writeKey(CHAT_STORAGE_KEY, Object.keys(logs).length ? JSON.stringify(memoryChat) : null);
 }
 
-/** The current pet's log (last 30); a log from another pet or a corrupt one is dropped. */
-export async function getChat(): Promise<ChatMessage[]> {
-  const pet = await getPet();
-  return pet ? readChatLog(pet.id) : [];
+/** One pet's log (last 30), the active pet's by default. */
+export async function getChat(id?: string): Promise<ChatMessage[]> {
+  const pet = await getPet(id);
+  return pet ? (readChats().logs[pet.id] ?? []) : [];
 }
 
 let messageSeq = 0;
@@ -598,14 +816,15 @@ const chatMessage = (from: ChatMessage["from"], text: string, now: number): Chat
  */
 export async function chatWithPet(
   text: string,
+  id?: string,
 ): Promise<{ pet: DemoPet; messages: ChatMessage[]; reply: ChatMessage; kind: ChatKind }> {
-  const current = await getPet();
+  const current = await getPet(id);
   if (!current) throw new Error("no pet");
   const clean = text.trim().slice(0, PET_RULES.messageMax);
   if (!clean) throw new Error("empty message");
   const now = Date.now();
   let pet = simulatePet(current, now);
-  const log = readChatLog(pet.id);
+  const log = readChats().logs[pet.id] ?? [];
   const sent = log.filter((m) => m.from === "you").length;
   const mine = chatMessage("you", clean, now);
   const mood = baseMood(pet);
@@ -623,6 +842,7 @@ export async function chatWithPet(
     const spent = { ...pet, energy: clampLevel(pet.energy - PET_RULES.chatEnergy) };
     pet = { ...spent, mood: baseMood(spent) };
   }
+  pet = { ...pet, stats: { ...pet.stats, messages: pet.stats.messages + 1 } };
   const messages = [...log, mine, reply].slice(-PET_RULES.chatMax);
   writeChatLog(pet.id, messages);
   return { pet: savePet(pet), messages, reply, kind };
