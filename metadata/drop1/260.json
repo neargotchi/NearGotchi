@@ -1,14 +1,14 @@
 {
   "title": "nightshade #260",
-  "description": "neargotchi drop 1 · #260 of 300 · common dragon wearing a chain.",
+  "description": "neargotchi drop 1 · #260 of 300 · common dragon wearing a cap.",
   "media": "260.png",
-  "media_hash": "a9yOJX3TTIH7XcoqQD9leDfE9KPRjnfO4B79PQuhpLE=",
+  "media_hash": "k/YMGVVGVNYxKyVaS1vmtkh/eB/q5vsgdy4S0InR2Dc=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c05-soft-sky\",\"tier\":\"common\",\"accessory\":\"chain\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c05-soft-sky\",\"tier\":\"common\",\"accessory\":\"cap\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

@@ -4,6 +4,7 @@
   "pets": ["pet1", "pet2", "pet3"],
   "perPet": { "common": 60, "rare": 25, "epic": 12, "legendary": 3 },
   "exclusions": {
-    "petItem": []
+    "petItem": [],
+    "petBackground": [["pet2", "r09-near-green"]]
   }
 }

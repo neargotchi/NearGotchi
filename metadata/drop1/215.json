@@ -1,14 +1,14 @@
 {
   "title": "nightshade #215",
-  "description": "neargotchi drop 1 · #215 of 300 · common dragon wearing a halo.",
+  "description": "neargotchi drop 1 · #215 of 300 · common dragon wearing a beanie.",
   "media": "215.png",
-  "media_hash": "8ulU1U2k8hz7C6yvA7BA+Lx/vWcQoQmNFq3j12n4FH0=",
+  "media_hash": "KoEJhCXghe68s3h0ZlTEQ2fJXqlgxbrzSqNKvWiaX24=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"halo\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"beanie\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

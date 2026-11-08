@@ -1,14 +1,14 @@
 {
   "title": "nightshade #278",
-  "description": "neargotchi drop 1 · #278 of 300 · rare dragon wearing a t-shirt.",
+  "description": "neargotchi drop 1 · #278 of 300 · rare dragon wearing headphones.",
   "media": "278.png",
-  "media_hash": "HSFLAFEVcyxpuCY5OY3lrO9uqx67ODrAUOqDd3ry0yI=",
+  "media_hash": "uswAGm51KOKTjzkIuSdLfZ5WcNjaROmreIS6W30N6l4=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"tshirt\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"headphones\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

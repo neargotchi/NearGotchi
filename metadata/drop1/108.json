@@ -2,13 +2,13 @@
   "title": "nightshade #108",
   "description": "neargotchi drop 1 · #108 of 300 · rare dragon wearing a chain.",
   "media": "108.png",
-  "media_hash": "15RrCyoRiqToyhtlQzd/bO+1s48QRJ79Ewqw89p0wgM=",
+  "media_hash": "D5kBt0cBEf+ESfAHJT5h3giBDeqNoLRMWgVv7K4A4Zs=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r09-near-green\",\"tier\":\"rare\",\"accessory\":\"chain\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"chain\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

@@ -1,14 +1,14 @@
 {
   "title": "nightshade #032",
-  "description": "neargotchi drop 1 · #032 of 300 · rare dragon wearing a keffiyeh.",
+  "description": "neargotchi drop 1 · #032 of 300 · rare dragon wearing a chain.",
   "media": "32.png",
-  "media_hash": "TyXYSK8T5krXlKSDcZQ6ptqnPrSqYGiBVWNwE6w15KQ=",
+  "media_hash": "o0GL98DHTOOnsSZu2WujGSEhSrCyTRZ9PmqV1GLnkiY=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"keffiyeh\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"chain\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

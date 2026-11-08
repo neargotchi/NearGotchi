@@ -1,14 +1,14 @@
 {
   "title": "nightshade #035",
-  "description": "neargotchi drop 1 · #035 of 300 · rare dragon wearing nerd glasses.",
+  "description": "neargotchi drop 1 · #035 of 300 · rare dragon wearing a cap.",
   "media": "35.png",
-  "media_hash": "5WyKp12AXlqzKhIFQSLui/ik/wxPfCPCdECtSX1eCis=",
+  "media_hash": "j0rJWjfC4+2uBM7UaJLGCWjz5qM+v5NdMrW/l/3vcVM=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"nerd\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"cap\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

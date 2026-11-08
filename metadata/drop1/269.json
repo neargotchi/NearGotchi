@@ -1,14 +1,14 @@
 {
   "title": "nightshade #269",
-  "description": "neargotchi drop 1 · #269 of 300 · common dragon wearing a keffiyeh.",
+  "description": "neargotchi drop 1 · #269 of 300 · common dragon wearing pixel shades.",
   "media": "269.png",
-  "media_hash": "iI10qExVh+A/xqadzl+eqMmV4NUEDDWYPn3/3Mm9eMg=",
+  "media_hash": "1VdggIzIawHgKl47R89Osmy6NIhCf6whhPHxGHKCVEk=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"keffiyeh\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c02-desert\",\"tier\":\"common\",\"accessory\":\"pixel\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

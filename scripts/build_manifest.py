@@ -1,7 +1,7 @@
 """Build + validate the drop-1 manifest (docs/PLAN-COLLECTION.md, rules updated by task 033: one dressed accessory).
   python3 scripts/build_manifest.py           build data/collection-drop1.json + docs/drop1-usage.txt
   python3 scripts/build_manifest.py --check   validate the committed manifest and confirm a rebuild is byte-identical
-Config (seed, quotas, exclusions): data/collection-config.json. Same seed + same config + same script → same bytes."""
+Config (seed, quotas, exclusions.petItem / exclusions.petBackground): data/collection-config.json. Same seed + same config + same script → same bytes."""
 import hashlib, itertools, json, os, random, sys
 from collections import Counter
 
@@ -29,16 +29,23 @@ def allowed_items(cfg, pet):
     return [i for i in L.items() if f"{pet}:{i}" not in cfg["exclusions"]["petItem"]]
 
 
-def bgs_by_tier():
+def bg_excluded(cfg, pet, bg):
+    return [pet, bg] in cfg["exclusions"].get("petBackground", [])
+
+
+def bgs_by_tier(cfg, pet):
+    """{tier: [bg]} this pet may sit on, after exclusions.petBackground (task 034: nightshade × r09-near-green)."""
     out = {t: [] for t in TIERS}
     for bg, tier in L.backgrounds().items():
-        out[tier].append(bg)
+        if not bg_excluded(cfg, pet, bg):
+            out[tier].append(bg)
     return out
 
 
 def capacity(cfg):
-    bgs, rows, ok = bgs_by_tier(), [], True
+    rows, ok = [], True
     for pet in cfg["pets"]:
+        bgs = bgs_by_tier(cfg, pet)
         for tier in TIERS:
             cap, need = len(allowed_items(cfg, pet)) * len(bgs[tier]), cfg["perPet"][tier]
             ok &= cap >= need
@@ -46,9 +53,9 @@ def capacity(cfg):
     return ok, rows
 
 
-def build_pet(cfg, pet, bgs, attempt):
+def build_pet(cfg, pet, attempt):
     """Greedy: per token take the least-used item (per pet) whose (bg, item) pair is still free; seeded ties."""
-    rng = random.Random(f"{cfg['seed']}:{pet}:{attempt}")
+    rng, bgs = random.Random(f"{cfg['seed']}:{pet}:{attempt}"), bgs_by_tier(cfg, pet)
     items, used, usage, out = allowed_items(cfg, pet), set(), Counter(), []
     for tier in FILL_ORDER:
         bg_cycle = sorted(bgs[tier]); rng.shuffle(bg_cycle)       # which bg gets the remainder is seeded
@@ -64,10 +71,10 @@ def build_pet(cfg, pet, bgs, attempt):
 
 
 def build(cfg):
-    bgs, tokens, attempts = bgs_by_tier(), [], {}
+    tokens, attempts = [], {}
     for pet in cfg["pets"]:
         for attempt in range(100):   # retry (logged) only if a (bg, item) clash pushed the spread above 1
-            pet_tokens, usage = build_pet(cfg, pet, bgs, attempt)
+            pet_tokens, usage = build_pet(cfg, pet, attempt)
             vals = [usage[i] for i in allowed_items(cfg, pet)]
             if max(vals) - min(vals) <= 1:
                 break
@@ -109,6 +116,8 @@ def validate(cfg, tokens):
         tid = t["tokenId"]
         if bgs.get(t["background"]) != t["tier"]:
             errs.append(f"#{tid}: background {t['background']} is not {t['tier']}")
+        if bg_excluded(cfg, t["petId"], t["background"]):
+            errs.append(f"#{tid}: {t['petId']} on excluded background {t['background']}")
         if not isinstance(t["accessory"], str) or t["accessory"] not in allowed_items(cfg, t["petId"]):
             errs.append(f"#{tid}: accessory {t['accessory']!r} is not an allowed dressed item")
         key = (t["petId"], t["background"], t["accessory"])

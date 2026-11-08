@@ -1,14 +1,14 @@
 {
   "title": "nightshade #056",
-  "description": "neargotchi drop 1 · #056 of 300 · common dragon wearing a keffiyeh.",
+  "description": "neargotchi drop 1 · #056 of 300 · common dragon wearing a halo.",
   "media": "56.png",
-  "media_hash": "oq7EUoCRoHjGSyS1jzIQJ5t8dSxkk6hkwdbvSKLkP+Q=",
+  "media_hash": "y7gqKgZyNcrXNDL5cGB6UyfsHKceduNwuRcwNV5iiak=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"keffiyeh\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"halo\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

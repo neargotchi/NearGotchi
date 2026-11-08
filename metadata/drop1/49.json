@@ -1,14 +1,14 @@
 {
   "title": "nightshade #049",
-  "description": "neargotchi drop 1 · #049 of 300 · common dragon wearing nerd glasses.",
+  "description": "neargotchi drop 1 · #049 of 300 · common dragon wearing a chain.",
   "media": "49.png",
-  "media_hash": "BmGslZwarPLLvnDXkvZV2+Q3ZxGCVZ+Lyo2vY/uBSJI=",
+  "media_hash": "UWpg/Flq67w5TCRP//s3BwVkjnzXYsypsrV+0PYXk98=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c04-pixel-grass\",\"tier\":\"common\",\"accessory\":\"nerd\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c04-pixel-grass\",\"tier\":\"common\",\"accessory\":\"chain\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

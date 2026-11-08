@@ -6,7 +6,7 @@ capacity (bg × allowed items, after exclusions):
   pet1 epic      capacity  26  need  12  ok
   pet1 legendary capacity  13  need   3  ok
   pet2 common    capacity  78  need  60  ok
-  pet2 rare      capacity  39  need  25  ok
+  pet2 rare      capacity  26  need  25  ok
   pet2 epic      capacity  26  need  12  ok
   pet2 legendary capacity  13  need   3  ok
   pet3 common    capacity  78  need  60  ok
@@ -33,20 +33,20 @@ pet1 (batman): common 60, rare 25, epic 12, legendary 3
 
 pet2 (nightshade): common 60, rare 25, epic 12, legendary 3
   item          comm  rare  epic  lege  total
-  beanie           5     1     2     0      8
+  beanie           4     2     2     0      8
   cap              5     2     1     0      8
   chain            5     2     0     1      8
-  crown            4     1     2     0      7
-  halo             5     2     1     0      8
+  crown            5     1     2     0      8
+  halo             4     2     1     0      7
   headphones       5     2     1     0      8
-  keffiyeh         5     2     1     0      8
-  mask             5     2     1     0      8
-  nerd             4     3     1     0      8
-  pixel            4     2     1     0      7
-  sunglasses       4     2     1     0      7
-  tophat           5     2     0     1      8
-  tshirt           4     2     0     1      7
-  backgrounds: c01-lcd-dots 10, c02-desert 10, c03-cozy-room 10, c04-pixel-grass 10, c05-soft-sky 10, c06-cream-grid 10, e10-golden-hour 6, e11-cosmic 6, l12-legendary-glow 3, r07-night-pixel 8, r08-sunset 8, r09-near-green 9
+  keffiyeh         4     2     1     0      7
+  mask             4     2     1     0      7
+  nerd             5     2     1     0      8
+  pixel            5     2     1     0      8
+  sunglasses       5     2     1     0      8
+  tophat           4     2     0     1      7
+  tshirt           5     2     0     1      8
+  backgrounds: c01-lcd-dots 10, c02-desert 10, c03-cozy-room 10, c04-pixel-grass 10, c05-soft-sky 10, c06-cream-grid 10, e10-golden-hour 6, e11-cosmic 6, l12-legendary-glow 3, r07-night-pixel 12, r08-sunset 13, r09-near-green 0
 
 pet3 (merk): common 60, rare 25, epic 12, legendary 3
   item          comm  rare  epic  lege  total

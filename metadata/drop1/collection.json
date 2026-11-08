@@ -12,7 +12,7 @@
     "drop": 1,
     "count": 300,
     "seed": 20261107,
-    "manifest": "data/collection-drop1.json sha256:ed60228ebf41f268ff4f139f891dc3943377b93ae7d8ed826501fcee4850079e",
+    "manifest": "data/collection-drop1.json sha256:3f5a719c0d8a6eaca41f8bcd01801269244ee86722fed74c9a5d8d3a981d9fc2",
     "per_pet_tier": {
       "pet1": {
         "rare": 25,
@@ -43,24 +43,24 @@
       "e10-golden-hour": 18,
       "e11-cosmic": 18,
       "l12-legendary-glow": 9,
-      "r07-night-pixel": 24,
-      "r08-sunset": 25,
-      "r09-near-green": 26
+      "r07-night-pixel": 28,
+      "r08-sunset": 30,
+      "r09-near-green": 17
     },
     "per_accessory": {
       "beanie": 23,
       "cap": 23,
       "chain": 23,
-      "crown": 23,
-      "halo": 24,
+      "crown": 24,
+      "halo": 23,
       "headphones": 22,
-      "keffiyeh": 24,
-      "mask": 23,
+      "keffiyeh": 23,
+      "mask": 22,
       "nerd": 23,
-      "pixel": 23,
-      "sunglasses": 23,
-      "tophat": 24,
-      "tshirt": 22
+      "pixel": 24,
+      "sunglasses": 24,
+      "tophat": 23,
+      "tshirt": 23
     }
   }
 }

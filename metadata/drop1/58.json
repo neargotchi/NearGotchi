@@ -1,14 +1,14 @@
 {
   "title": "nightshade #058",
-  "description": "neargotchi drop 1 · #058 of 300 · common dragon wearing a mask.",
+  "description": "neargotchi drop 1 · #058 of 300 · common dragon wearing headphones.",
   "media": "58.png",
-  "media_hash": "u/iB+xgw48umpd7z3eChL/w48AQRt8g9xW8AzmHXIWc=",
+  "media_hash": "//mq+GSNfsjuk5e52pLpyOcu//D/P+z/Si27q4YIIBI=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"mask\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"c03-cozy-room\",\"tier\":\"common\",\"accessory\":\"headphones\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

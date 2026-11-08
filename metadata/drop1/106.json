@@ -1,14 +1,14 @@
 {
   "title": "nightshade #106",
-  "description": "neargotchi drop 1 · #106 of 300 · rare dragon wearing a halo.",
+  "description": "neargotchi drop 1 · #106 of 300 · rare dragon wearing a mask.",
   "media": "106.png",
-  "media_hash": "2o+jAG7hpbZlqdj0lWRSlyiLaAVFFM5QgHTLc5vmKmk=",
+  "media_hash": "rgeRzIIGnAPpUetFsfkc9liY+HLMKT/s8YNxTjl23dM=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"halo\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r07-night-pixel\",\"tier\":\"rare\",\"accessory\":\"mask\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }

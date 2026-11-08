@@ -1,14 +1,14 @@
 {
   "title": "nightshade #048",
-  "description": "neargotchi drop 1 · #048 of 300 · rare dragon wearing sunglasses.",
+  "description": "neargotchi drop 1 · #048 of 300 · rare dragon wearing a beanie.",
   "media": "48.png",
-  "media_hash": "5ATHqhqeAiaN0pqzNBiphPDZ1RQVEa1peBRJsCwk/sk=",
+  "media_hash": "yrdihvc9jwk/CUVfSdd3HnXSc8NW64UroKV6kCQGXls=",
   "copies": 1,
   "issued_at": null,
   "expires_at": null,
   "starts_at": null,
   "updated_at": null,
-  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r09-near-green\",\"tier\":\"rare\",\"accessory\":\"sunglasses\",\"drop\":1}",
+  "extra": "{\"pet\":\"nightshade\",\"species\":\"dragon\",\"background\":\"r08-sunset\",\"tier\":\"rare\",\"accessory\":\"beanie\",\"drop\":1}",
   "reference": null,
   "reference_hash": null
 }
