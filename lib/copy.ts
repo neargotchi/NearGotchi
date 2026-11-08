@@ -8,34 +8,72 @@ export type HowItWorksStep = {
   soon?: boolean;
 };
 
+/** Hero (app/page.tsx). Demo now, near next: no live near ai promise, no dressing up. */
+export const hero = {
+  lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. demo now, near next.",
+};
+
 export const howItWorks = {
   header: "how gotchi works",
   steps: [
     {
       number: 1,
-      title: "mint",
-      body: "hatch a random pet. 300 in drop 1. each one is an nft with its own balance.",
+      title: "hatch",
+      body: "crack an egg, meet a random gotchi. 300 in drop 1, each one an nft with its own rarity.",
       sprite: { src: "/logo-transparent.png", width: 1024, height: 1024, alt: "" },
     },
     {
       number: 2,
       title: "feed",
-      body: "snacks cost $NEARGotchi. hungry pets don't talk.",
+      body: "snacks cost $NEARGotchi. a hungry pet won't play.",
       sprite: { src: "/pets/pet1/hungry.png", width: 489, height: 431, alt: "" },
     },
     {
       number: 3,
+      title: "play",
+      body: "simon and catch the snack. a game makes it happy, and a bit hungry.",
+      sprite: { src: "/pets/pet2/happy.png", width: 489, height: 431, alt: "" },
+    },
+    {
+      number: 4,
       title: "talk",
-      body: "every message uses energy. your pet thinks with near ai.",
+      body: "every message uses energy and food. near ai comes next; the demo answers on its own.",
       sprite: { src: "/pets/pet3/happy.png", width: 489, height: 431, alt: "" },
     },
-  ] satisfies HowItWorksStep[],
+  ] as HowItWorksStep[],
 };
 
-export const wardrobe = {
-  header: "dress to impress",
-  sub: "crowns, caps, capes, gold chains. buy the fit, flex the fit.",
-  cta: { label: "open wardrobe", href: "/pet#wardrobe" },
+/** "meet your gotchi" (app/meet-your-gotchi.tsx): the 4 tabs of /pet, each with a live mini preview. */
+export const yourGotchi = {
+  header: "meet your gotchi",
+  sub: "every gotchi comes with a little menu. this is it.",
+  tiles: {
+    stats: { title: "stats", body: "its nft card, character, age and how it's doing." },
+    games: { title: "games", body: "simon on the three buttons and catch the snack. games make it happy." },
+    feed: { title: "feed", body: "a snack shop. each snack fills a different bar and restocks on its own time." },
+    chat: { title: "chat", body: "talk to it. every pet has its own voice. each message costs a bit of energy and food." },
+  },
+  /** Fixed sample data for the previews (not a real pet). */
+  sample: {
+    name: "near kat",
+    you: "gm",
+    reply: "gm. i saw you coming three blocks ago.",
+    simonTop: "round 3",
+    simonMain: "your turn",
+  },
+  cta: "try it: hatch your gotchi",
+};
+
+/** "drop 1" (app/drop-section.tsx), in place of the old wardrobe. Rarity only, never value. */
+export const dropSection = {
+  header: "drop 1",
+  sub: "300 gotchis. every egg is random: pet, background, item and rarity.",
+  tiersTitle: "4 tiers",
+  tierCount: "{n} per pet",
+  tierTotal: "{n} in the drop",
+  itemsTitle: "13 items, one per gotchi",
+  backgroundsTitle: "12 backgrounds",
+  cta: "hatch your gotchi",
 };
 
 export const tokenomics = {
@@ -48,7 +86,7 @@ export const tokenomics = {
     { label: "split", value: ["33% team /", "33% stakers /", "34% buyback & burn"] },
   ],
   // Under the tiles (body font).
-  note: "applies to hatches, platform fees and the 5% royalty.",
+  note: "applies to hatches, platform fees and the 5% royalty. demo snacks burn nothing.",
   closing: { lead: "every snack ", accent: "burns." },
 };
 
@@ -75,6 +113,10 @@ export const faq = {
       question: "where do the fees go?",
       answer: "split three ways: 33% team, 33% to stakers, 34% buys back $NEARGotchi and burns it.",
     },
+    {
+      question: "is this live?",
+      answer: "it's a demo. hatching, your pets and the snacks live in your browser. the near mint comes later.",
+    },
   ],
 };
 
@@ -89,7 +131,8 @@ export const header = {
   nav: [
     { label: "pets", href: "#pets" },
     { label: "how it works", href: "#how-it-works" },
-    { label: "wardrobe", href: "#wardrobe" },
+    { label: "your gotchi", href: "#your-gotchi" },
+    { label: "drop 1", href: "#drop-1" },
     { label: "tokenomics", href: "#tokenomics" },
     { label: "faq", href: "#faq" },
   ],
@@ -119,7 +162,7 @@ export type SocialLink = { label: string; url: string | null };
 export const footer = {
   disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value.",
   // No cookies, no analytics: only functional localStorage (theme, demo pet, chat).
-  privacy: "no tracking. your demo wallet and pets live only in your browser.",
+  privacy: "no tracking. your demo wallet and pets live only in this browser.",
   copyright: "© 2026 neargotchi",
   // URLs not approved yet (copy v1 §7 has [URL]); null links are not rendered.
   socials: [
@@ -130,9 +173,10 @@ export const footer = {
 
 /** Section mascots: pet sprite folder (lib/mocks.ts) + speech bubble line, keyed by section. */
 export const mascots = {
-  pets: { name: "batman", spriteFolder: "pet1", line: "pick me. i'm the real one." },
+  pets: { name: "batman", spriteFolder: "pet1", line: "i'm the real one. the others are cute too." },
   howItWorks: { name: "near kat", spriteFolder: "pet3", line: "it's easy. i watched." },
-  wardrobe: { name: "near dragon", spriteFolder: "pet2", line: "i look good in a crown." },
+  drop: { name: "near dragon", spriteFolder: "pet2", line: "i got a crown. legendary? i'll never tell." },
+  yourGotchi: { name: "batman", spriteFolder: "pet1", line: "four tabs. one is snacks. guess my favourite." },
   tokenomics: { name: "batman", spriteFolder: "pet1", line: "every snack burns. feed me." },
   faq: { name: "near kat", spriteFolder: "pet3", line: "ask away. i never sleep." },
 };
@@ -141,8 +185,15 @@ export const mascots = {
 export const fill = (text: string, values: Record<string, string>) =>
   text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
 
-/** "mint {name}" link under the mood buttons of the 3 real pet cards → plain /mint (the pet comes from the drop-1 draw). */
-export const petGallery = { mintLink: "mint {name}" };
+/** "meet the pets" (app/pet-gallery.tsx): you don't pick, the egg does, so one CTA under the cards. */
+export const petGallery = {
+  header: "meet the pets",
+  sub: "3 pets in drop 1, 4 moods each. one of them is a real dog.",
+  tiersLabel: "{name} in drop 1, one per tier",
+  tierLink: "{token}, {tier}",
+  soon: "3 more pets soon",
+  cta: "hatch your gotchi",
+};
 
 /**
  * /mint (docs/PLAN-MINT.md §5, random hatch since task 036: docs/DEVLOG.md §2).

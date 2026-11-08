@@ -51,6 +51,19 @@ export const filledCells = ({ minted, total }: { minted: number; total: number }
       ? PROGRESS_CELLS
       : Math.min(PROGRESS_CELLS - 1, Math.max(1, Math.floor((minted / total) * PROGRESS_CELLS)));
 
+/** The lowest token id of a pet in a tier (landing previews: "one per tier"). */
+export const tierSample = (petId: string, tier: Tier): Drop1Token | null => {
+  const row = rows.find((r) => r.petId === petId && r.tier === tier);
+  return row ? findToken(row.tokenId) : null;
+};
+
+/** The 12 backgrounds of the drop, by file order (c01 … l12), with their tier. */
+export const dropBackgrounds = (): { id: string; tier: Tier }[] => {
+  const seen = new Map<string, Tier>();
+  for (const row of rows) seen.set(row.background, row.tier);
+  return [...seen.entries()].sort(([a], [b]) => a.slice(1).localeCompare(b.slice(1))).map(([id, tier]) => ({ id, tier }));
+};
+
 /** "r08-sunset" → "sunset". */
 export const backgroundLabel = (background: string) => background.replace(/^[a-z]\d+-/, "").replace(/-/g, " ");
 

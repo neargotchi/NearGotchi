@@ -4,11 +4,13 @@ import Sparkles from "../components/Sparkles";
 import PetCta from "./pet-cta";
 import type { Metadata } from "next";
 import { SITE_DESCRIPTION, pageMeta } from "../lib/site";
+import { hero } from "../lib/copy";
 import Faq from "./faq";
 import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
 import Tokenomics from "./tokenomics";
-import Wardrobe from "./wardrobe";
+import DropSection from "./drop-section";
+import MeetYourGotchi from "./meet-your-gotchi";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
@@ -49,10 +51,7 @@ export default function Home() {
                 />
               </span>
             </h1>
-            <p className="hero-lede">
-              mint it. feed it. dress it. talk to it. it thinks with near ai,
-              and it eats tokens to do it.
-            </p>
+            <p className="hero-lede">{hero.lede}</p>
             <div className="hero-actions">
               <PetCta variant="hero">
                 <Sparkles
@@ -110,7 +109,8 @@ export default function Home() {
 
       <PetGallery />
       <HowItWorks />
-      <Wardrobe />
+      <MeetYourGotchi />
+      <DropSection />
       <Tokenomics />
       <Faq />
     </main>

@@ -110,6 +110,19 @@ await test("claim for one pet stays in that pet's 100, then null", async () => {
   assert.equal(drop.claimRandomToken("pet1").petId, "pet1");
 });
 
+await test("landing helpers: 12 backgrounds in file order with their tier; a sample token per pet and tier", async () => {
+  const bgs = drop.dropBackgrounds();
+  assert.equal(bgs.length, 12);
+  assert.deepEqual(bgs.map((b) => b.id.slice(0, 3)), ["c01", "c02", "c03", "c04", "c05", "c06", "r07", "r08", "r09", "e10", "e11", "l12"]);
+  assert.deepEqual([...new Set(bgs.map((b) => b.tier))], ["common", "rare", "epic", "legendary"]);
+  for (const petId of ["pet1", "pet2", "pet3"]) {
+    for (const tier of drop.tiers) {
+      const t = drop.tierSample(petId, tier);
+      assert.ok(t && t.petId === petId && t.tier === tier, `${petId} ${tier}`);
+    }
+  }
+});
+
 console.log("wallet");
 const wallet = await import("../lib/wallet.ts");
 const WKEY = wallet.WALLET_STORAGE_KEY;
@@ -512,7 +525,7 @@ await test("drop progress cells: 0 → none, first hatch → 1, 299 → 29, sold
 
 console.log("copy");
 const copy = await import("../lib/copy.ts");
-await test("rarity only: no value / price / growth words in the drop-1, /mint and wallet strings", async () => {
+await test("rarity only: no value / price / growth words in the drop-1, /mint, /pet, wallet and landing strings", async () => {
   // build_metadata.py BANNED + a few more; checked on the values, never the keys.
   const banned = /value|price|profit|moon|grow|invest|x\d|worth|floor|resale|resell|\bflip|\bpump|\breturns?\b|\bgains?\b|cheap|expensive|\brich\b/i;
   const strings = [];
@@ -535,6 +548,7 @@ await test("rarity only: no value / price / growth words in the drop-1, /mint an
   walk(copy.petPage.games, "petPage.games");
   walk(copy.snackLabels, "snackLabels");
   walk(copy.nftPage, "nftPage");
+  for (const key of ["hero", "howItWorks", "yourGotchi", "dropSection", "faq", "tokenomics"]) walk(copy[key], key);
   assert.ok(strings.length > 30);
   const hits = strings.filter(([, text]) => banned.test(text));
   assert.deepEqual(hits, []);

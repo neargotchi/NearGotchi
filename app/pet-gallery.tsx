@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import Mascot from "../components/Mascot";
-import TitleSparkles from "../components/TitleSparkles";
-import Sparkles from "../components/Sparkles";
-import { fill, mascots, petGallery } from "../lib/copy";
 import { useState } from "react";
 
+import Mascot from "../components/Mascot";
+import Sparkles from "../components/Sparkles";
+import TierBadge from "../components/TierBadge";
+import TitleSparkles from "../components/TitleSparkles";
+import { fill, mascots, petGallery, petTraits } from "../lib/copy";
+import { tierSample, tiers } from "../lib/drop1";
 import { PETS_4_6_ENABLED } from "../lib/features";
 import {
   moods,
@@ -19,12 +21,17 @@ import {
   type PetProfile,
 } from "../lib/mocks";
 
+/**
+ * One drop-1 pet: mood switcher, description, its 3 traits and a mini row of 4 of its NFTs (common →
+ * legendary, each with its tier badge, linking to /nft/[id]). No per-pet mint link: the egg picks the pet.
+ */
 function PetCard({ pet }: { pet: PetProfile }) {
   const { name, description } = pet;
   const [mood, setMood] = useState<Mood>("normal");
+  const traits = petTraits[pet.id] ?? [];
 
   return (
-    <article className="pet-card">
+    <article className="pet-card is-drop">
       <div className="pet-sprite-wrap">
         <Image
           className="pet-sprite"
@@ -36,6 +43,11 @@ function PetCard({ pet }: { pet: PetProfile }) {
       </div>
       <h3>{name}</h3>
       <p>{description}</p>
+      <ul className="pet-traits pet-card-traits">
+        {traits.map((trait) => (
+          <li key={trait}>{trait}</li>
+        ))}
+      </ul>
       <div className="pet-moods" aria-label={`${name} mood`}>
         {moods.map((item) => (
           <button
@@ -49,14 +61,31 @@ function PetCard({ pet }: { pet: PetProfile }) {
           </button>
         ))}
       </div>
-      <Link className="pet-mint-link" href="/mint">
-        {fill(petGallery.mintLink, { name })}
-      </Link>
+      <ul className="pet-tier-row" aria-label={fill(petGallery.tiersLabel, { name })}>
+        {tiers.map((tier) => {
+          const token = tierSample(pet.id, tier);
+          if (!token) return null;
+          return (
+            <li key={tier}>
+              <Link
+                className="pet-tier-link"
+                href={`/nft/${token.tokenId}`}
+                aria-label={fill(petGallery.tierLink, { token: token.name, tier })}
+              >
+                <span className="pet-tier-art">
+                  <Image src={token.image} alt="" width={512} height={512} unoptimized />
+                </span>
+                <TierBadge tier={tier} />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </article>
   );
 }
 
-/** `title="p"` where the page has no h2 above the cards (/mint), so the heading order stays valid. */
+/** `title="p"` where the page has no h2 above the cards, so the heading order stays valid. */
 export function LockedCard({ slot, title = "h3" }: { slot: string; title?: "h3" | "p" }) {
   const Title = title;
   return (
@@ -87,19 +116,32 @@ export default function PetGallery() {
       <div className="pets-content">
         <header className="pets-heading">
           <h2 id="pets-title" className="section-title-host">
-            pick your gotchi
+            {petGallery.header}
             <TitleSparkles seed="title-pets" belowRight />
           </h2>
-          <p>6 pets. 4 moods each. one of them is a real dog.</p>
+          <p>{petGallery.sub}</p>
           <Mascot {...mascots.pets} />
         </header>
-        <div className="pets-list">
+        <div className="pets-list pets-list-drop">
           {pets.map((pet) => (
             <PetCard key={pet.id} pet={pet} />
           ))}
-          {PETS_4_6_ENABLED
-            ? upcomingPets.map((pet) => <PetCard key={pet.id} pet={pet} />)
-            : upcomingPetSlots.map((slot) => <LockedCard key={slot} slot={slot} />)}
+          {PETS_4_6_ENABLED ? upcomingPets.map((pet) => <PetCard key={pet.id} pet={pet} />) : null}
+        </div>
+        {PETS_4_6_ENABLED ? null : (
+          <div className="pets-soon">
+            <h3 className="pets-soon-title">{petGallery.soon}</h3>
+            <div className="pets-soon-list">
+              {upcomingPetSlots.map((slot) => (
+                <LockedCard key={slot} slot={slot} title="p" />
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="section-cta">
+          <Link className="button button-primary" href="/mint">
+            {petGallery.cta}
+          </Link>
         </div>
       </div>
     </section>
