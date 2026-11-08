@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check:drop1": "node --experimental-transform-types --no-warnings scripts/check-drop1.mjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "4.3.4",

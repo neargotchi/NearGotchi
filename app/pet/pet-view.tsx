@@ -20,6 +20,7 @@ import {
 import PetChat from "./pet-chat";
 import PetDevice, { type FeedAnim } from "./pet-device";
 import StatBars from "./stat-bars";
+import TokenCard from "./token-card";
 
 const SAVE_EVERY_MS = 15000;
 
@@ -176,6 +177,7 @@ export default function PetView() {
         </div>
 
         <div className="pet-side">
+          {pet.token ? <TokenCard token={pet.token} profile={profile} /> : null}
           <StatBars hunger={shown.hunger} energy={shown.energy} balance={shown.balance} />
           <div className="pet-actions">
             <button type="button" className="button button-primary" onClick={feed}>

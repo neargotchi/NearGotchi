@@ -130,7 +130,7 @@ export const mascots = {
 export const fill = (text: string, values: Record<string, string>) =>
   text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
 
-/** "mint {name}" link under the mood buttons of the 3 real pet cards → /mint?pet=… */
+/** "mint {name}" link under the mood buttons of the 3 real pet cards → plain /mint (the pet comes from the drop-1 draw). */
 export const petGallery = { mintLink: "mint {name}" };
 
 /** /mint (docs/PLAN-MINT.md §5). Demo only: no real mint, no wallet. */
@@ -195,6 +195,16 @@ export const petPage = {
   },
   refill: { label: "refill demo balance", done: "refilled to 100 demo $NEARGotchi. still not real." },
   wardrobe: "wardrobe · soon",
+  /** Drop-1 token card (app/pet/token-card.tsx). Rarity only, never value. */
+  token: {
+    title: "{token}",
+    demo: "demo token · not on chain",
+    number: "#{id} of {total}",
+    rarity: "one of {count} {tier} {pet}s",
+    background: "background",
+    item: "item",
+    alt: "{token}: a {tier} {species} on a {background} background, wearing {item}.",
+  },
   chat: {
     title: "talk",
     note: "demo · near ai soon",
@@ -209,4 +219,14 @@ export const petPage = {
     asleep: "zzz… {name} is asleep. feed it to wake it up.",
     you: "you",
   },
+};
+
+/** Drop-1 tier badge labels (components/TierBadge.tsx). */
+export const tierLabels = { common: "common", rare: "rare", epic: "epic", legendary: "legendary" } as const;
+
+/** Dressed items as shown on the token card (same words as scripts/build_metadata.py WEARING, without articles). */
+export const itemLabels: Record<string, string> = {
+  beanie: "beanie", cap: "cap", chain: "chain", crown: "crown", halo: "halo", headphones: "headphones",
+  keffiyeh: "keffiyeh", mask: "mask", nerd: "nerd glasses", pixel: "pixel shades", sunglasses: "sunglasses",
+  tophat: "top hat", tshirt: "t-shirt",
 };

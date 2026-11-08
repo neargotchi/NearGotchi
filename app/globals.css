@@ -1823,6 +1823,52 @@ main > section[class] { background: transparent; }
 
 .pet-reset { margin-top: round(calc(40px * var(--ui-scale)), 1px); padding-top: round(calc(28px * var(--ui-scale)), 1px); border-top: round(calc(2px * var(--ui-scale)), 1px) solid var(--divider); }
 
+/* Drop-1 token card + tier badge (docs/DEVLOG.md §3). Badge fills keep ink text in both themes. */
+.tier-badge {
+  --tier: #ddd5c3;
+  display: inline-block;
+  padding: round(calc(5px * var(--ui-scale)), 1px) round(calc(7px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  color: var(--ink);
+  background: var(--tier);
+  box-shadow: inset round(calc(-3px * var(--ui-scale)), 1px) round(calc(-3px * var(--ui-scale)), 1px) 0 rgb(20 20 20 / 0.18);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5625rem;
+  line-height: 1;
+  text-transform: lowercase;
+}
+
+.tier-badge.is-rare { --tier: #7fb2ff; }
+.tier-badge.is-epic { --tier: #c79bff; }
+.tier-badge.is-legendary { --tier: #ffd04a; }
+
+.token-card {
+  display: grid;
+  grid-template-columns: round(calc(176px * var(--ui-scale)), 1px) minmax(0, 1fr);
+  align-items: center;
+  gap: round(calc(24px * var(--ui-scale)), 1px);
+  margin-bottom: round(calc(32px * var(--ui-scale)), 1px);
+  padding: round(calc(20px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+
+.token-card-art { border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink); background: var(--lcd); line-height: 0; }
+.token-card-art img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+
+.token-card-info { display: grid; min-width: 0; gap: round(calc(10px * var(--ui-scale)), 1px); justify-items: start; }
+.token-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: round(calc(8px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px); }
+.token-card-demo { color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5rem; line-height: 1.4; }
+.token-card-name { margin: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.token-card-rarity { display: grid; gap: round(calc(2px * var(--ui-scale)), 1px); margin: 0; font-size: 1rem; font-weight: 500; line-height: 1.4; }
+.token-card-rarity > span:first-child { color: var(--text-muted); }
+
+.token-card-traits { display: flex; flex-wrap: wrap; gap: round(calc(6px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); margin: 0; }
+.token-card-traits > div { display: flex; align-items: baseline; gap: round(calc(8px * var(--ui-scale)), 1px); }
+.token-card-traits dt { color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5rem; line-height: 1.4; }
+.token-card-traits dd { margin: 0; font-size: 1rem; font-weight: 600; line-height: 1.4; }
+
 /* Chat */
 .pet-chat {
   padding: round(calc(24px * var(--ui-scale)), 1px);
@@ -1898,6 +1944,11 @@ main > section[class] { background: transparent; }
   .pet-stats { padding: 18px 16px; gap: 16px; }
   .pet-meter { grid-template-columns: 68px minmax(0, 1fr) 32px; gap: 10px; font-size: 0.625rem; }
   .pet-meter-bar { gap: 3px; height: 20px; }
+  .token-card { grid-template-columns: 112px minmax(0, 1fr); align-items: start; gap: 16px; margin-bottom: 24px; padding: 14px; }
+  .token-card-info { gap: 8px; }
+  .token-card-name { font-size: 1.25rem; }
+  .token-card-rarity { font-size: 0.9375rem; }
+  .token-card-traits dd { font-size: 0.9375rem; }
   .pet-balance { font-size: 0.6875rem; }
   .pet-actions { display: grid; gap: 14px; margin-top: 24px; }
   .pet-actions .button,

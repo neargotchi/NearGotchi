@@ -1,6 +1,8 @@
 // Single mocks module (PLAN.md §4): the only place for demo pets, items, balances,
 // chat replies and simulation rules. All values here are demonstration data.
 
+import { claimRandomToken, ensureMinted, findToken, type Drop1Token } from "./drop1";
+
 export const moods = ["normal", "hungry", "happy", "sleep"] as const;
 export type Mood = (typeof moods)[number];
 
@@ -90,9 +92,12 @@ export const items: Item[] = [
 // Async on purpose: a future backend swaps these bodies and keeps the same calls.
 // Browser-only; every storage access is guarded. Nothing here is a real mint.
 
+/** The drop-1 token a pet hatched as (docs/DEVLOG.md §3). Always matches lib/drop1-tokens.json. */
+export type PetToken = Pick<Drop1Token, "tokenId" | "tier" | "background" | "accessory">;
+
 export type DemoPet = {
-  /** 2 since /pet (adds lastUpdated); v1 pets from /mint are migrated on read. */
-  v: 2;
+  /** 3 since drop 1 (adds token); v1 (/mint) and v2 (/pet) pets are migrated on read. */
+  v: 3;
   /** "demo-" + petId + "-" + Date.now() */
   id: string;
   petId: PetProfile["id"];
@@ -110,8 +115,28 @@ export type DemoPet = {
   mintedAt: string;
   /** ISO date: hunger/energy are simulated from here to "now" (docs/DEVLOG.md §2). */
   lastUpdated: string;
+  /** null only when no free token of this pet was left (migration or mint); /pet then shows no token card. */
+  token: PetToken | null;
   demo: true;
 };
+
+const toPetToken = (token: Drop1Token | null): PetToken | null =>
+  token && { tokenId: token.tokenId, tier: token.tier, background: token.background, accessory: token.accessory };
+
+/** A stored token must be the manifest's token of the same pet, field for field. */
+function checkToken(value: unknown, petId: string): { ok: true; token: PetToken | null } | { ok: false } {
+  if (value === null) return { ok: true, token: null };
+  if (typeof value !== "object") return { ok: false };
+  const stored = value as Partial<PetToken>;
+  const known = findToken(stored.tokenId);
+  const same =
+    known &&
+    known.petId === petId &&
+    stored.tier === known.tier &&
+    stored.background === known.background &&
+    stored.accessory === known.accessory;
+  return same ? { ok: true, token: toPetToken(known) } : { ok: false };
+}
 
 export const PET_STORAGE_KEY = "neargotchi-pet";
 
@@ -177,15 +202,20 @@ function writeStored(value: string | null): boolean {
 
 const isLevel = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
 
-/** Parses a stored pet; a v1 pet (from /mint before /pet existed) is migrated with lastUpdated = now. */
+/**
+ * Parses a stored pet. Migrations: v1 (from /mint before /pet existed) gets lastUpdated = now; v1 and v2
+ * (before drop 1) get a random free drop-1 token of the same pet, marked minted, or token null when that
+ * pet has none left. A v3 token must match the manifest, otherwise the record counts as corrupt.
+ * Claims a token, so only getPet() calls it (and saves the migrated pet right away).
+ */
 function parsePetRecord(raw: string | null | undefined): { pet: DemoPet; migrated: boolean } | null {
   if (!raw) return null;
   try {
-    const data = JSON.parse(raw) as (Omit<Partial<DemoPet>, "v"> & { v?: number }) | null;
+    const data = JSON.parse(raw) as (Omit<Partial<DemoPet>, "v" | "token"> & { v?: number; token?: unknown }) | null;
     if (
       !data ||
-      (data.v !== 1 && data.v !== 2) ||
-      (data.v === 2 && (typeof data.lastUpdated !== "string" || !Number.isFinite(Date.parse(data.lastUpdated)))) ||
+      (data.v !== 1 && data.v !== 2 && data.v !== 3) ||
+      (data.v !== 1 && (typeof data.lastUpdated !== "string" || !Number.isFinite(Date.parse(data.lastUpdated)))) ||
       data.demo !== true ||
       typeof data.id !== "string" ||
       typeof data.name !== "string" ||
@@ -203,14 +233,20 @@ function parsePetRecord(raw: string | null | undefined): { pet: DemoPet; migrate
     ) {
       return null;
     }
-    if (data.v === 1) return { pet: { ...(data as unknown as DemoPet), v: 2, lastUpdated: new Date().toISOString() }, migrated: true };
-    return { pet: data as DemoPet, migrated: false };
+    const petId = data.petId as string;
+    if (data.v === 3) {
+      const checked = checkToken(data.token, petId);
+      if (!checked.ok) return null;
+      if (checked.token) ensureMinted(checked.token.tokenId);
+      return { pet: { ...(data as unknown as DemoPet), token: checked.token }, migrated: false };
+    }
+    const lastUpdated = data.v === 1 ? new Date().toISOString() : (data.lastUpdated as string);
+    const token = toPetToken(claimRandomToken(petId));
+    return { pet: { ...(data as unknown as DemoPet), v: 3, lastUpdated, token }, migrated: true };
   } catch {
     return null;
   }
 }
-
-const parsePet = (raw: string | null | undefined) => parsePetRecord(raw)?.pet ?? null;
 
 /** False when localStorage is blocked (private mode, blocked site data). */
 export function isPersistent(): boolean {
@@ -236,7 +272,7 @@ export async function getPet(): Promise<DemoPet | null> {
   return memoryPet;
 }
 
-/** Validates, creates and saves the demo pet. Throws MintError on a bad name or unknown pet. */
+/** Validates, creates and saves the demo pet with a drop-1 token. Throws MintError on a bad name or unknown pet. */
 export async function mintPet(input: { petId: string; name: string }): Promise<DemoPet> {
   const profile = findPet(input.petId);
   if (!profile) throw new MintError("no_pet");
@@ -244,7 +280,7 @@ export async function mintPet(input: { petId: string; name: string }): Promise<D
   if (!checked.ok) throw new MintError(checked.error);
   const now = new Date().toISOString();
   const pet: DemoPet = {
-    v: 2,
+    v: 3,
     id: `demo-${profile.id}-${Date.now()}`,
     petId: profile.id,
     species: profile.species,
@@ -256,6 +292,8 @@ export async function mintPet(input: { petId: string; name: string }): Promise<D
     outfit: {},
     mintedAt: now,
     lastUpdated: now,
+    // Until /mint draws from the whole pool (task 036): a random free token of the picked pet.
+    token: toPetToken(claimRandomToken(profile.id)),
     demo: true,
   };
   memoryPet = pet;
@@ -265,10 +303,10 @@ export async function mintPet(input: { petId: string; name: string }): Promise<D
 }
 
 /** For /pet: merges a patch into the saved pet. */
-export async function updatePet(patch: Partial<Omit<DemoPet, "v" | "id" | "demo">>): Promise<DemoPet> {
+export async function updatePet(patch: Partial<Omit<DemoPet, "v" | "id" | "demo" | "token">>): Promise<DemoPet> {
   const current = await getPet();
   if (!current) throw new Error("no pet");
-  return savePet({ ...current, ...patch, v: 2, id: current.id, demo: true } as DemoPet);
+  return savePet({ ...current, ...patch, v: 3, id: current.id, token: current.token, demo: true } as DemoPet);
 }
 
 function savePet(pet: DemoPet): DemoPet {
@@ -278,7 +316,7 @@ function savePet(pet: DemoPet): DemoPet {
   return pet;
 }
 
-/** Removes the demo pet and its chat log. */
+/** Removes the demo pet and its chat log. Its drop-1 token stays minted (the counter only goes up). */
 export async function resetPet(): Promise<void> {
   memoryPet = null;
   writeStored(null);
@@ -289,11 +327,10 @@ export async function resetPet(): Promise<void> {
 /** Calls back on mint/update/reset in this tab and on storage changes from other tabs. */
 export function subscribePet(callback: (pet: DemoPet | null) => void): () => void {
   listeners.add(callback);
+  // Re-read through getPet so an old (v1/v2) pet written by an outdated tab is migrated and saved once.
   const onStorage = (event: StorageEvent) => {
     if (event.key !== PET_STORAGE_KEY && event.key !== null) return;
-    const pet = parsePet(event.newValue);
-    memoryPet = pet;
-    callback(pet);
+    getPet().then(callback);
   };
   if (inBrowser()) window.addEventListener("storage", onStorage);
   return () => {

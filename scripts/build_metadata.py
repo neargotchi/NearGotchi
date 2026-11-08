@@ -1,5 +1,5 @@
 """NEP-177 metadata for drop 1 (docs/PLAN-COLLECTION.md §4; accessory = one dressed item since task 033).
-  python3 scripts/build_metadata.py   → metadata/drop1/{id}.json + metadata/drop1/collection.json
+  python3 scripts/build_metadata.py   → metadata/drop1/{id}.json + metadata/drop1/collection.json + lib/drop1-tokens.json
 Needs metadata/hashes.json from compose_drop1.py (media_hash = base64 sha256 of images/drop1/{id}.png).
 Copy rule: rarity only. The build fails if a title/description talks about value."""
 import base64, hashlib, json, os, re, sys
@@ -9,6 +9,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import drop1_lib as L
 
 OUT = L.path("metadata", "drop1")
+SLIM = L.path("lib", "drop1-tokens.json")   # the site's token list (lib/drop1.ts, docs/DEVLOG.md §1)
+SLIM_KEYS = ("tokenId", "petId", "tier", "background", "accessory", "name")
 BASE_URI = "ipfs://TODO_CID"   # placeholder: hosting is decided later
 WEARING = {"beanie": "a beanie", "cap": "a cap", "chain": "a chain", "crown": "a crown", "halo": "a halo",
            "headphones": "headphones", "keffiyeh": "a keffiyeh", "mask": "a mask", "nerd": "nerd glasses",
@@ -65,7 +67,11 @@ def main():
     }
     with open(os.path.join(OUT, "collection.json"), "w") as fh:
         json.dump(collection, fh, indent=2); fh.write("\n")
-    print(f"ok: {len(tokens)} token files + collection.json in metadata/drop1/ (base_uri placeholder {BASE_URI})")
+    slim = [{k: t[k] for k in SLIM_KEYS} for t in tokens]
+    with open(SLIM, "w") as fh:   # one token per line: small diffs, ~35 KB
+        fh.write("[\n" + ",\n".join(json.dumps(t, separators=(",", ":")) for t in slim) + "\n]\n")
+    print(f"ok: {len(tokens)} token files + collection.json in metadata/drop1/ (base_uri placeholder {BASE_URI}), "
+          f"slim list in {os.path.relpath(SLIM, L.ROOT)}")
 
 
 if __name__ == "__main__":

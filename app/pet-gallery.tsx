@@ -49,7 +49,7 @@ function PetCard({ pet }: { pet: PetProfile }) {
           </button>
         ))}
       </div>
-      <Link className="pet-mint-link" href={`/mint?pet=${pet.id}`}>
+      <Link className="pet-mint-link" href="/mint">
         {fill(petGallery.mintLink, { name })}
       </Link>
     </article>
