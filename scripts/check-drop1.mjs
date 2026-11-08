@@ -366,6 +366,8 @@ await test("rarity only: no value / price / growth words in the drop-1, /mint an
   walk(copy.walletGate, "walletGate");
   walk(copy.dropProgress, "dropProgress");
   walk(copy.petPage.hatchAnother, "petPage.hatchAnother");
+  for (const key of ["switcher", "tabs", "stats", "release", "games"]) walk(copy.petPage[key], `petPage.${key}`);
+  walk(copy.petTraits, "petTraits");
   assert.ok(strings.length > 30);
   const hits = strings.filter(([, text]) => banned.test(text));
   assert.deepEqual(hits, []);

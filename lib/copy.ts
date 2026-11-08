@@ -188,15 +188,6 @@ export const mintPage = {
     reset: "reset demo drop",
     note: "demo only: puts all {total} eggs back in this browser.",
   },
-  /** /pet "release" (start over) button; /mint no longer has an "already have a gotchi" view. */
-  existing: {
-    startOver: "start over",
-  },
-  confirm: {
-    text: "start over? {name} will be gone. it's a demo, so nothing real is lost.",
-    yes: "yes, start over",
-    keep: "keep {name}",
-  },
   storageNote: "this browser won't save your pet. it stays until you close the tab.",
   noscript: "turn on javascript to hatch a pet.",
 };
@@ -224,8 +215,41 @@ export const petPage = {
   metaTitle: "my gotchi — NEARGOTCHI",
   empty: "no pet yet.",
   emptyLink: "hatch your gotchi",
-  /** Next to the drop progress bar on /pet (the switcher comes in step 4). */
+  /** Next to the pet switcher and the drop progress bar. */
   hatchAnother: "hatch another",
+  /** Row of the account's pets (app/pet/pet-switcher.tsx). */
+  switcher: { label: "your gotchis", item: "{name}, {token}" },
+  /** WAI-ARIA tabs under the device (app/pet/pet-tabs.tsx); ?tab= in the URL. */
+  tabs: { label: "{name} menu", stats: "stats", games: "games", feed: "feed", chat: "chat" },
+  stats: {
+    character: "character",
+    age: "age",
+    ageToday: "hatched today",
+    ageDay: "1 day old",
+    ageDays: "{n} days old",
+    counters: "so far",
+    games: "games played",
+    snacks: "snacks eaten",
+    messages: "messages sent",
+    best: "best scores",
+    simon: "simon",
+    snack: "catch the snack",
+    noScore: "—",
+    renameLabel: "rename",
+    renameSave: "save name",
+    renamed: "renamed to {name}.",
+  },
+  release: {
+    button: "release {name}",
+    text: "release {name}? it leaves your demo account. its token stays hatched.",
+    yes: "yes, release",
+    keep: "keep {name}",
+  },
+  games: {
+    title: "games",
+    soon: "soon",
+    body: "simon on the three buttons and catch the snack. each game makes {name} happy and a bit hungry. a hungry pet sits it out.",
+  },
   sub: "the {species} · hatched {date}",
   tapLabel: "pet {name}",
   status: {
@@ -243,7 +267,6 @@ export const petPage = {
     broke: "out of demo $NEARGotchi.",
   },
   refill: { label: "refill demo balance", done: "refilled to 100 demo $NEARGotchi. still not real." },
-  wardrobe: "wardrobe · soon",
   /** Drop-1 token card (app/pet/token-card.tsx). Rarity only, never value. */
   token: {
     title: "{token}",
@@ -269,6 +292,13 @@ export const petPage = {
     asleep: "zzz… {name} is asleep. feed it to wake it up.",
     you: "you",
   },
+};
+
+/** Character on the stats tab: 3 traits per pet (docs/DEVLOG.md §2, approved by the owner 2026-11-08). */
+export const petTraits: Record<string, [string, string, string]> = {
+  pet1: ["chunky", "always hungry", "loyal"],
+  pet2: ["tiny", "dramatic", "hoards shiny things"],
+  pet3: ["alert", "curious", "never sleeps"],
 };
 
 /** Drop-1 tier badge labels (components/TierBadge.tsx). */

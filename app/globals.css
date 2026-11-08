@@ -1688,12 +1688,127 @@ main > section[class] { background: transparent; }
 }
 
 .hero-progress { margin-top: round(calc(32px * var(--ui-scale)), 1px); }
+/* /pet: switcher (left, scrolls sideways when it doesn't fit) + "hatch another" and the drop bar (right). */
 .pet-hatch-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: round(calc(18px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px);
-  margin: round(calc(28px * var(--ui-scale)), 1px) 0 round(calc(48px * var(--ui-scale)), 1px);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: round(calc(20px * var(--ui-scale)), 1px) round(calc(32px * var(--ui-scale)), 1px);
+  margin: round(calc(28px * var(--ui-scale)), 1px) 0 round(calc(8px * var(--ui-scale)), 1px);
+}
+.pet-hatch-actions { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: round(calc(18px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px); }
+/* A fixed width here: min(400px, 100%) inside this shrink-to-fit box would wrap the bar under the button. */
+.pet-hatch-actions .drop-progress { width: round(calc(400px * var(--ui-scale)), 1px); }
+
+.pet-switcher { flex: 1 1 auto; min-width: 0; }
+.pet-switcher ul {
+  display: flex;
+  gap: round(calc(12px * var(--ui-scale)), 1px);
+  margin: 0;
+  padding: round(calc(4px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) round(calc(10px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px);
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.pet-switcher li { flex: none; }
+.pet-thumb {
+  display: grid;
+  justify-items: center;
+  gap: round(calc(6px * var(--ui-scale)), 1px);
+  width: round(calc(92px * var(--ui-scale)), 1px);
+  padding: round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: round(calc(3px * var(--ui-scale)), 1px) round(calc(3px * var(--ui-scale)), 1px) 0 var(--shadow);
+  text-decoration: none;
+}
+.pet-thumb:hover { background: var(--lcd); color: var(--ink); }
+.pet-thumb.is-active { color: var(--ink); background: var(--green); }
+.pet-thumb:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
+.pet-thumb-art { display: block; width: round(calc(64px * var(--ui-scale)), 1px); height: round(calc(64px * var(--ui-scale)), 1px); border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink); background: var(--lcd); }
+.pet-thumb-art img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.pet-thumb-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pet menu: 4 WAI-ARIA tabs as one pixel bar; the selected tab is NEAR green. */
+.pet-tablist {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: round(calc(28px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+.pet-tab {
+  min-height: round(calc(52px * var(--ui-scale)), 1px);
+  padding: 0 round(calc(10px * var(--ui-scale)), 1px);
+  border: 0;
+  border-right: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  color: var(--text);
+  background: transparent;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.pet-tab:last-child { border-right: 0; }
+.pet-tab:hover { color: var(--ink); background: var(--lcd); }
+.pet-tab[aria-selected="true"] { color: var(--ink); background: var(--green); }
+.pet-tab:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(-6px * var(--ui-scale)), 1px); }
+.pet-panel { min-width: 0; }
+.pet-panel:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(6px * var(--ui-scale)), 1px); }
+
+.pet-stats-tab,
+.pet-feed-tab { display: grid; gap: round(calc(28px * var(--ui-scale)), 1px); }
+.pet-stats-tab .token-card { margin-bottom: 0; }
+.pet-stats-tab .pet-reset { margin-top: 0; }
+.pet-feed-tab .pet-actions { margin-top: 0; }
+.pet-feed-tab .pet-result { margin-top: round(calc(-12px * var(--ui-scale)), 1px); }
+
+.pet-card-block {
+  display: grid;
+  gap: round(calc(14px * var(--ui-scale)), 1px);
+  padding: round(calc(24px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+.pet-character-about { margin: 0; font-size: 1.0625rem; font-weight: 500; line-height: 1.45; }
+.pet-traits { display: flex; flex-wrap: wrap; gap: round(calc(10px * var(--ui-scale)), 1px); margin: 0; padding: 0; list-style: none; }
+.pet-traits li {
+  padding: round(calc(7px * var(--ui-scale)), 1px) round(calc(10px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  color: var(--ink);
+  background: var(--lcd);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.625rem;
+  line-height: 1.2;
+}
+.pet-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(round(calc(140px * var(--ui-scale)), 1px), 1fr)); gap: round(calc(12px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px); margin: 0; }
+.pet-facts dt { color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5625rem; line-height: 1.4; }
+.pet-facts dd { margin: round(calc(4px * var(--ui-scale)), 1px) 0 0; font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
+.pet-facts-title { margin: round(calc(6px * var(--ui-scale)), 1px) 0 0; font-family: var(--font-pixel), monospace; font-size: 0.75rem; font-weight: 400; line-height: 1.5; }
+
+.pet-rename-row { display: flex; gap: round(calc(14px * var(--ui-scale)), 1px); margin-top: round(calc(12px * var(--ui-scale)), 1px); }
+.pet-rename .mint-input { width: auto; min-width: 0; flex: 1 1 auto; }
+.pet-rename-done { min-height: 1.45em; margin: round(calc(8px * var(--ui-scale)), 1px) 0 0; font-size: 1rem; font-weight: 500; line-height: 1.45; }
+
+.pet-soon-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: round(calc(12px * var(--ui-scale)), 1px); }
+.pet-soon-tag {
+  padding: round(calc(6px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) dashed var(--line);
+  color: var(--text-muted);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.625rem;
+  line-height: 1;
 }
 .pet-stub .pet-progress { margin-top: round(calc(32px * var(--ui-scale)), 1px); }
 
@@ -1756,8 +1871,20 @@ main > section[class] { background: transparent; }
   .mint-reveal { gap: 22px; padding: 16px; }
   .mint-reveal-actions { flex-direction: column; gap: 14px; }
   .mint-reveal-actions .button { width: 100%; min-height: 56px; }
-  .pet-hatch-row { flex-direction: column; align-items: stretch; margin: 24px 0 32px; }
+  .pet-hatch-row { flex-direction: column; flex-wrap: nowrap; align-items: stretch; margin: 24px 0 8px; }
+  .pet-hatch-actions { flex-direction: column; align-items: stretch; gap: 14px; }
+  .pet-hatch-actions .button { width: 100%; min-height: 56px; }
   .pet-hatch-row .drop-progress { width: 100%; }
+  .pet-switcher ul { margin-inline: -4px; }
+  .pet-tablist { margin-bottom: 20px; }
+  .pet-tab { min-height: 48px; padding: 0 4px; font-size: 0.5625rem; }
+  .pet-stats-tab,
+  .pet-feed-tab { gap: 20px; }
+  .pet-card-block { padding: 16px; }
+  .pet-character-about { font-size: 1rem; }
+  .pet-rename-row { flex-direction: column; gap: 12px; }
+  .pet-rename .mint-input { width: 100%; }
+  .pet-rename .button { width: 100%; min-height: 56px; }
   .drop-progress-label { font-size: 0.5625rem; }
   .mint-soldout { margin-top: 40px; justify-items: stretch; }
 
@@ -1767,7 +1894,7 @@ main > section[class] { background: transparent; }
 /* ---------- /pet (docs/DEVLOG.md) ---------- */
 .pet-layout {
   display: grid;
-  grid-template-areas: "stage side" "talk side";
+  grid-template-areas: "stage side";
   grid-template-columns: round(calc(560px * var(--ui-scale)), 1px) minmax(0, 1fr);
   align-items: start;
   gap: round(calc(48px * var(--ui-scale)), 1px) round(calc(56px * var(--ui-scale)), 1px);
@@ -1775,8 +1902,11 @@ main > section[class] { background: transparent; }
 }
 
 .pet-stage { grid-area: stage; }
+/* Desktop: the device stays in view while the tab content scrolls. */
+@media (min-width: 1024px) {
+  .pet-stage { position: sticky; top: round(calc(110px * var(--ui-scale)), 1px); }
+}
 .pet-side { grid-area: side; min-width: 0; }
-.pet-talk { grid-area: talk; min-width: 0; }
 
 /* Device: the egg's colours in both themes (cream body, ink outline, NEAR green frame, LCD). */
 .pet-device { filter: drop-shadow(round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow)); }
@@ -2016,7 +2146,7 @@ main > section[class] { background: transparent; }
 }
 
 @media (max-width: 1023px) {
-  .pet-layout { grid-template-areas: "stage" "side" "talk"; grid-template-columns: minmax(0, 1fr); gap: 32px; margin-top: 32px; }
+  .pet-layout { grid-template-areas: "stage" "side"; grid-template-columns: minmax(0, 1fr); gap: 32px; margin-top: 32px; }
   .pet-device-body { padding: 16px 16px 14px; }
   .pet-device-frame { padding: 8px; }
   .pet-device-screen { --screen-h: clamp(220px, 40svh, 320px); --sprite-h: calc(clamp(220px, 40svh, 320px) * 0.82); }
