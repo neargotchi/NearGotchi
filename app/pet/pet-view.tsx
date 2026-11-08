@@ -197,24 +197,24 @@ export default function PetView() {
 
   return (
     <div className="pet-page">
-      <header className="mint-head">
-        <div className="section-head">
+      {/* Task 049: one compact block right under the site header — name + drop bar, then the switcher,
+          "hatch another" and the demo note — so the device, the tabs and a whole game fit one screen. */}
+      <header className="pet-head">
+        <div className="pet-head-title">
           <h1 id="pet-title" ref={titleRef} className="mint-title" tabIndex={-1}>
             {pet.name}
           </h1>
+          <p className="mint-sub">{fill(petPage.sub, { species: pet.species, date: hatched })}</p>
         </div>
-        <p className="mint-demo">{mintPage.demo}</p>
-        <p className="mint-sub">{fill(petPage.sub, { species: pet.species, date: hatched })}</p>
+        <DropProgress className="pet-progress" />
       </header>
 
       <div className="pet-hatch-row">
         <PetSwitcher pets={pets} activeId={pet.id} hrefOf={(other) => urlFor(other, tab)} onSelect={select} />
-        <div className="pet-hatch-actions">
-          <Link className="button button-secondary" href="/mint">
-            {petPage.hatchAnother}
-          </Link>
-          <DropProgress className="pet-progress" />
-        </div>
+        <Link className="button button-secondary pet-hatch-another" href="/mint">
+          {petPage.hatchAnother}
+        </Link>
+        <p className="mint-demo">{mintPage.demo}</p>
       </div>
 
       <div className="pet-layout">

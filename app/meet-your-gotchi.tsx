@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import Mascot from "../components/Mascot";
@@ -5,6 +6,7 @@ import TierBadge from "../components/TierBadge";
 import TitleSparkles from "../components/TitleSparkles";
 import { fill, mascots, petPage, petTraits, snackLabels, yourGotchi } from "../lib/copy";
 import { findToken } from "../lib/drop1";
+import { findPet, petSpriteSrc } from "../lib/mocks";
 import { findSnack, type SnackId } from "../lib/shop";
 import SnackSprite from "./pet/snack-sprites";
 import StatBars from "./pet/stat-bars";
@@ -32,18 +34,33 @@ function StatsPreview() {
   );
 }
 
+/** catch the snack mid-round: the same console, HUD and pads, with a snack falling towards the pet. */
 function GamesPreview() {
-  const { simonTop, simonMain } = yourGotchi.sample;
+  const { catchTime, catchScore } = yourGotchi.sample;
+  const profile = findPet(findToken(SAMPLE_TOKEN)!.petId)!;
   return (
     <div className="simon-device gotchi-simon">
-      <div className="simon-screen">
-        <p className="simon-lcd-top">{simonTop}</p>
-        <p className="simon-lcd-main">{simonMain}</p>
+      <div className="catch-screen gotchi-catch">
+        <div className="catch-hud">
+          <span>{catchTime}</span>
+          <span>{catchScore}</span>
+        </div>
+        <SnackSprite id="berries" className="gotchi-catch-snack" />
+        <Image
+          className="gotchi-catch-pet"
+          src={petSpriteSrc(profile, "normal")}
+          alt=""
+          width={profile.spriteWidth}
+          height={profile.spriteHeight}
+          sizes="64px"
+        />
       </div>
-      <div className="simon-pads">
-        {[1, 2, 3].map((pad) => (
-          <span key={pad} className={pad === 2 ? "simon-pad is-lit" : "simon-pad"}>
-            <span>{pad}</span>
+      <div className="simon-pads catch-pads">
+        {[-1, 1].map((dir) => (
+          <span key={dir} className={dir > 0 ? "simon-pad catch-pad is-lit" : "simon-pad catch-pad"}>
+            <span>
+              <i className={dir < 0 ? "catch-arrow is-left" : "catch-arrow"} />
+            </span>
           </span>
         ))}
       </div>
@@ -112,7 +129,7 @@ const TILES = [
 
 /**
  * "meet your gotchi" (docs/DEVLOG.md §3): the 4 tabs of /pet as tiles, each with a mini preview built
- * from the real components and styles (token art, tier badge, stat bars, simon console, snack cards, chat)
+ * from the real components and styles (token art, tier badge, stat bars, catch console, snack cards, chat)
  * with fixed sample data, plus one sentence. Previews are inert and hidden from assistive tech; the
  * sentence carries the meaning.
  */

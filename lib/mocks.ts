@@ -97,7 +97,7 @@ export const items: Item[] = [
 export type PetToken = Pick<Drop1Token, "tokenId" | "tier" | "background" | "accessory">;
 
 /** Counters for the stats tab; best scores per game. */
-export type PetStats = { games: number; snacks: number; messages: number; best: { simon: number; snack: number } };
+export type PetStats = { games: number; snacks: number; messages: number; best: { snack: number } };
 
 export type DemoPet = {
   /** 4 since demo v2: one of many pets of an account; the balance moved to the wallet. v1–v3 are migrated on read. */
@@ -279,7 +279,7 @@ const currentName = (petId: string, name: string) => {
   return renamed && name === renamed[0] ? renamed[1] : name;
 };
 
-const emptyStats = (): PetStats => ({ games: 0, snacks: 0, messages: 0, best: { simon: 0, snack: 0 } });
+const emptyStats = (): PetStats => ({ games: 0, snacks: 0, messages: 0, best: { snack: 0 } });
 
 /** v3 → v4: owned by the demo account, one more try for a token if it had none (the balance goes to the wallet in loadStore). */
 function fromLegacy(old: LegacyPet): DemoPet {
@@ -306,9 +306,10 @@ function fromLegacy(old: LegacyPet): DemoPet {
 function parseStats(value: unknown): PetStats | null {
   if (!isObject(value) || !isObject(value.best)) return null;
   const { games, snacks, messages } = value;
-  const { simon, snack } = value.best;
-  if (![games, snacks, messages, simon, snack].every(isCount)) return null;
-  return { games, snacks, messages, best: { simon, snack } } as PetStats;
+  // Pets saved before task 049 also carry best.simon (game removed): ignored, the pet stays valid.
+  const { snack } = value.best;
+  if (![games, snacks, messages, snack].every(isCount)) return null;
+  return { games, snacks, messages, best: { snack } } as PetStats;
 }
 
 /** One v4 pet, rebuilt field by field (unknown fields dropped), or null when anything is off. */
@@ -571,8 +572,8 @@ export function subscribePet(callback: (pet: DemoPet | null) => void): () => voi
 // ---------- /pet simulation (docs/DEVLOG.md §2; hunger tempo from PLANNER REVIEW 037) ----------
 
 export const PET_RULES = {
-  /** 20 → 70 (hungry) in 10 min; never above 100. */
-  hungerPerMin: 5,
+  /** 20 → 70 (hungry) in ~17 min; never above 100 (task 049: 5 → 3, games were almost always blocked). */
+  hungerPerMin: 3,
   /** Slow drain … */
   energyPerMin: 5,
   /** … twice as fast while hunger ≥ 70 ("it gets sad and slowly loses energy"), but a hungry pet only

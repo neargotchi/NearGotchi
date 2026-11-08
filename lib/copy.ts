@@ -25,13 +25,13 @@ export const howItWorks = {
     {
       number: 2,
       title: "feed",
-      body: "snacks cost $NEARGotchi. a hungry pet won't play.",
+      body: "snacks cost $NEARGotchi. a starving pet won't play.",
       sprite: { src: "/pets/pet1/hungry.png", width: 489, height: 431, alt: "" },
     },
     {
       number: 3,
       title: "play",
-      body: "simon and catch the snack. a game makes it happy, and a bit hungry.",
+      body: "catch the snack now, fetch and hide & seek soon. a game makes it happy, and a bit hungry.",
       sprite: { src: "/pets/pet2/happy.png", width: 489, height: 431, alt: "" },
     },
     {
@@ -49,7 +49,7 @@ export const yourGotchi = {
   sub: "every gotchi comes with a little menu. this is it.",
   tiles: {
     stats: { title: "stats", body: "its nft card, character, age and how it's doing." },
-    games: { title: "games", body: "simon on the three buttons and catch the snack. games make it happy." },
+    games: { title: "games", body: "catch the snack on a tiny lcd. fetch and hide & seek come next. games make it happy." },
     feed: { title: "feed", body: "a snack shop. each snack fills a different bar and restocks on its own time." },
     chat: { title: "chat", body: "talk to it. every pet has its own voice. each message costs a bit of energy and food." },
   },
@@ -58,8 +58,8 @@ export const yourGotchi = {
     name: "near kat",
     you: "gm",
     reply: "gm. i saw you coming three blocks ago.",
-    simonTop: "round 3",
-    simonMain: "your turn",
+    catchTime: "time 0:12",
+    catchScore: "caught 7",
   },
   cta: "try it: hatch your gotchi",
 };
@@ -190,8 +190,9 @@ export const petGallery = {
   header: "meet the pets",
   sub: "3 pets in drop 1, 4 moods each. one of them is a real dog.",
   tiersLabel: "{name} in drop 1, one per tier",
-  tierLink: "{token}, {tier}",
-  soon: "3 more pets soon",
+  tierLink: "{token}, {tier}. enlarge",
+  /** Enlarged tier thumbnail (app/nft-lightbox.tsx). */
+  lightbox: { open: "open nft page", close: "close" },
   cta: "hatch your gotchi",
 };
 
@@ -283,7 +284,6 @@ export const petPage = {
     snacks: "snacks eaten",
     messages: "messages sent",
     best: "best scores",
-    simon: "simon",
     snack: "catch the snack",
     noScore: "—",
     renameLabel: "rename",
@@ -300,7 +300,7 @@ export const petPage = {
   games: {
     title: "games",
     soon: "soon",
-    cost: "every finished game: +15 hunger, happy for 1 min. stop early and it's free.",
+    cost: "every finished game: +10 hunger, happy for 1 min. stop early and it's free.",
     best: "best",
     noScore: "—",
     play: "play",
@@ -311,25 +311,14 @@ export const petPage = {
       asleep: "{name} is recharging. back at 40 energy.",
     },
     feedFirst: "feed it first",
-    finished: "+15 hunger · {name} is happy. score {score}.",
+    /** Cards under catch the snack (games in tasks 050–051). */
+    upcoming: [
+      { title: "fetch", rules: "hold to wind up, let go to throw. {name} runs across the screen and brings the ball back." },
+      { title: "hide & seek", rules: "{name} hides behind a bush, a box or a tree. the spots shuffle. find it." },
+    ],
+    finished: "+10 hunger · {name} is happy. score {score}.",
     newBest: "new best!",
     stopped: "stopped. no cost.",
-    simon: {
-      title: "simon",
-      rules: "the three buttons light up in a row. press them back in the same order. one more each round. keys 1, 2, 3 work too.",
-      pads: "simon buttons",
-      pad: "button {n}",
-      ready: "press play",
-      round: "round {n}",
-      watch: "watch…",
-      yourTurn: "your turn",
-      /** between rounds */
-      good: "nice!",
-      /** aria-live after the sequence is shown */
-      sequence: "round {n}. your turn: {seq}.",
-      wrong: "oops. it was {n}.",
-      over: "game over",
-    },
     snack: {
       title: "catch the snack",
       rules: "snacks fall from the top. move {name} with ← → or a / d, or tap the left or right half of the screen. 20 seconds a round, p pauses.",

@@ -2,18 +2,18 @@
 // charged when a game ends (finishGame); quitting before the end costs nothing. A hungry or sleeping pet
 // doesn't play. Async on purpose, like the rest of lib/*.
 
-import { PET_RULES, baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
+import { baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
 
 export const GAME_RULES = {
-  /** hunger +15 per finished game */
-  hungerCost: 15,
-  /** hunger ≥ 70 (the "hungry" mood) blocks a new game */
-  blockedAt: PET_RULES.hungryAt,
+  /** hunger +10 per finished game (task 049: was 15) */
+  hungerCost: 10,
+  /** only a starving pet (hunger ≥ 90) can't start a game (task 049: was the "hungry" mood at 70) */
+  blockedAt: 90,
   /** happy sprite for 60 s after a game */
   happyMs: 60000,
 } as const;
 
-export const gameIds = ["simon", "snack"] as const;
+export const gameIds = ["snack"] as const;
 export type GameId = (typeof gameIds)[number];
 
 export type PlayCheck = "ok" | "hungry" | "asleep";
@@ -33,7 +33,7 @@ export class GameError extends Error {
 }
 
 /**
- * A game ended with `score` (a whole number ≥ 0): hunger +15, happy for 60 s, stats.games++ and the best
+ * A game ended with `score` (a whole number ≥ 0): hunger +10, happy for 60 s, stats.games++ and the best
  * score of that game. Returns the saved pet and whether the score is a new best.
  */
 export async function finishGame(

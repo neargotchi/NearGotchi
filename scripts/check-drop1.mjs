@@ -171,7 +171,7 @@ await test("v1 → v4: lastUpdated now, token of the same pet, minted, owner you
   assert.deepEqual(pets().pets, [pet]);
   assert.ok(!store.has(LEGACY));
   assert.equal(!("balance" in pet) && !("outfit" in pet), true);
-  assert.deepEqual(pet.stats, { games: 0, snacks: 0, messages: 0, best: { simon: 0, snack: 0 } });
+  assert.deepEqual(pet.stats, { games: 0, snacks: 0, messages: 0, best: { snack: 0 } });
 });
 
 await test("rename: old default names become near dragon / near kat; picked names stay", async () => {
@@ -322,13 +322,14 @@ await test("mintPet saves the drawn token; rename; update keeps it; release keep
   await assert.rejects(mocks.renamePet("scout"), (e) => e.code === "no_pet");
 });
 
-await test("hunger tempo: 20 → 70 (hungry) in 10 min, energy unchanged", async () => {
+await test("hunger tempo (task 049): +3/min, 20 → 50 in 10 min, energy unchanged", async () => {
   const start = Date.parse("2026-11-02T10:00:00.000Z");
   const pet = { ...basePet(4), hunger: 20, energy: 100, lastUpdated: new Date(start).toISOString() };
+  assert.equal(mocks.PET_RULES.hungerPerMin, 3);
   const later = mocks.simulatePet(pet, start + 10 * 60000);
-  assert.equal(later.hunger, 70);
+  assert.equal(later.hunger, 50);
   assert.equal(later.energy, 50);
-  assert.equal(later.mood, "hungry");
+  assert.equal(later.mood, "normal");
 });
 
 await test("chat: an answered message costs 4 energy and 3 hunger; hungry / asleep answers are free", async () => {
@@ -359,7 +360,7 @@ await test("sleep: recharges +3/min, wakes at 40; hunger keeps rising; 1 h alone
   const asleep = { ...base, hunger: 30, energy: 10, mood: "sleep" };
   const five = mocks.simulatePet(asleep, at(5));
   assert.equal(five.energy, 25);
-  assert.equal(five.hunger, 55);
+  assert.equal(five.hunger, 45);
   assert.equal(five.mood, "sleep", "still recharging below 40");
   const ten = mocks.simulatePet(asleep, at(10));
   assert.equal(ten.energy, 40);
@@ -367,7 +368,8 @@ await test("sleep: recharges +3/min, wakes at 40; hunger keeps rising; 1 h alone
   const fresh = { ...base, hunger: 20, energy: 100, mood: "normal" };
   const hour = mocks.simulatePet(fresh, at(60));
   assert.equal(hour.hunger, 100);
-  assert.equal(hour.energy, 40, "a hungry pet sulks down to 40, not into sleep");
+  // task 049 (hunger +3/min): hungry at ~16.7 min with energy ~16.7, already under 40, so it just holds there
+  assert.ok(hour.energy > mocks.PET_RULES.sleepAt && hour.energy < 17, String(hour.energy));
   assert.equal(hour.mood, "hungry");
   const tired = { ...base, hunger: 0, energy: 30, mood: "normal" };
   const nap = mocks.simulatePet(tired, at(3));
@@ -472,33 +474,70 @@ await test("shop: a sleeping pet eats and can wake up (asleep)", async () => {
 
 console.log("games");
 const games = await import("../lib/games.ts");
-await test("games: canPlay asleep > hungry > ok; finishGame +15 hunger, happy 60 s, games++, best", async () => {
-  assert.deepEqual(games.GAME_RULES, { hungerCost: 15, blockedAt: 70, happyMs: 60000 });
+await test("games (task 049): canPlay asleep > hungry ≥ 90 > ok; finishGame +10 hunger, happy 60 s, games++, best", async () => {
+  assert.deepEqual(games.GAME_RULES, { hungerCost: 10, blockedAt: 90, happyMs: 60000 });
+  assert.deepEqual([...games.gameIds], ["snack"], "simon is gone");
   assert.equal(games.canPlay({ hunger: 20, energy: 80 }), "ok");
-  assert.equal(games.canPlay({ hunger: 69.4, energy: 80 }), "ok");
-  assert.equal(games.canPlay({ hunger: 70, energy: 80 }), "hungry");
-  assert.equal(games.canPlay({ hunger: 90, energy: 10 }), "asleep");
+  assert.equal(games.canPlay({ hunger: 75, energy: 80 }), "ok", "a merely hungry pet still plays");
+  assert.equal(games.canPlay({ hunger: 89.4, energy: 80 }), "ok");
+  assert.equal(games.canPlay({ hunger: 90, energy: 80 }), "hungry");
+  assert.equal(games.canPlay({ hunger: 95, energy: 10 }), "asleep");
   await wallet.connect();
   const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
   await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
-  const a = await games.finishGame(pet.id, "simon", 5);
-  assert.ok(Math.abs(a.pet.hunger - 35) < 0.1, String(a.pet.hunger));
+  const a = await games.finishGame(pet.id, "snack", 5);
+  assert.ok(Math.abs(a.pet.hunger - 30) < 0.1, String(a.pet.hunger));
   assert.ok(Date.parse(a.pet.happyUntil) > Date.now() + 55000);
   assert.equal(a.pet.stats.games, 1);
-  assert.equal(a.pet.stats.best.simon, 5);
+  assert.equal(a.pet.stats.best.snack, 5);
   assert.equal(a.newBest, true);
-  const b = await games.finishGame(pet.id, "simon", 3);
+  const b = await games.finishGame(pet.id, "snack", 3);
   assert.equal(b.newBest, false);
-  assert.equal(b.pet.stats.best.simon, 5, "best keeps the higher score");
+  assert.equal(b.pet.stats.best.snack, 5, "best keeps the higher score");
   assert.equal(b.pet.stats.games, 2);
-  const c = await games.finishGame(pet.id, "simon", 0);
-  assert.equal(c.pet.stats.games, 3, "a game lost in round 1 still counts and costs");
+  const c = await games.finishGame(pet.id, "snack", 0);
+  assert.equal(c.pet.stats.games, 3, "a round with 0 caught still counts and costs");
   assert.equal(account().balance, 100, "games cost food, never demo balance");
   await mocks.updatePet({ hunger: 95 }, pet.id);
   assert.equal((await games.finishGame(pet.id, "snack", 2)).pet.hunger, 100, "hunger caps at 100");
-  await assert.rejects(games.finishGame(pet.id, "simon", -1), (e) => e.code === "bad_score");
-  await assert.rejects(games.finishGame(pet.id, "chess", 1), (e) => e.code === "unknown_game");
-  await assert.rejects(games.finishGame("nobody", "simon", 1), (e) => e.code === "no_pet");
+  await assert.rejects(games.finishGame(pet.id, "snack", -1), (e) => e.code === "bad_score");
+  await assert.rejects(games.finishGame(pet.id, "simon", 1), (e) => e.code === "unknown_game");
+  await assert.rejects(games.finishGame("nobody", "snack", 1), (e) => e.code === "no_pet");
+});
+
+await test("games (task 049): a fed pet plays at least 6 rounds in a row (20 s each)", async () => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  // just fed with noodles from the hungry mood: 70 − 50 = 20 hunger, energy 80
+  const start = Date.parse("2026-11-08T12:00:00.000Z");
+  let current = { ...pet, hunger: 20, energy: 80, mood: "normal", lastUpdated: new Date(start).toISOString() };
+  let played = 0;
+  for (let round = 0; round < 12; round++) {
+    const at = start + (round + 1) * 20000;
+    const shown = mocks.simulatePet(current, at);
+    if (games.canPlay(shown) !== "ok") break;
+    const hunger = Math.min(100, shown.hunger + games.GAME_RULES.hungerCost);
+    current = { ...shown, hunger, lastUpdated: new Date(at).toISOString() };
+    played++;
+  }
+  assert.ok(played >= 6, `played ${played}`);
+  // and the same through the real finishGame, back to back
+  await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
+  for (let round = 0; round < 6; round++) {
+    const now = await mocks.getPet(pet.id);
+    assert.equal(games.canPlay(mocks.simulatePet(now, Date.now())), "ok", `round ${round + 1}`);
+    await games.finishGame(pet.id, "snack", 4);
+  }
+});
+
+await test("stats (task 049): a stored pet with the old best.simon stays valid, simon dropped", async () => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  const raw = pets();
+  raw.pets.find((p) => p.id === pet.id).stats = { games: 4, snacks: 1, messages: 2, best: { simon: 7, snack: 3 } };
+  store.set(PKEY, JSON.stringify(raw));
+  const back = await mocks.getPet(pet.id);
+  assert.deepEqual(back.stats, { games: 4, snacks: 1, messages: 2, best: { snack: 3 } });
 });
 
 console.log("share + progress");

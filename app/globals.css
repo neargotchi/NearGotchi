@@ -1701,9 +1701,7 @@ main > section[class] { background: transparent; }
   gap: round(calc(20px * var(--ui-scale)), 1px) round(calc(32px * var(--ui-scale)), 1px);
   margin: round(calc(28px * var(--ui-scale)), 1px) 0 round(calc(8px * var(--ui-scale)), 1px);
 }
-.pet-hatch-actions { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: round(calc(18px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px); }
 /* A fixed width here: min(400px, 100%) inside this shrink-to-fit box would wrap the bar under the button. */
-.pet-hatch-actions .drop-progress { width: round(calc(400px * var(--ui-scale)), 1px); }
 
 .pet-switcher { flex: 1 1 auto; min-width: 0; }
 .pet-switcher ul {
@@ -1818,9 +1816,8 @@ main > section[class] { background: transparent; }
 .game-card.is-soon { border-style: dashed; box-shadow: none; }
 .game-card.is-soon .game-rules { color: var(--text-muted); }
 
-/* Simon: the egg device in small — cream body, NEAR green frame, LCD, three pixel-octagon buttons
-   (same shape as the device's). A lit pad turns cream (no glow, no animation, so reduced motion only
-   needs the slower timing); the pad that was expected after a miss turns pink. */
+/* Game console (catch the snack; class names from the removed simon game): the egg device in small —
+   cream body, NEAR green frame, LCD, pixel-octagon buttons (same shape as the device's). A lit pad turns cream. */
 .simon { display: grid; justify-items: center; gap: round(calc(20px * var(--ui-scale)), 1px); margin-top: round(calc(6px * var(--ui-scale)), 1px); }
 .simon-device {
   display: grid;
@@ -1832,28 +1829,9 @@ main > section[class] { background: transparent; }
   background: var(--cream);
   box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
 }
-.simon-screen {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: round(calc(6px * var(--ui-scale)), 1px);
-  width: 100%;
-  height: round(calc(150px * var(--ui-scale)), 1px);
-  padding: round(calc(26px * var(--ui-scale)), 1px) round(calc(10px * var(--ui-scale)), 1px) round(calc(10px * var(--ui-scale)), 1px);
-  border: round(calc(10px * var(--ui-scale)), 1px) solid var(--green);
-  outline: round(calc(2px * var(--ui-scale)), 1px) solid var(--green-deep);
-  color: var(--ink);
-  background: var(--lcd);
-  box-shadow: inset round(calc(-4px * var(--ui-scale)), 1px) round(calc(-4px * var(--ui-scale)), 1px) 0 var(--lcd-shadow);
-  text-align: center;
-}
 .simon-device:focus { outline: none; }
 .simon-lcd-top { position: absolute; top: round(calc(8px * var(--ui-scale)), 1px); left: round(calc(10px * var(--ui-scale)), 1px); margin: 0; font-family: var(--font-pixel), monospace; font-size: 0.5625rem; line-height: 1; }
 .simon-lcd-main { margin: 0; font-family: var(--font-pixel), monospace; font-size: 1.25rem; line-height: 1.2; }
-.simon-screen.is-over { flex-direction: row; gap: round(calc(14px * var(--ui-scale)), 1px); }
-.simon-screen.is-over .simon-lcd-main { font-size: 2rem; }
 .simon-happy { width: auto; height: round(calc(96px * var(--ui-scale)), 1px); image-rendering: pixelated; }
 .simon-pads { display: flex; justify-content: center; gap: round(calc(26px * var(--ui-scale)), 1px); }
 .simon-pad {
@@ -1883,7 +1861,6 @@ main > section[class] { background: transparent; }
   clip-path: inherit;
 }
 .simon-pad.is-lit > span { background: var(--cream); box-shadow: inset round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--lcd); }
-.simon-pad.is-wrong > span { background: var(--pink); box-shadow: none; }
 .simon-pad[aria-disabled="true"] { cursor: default; }
 /* Focus: the ink octagon outline turns pink (an outline would be cut by the clip-path). */
 .simon-pad:focus-visible { outline: none; background: var(--pink); }
@@ -2097,8 +2074,6 @@ main > section[class] { background: transparent; }
   .mint-reveal-actions { flex-direction: column; gap: 14px; }
   .mint-reveal-actions .button { width: 100%; min-height: 56px; }
   .pet-hatch-row { flex-direction: column; flex-wrap: nowrap; align-items: stretch; margin: 24px 0 8px; }
-  .pet-hatch-actions { flex-direction: column; align-items: stretch; gap: 14px; }
-  .pet-hatch-actions .button { width: 100%; min-height: 56px; }
   .pet-hatch-row .drop-progress { width: 100%; }
   .pet-switcher ul { margin-inline: -4px; }
   .pet-tablist { margin-bottom: 20px; }
@@ -2824,7 +2799,7 @@ main > section[class] { background: transparent; }
 .section-cta { display: flex; flex-wrap: wrap; gap: round(calc(18px * var(--ui-scale)), 1px); margin-top: round(calc(56px * var(--ui-scale)), 1px); }
 
 /* Meet the pets: 3 drop-1 cards, each with traits and a mini row of its 4 tiers (container query:
-   2×2 when the card is narrow); the 3 locked pets sit in a smaller row under them. */
+   2×2 when the card is narrow). Desktop: the row is ~12% narrower than the content and centered (task 049). */
 .pets-list-drop { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: round(calc(24px * var(--ui-scale)), 1px); }
 .pet-card.is-drop { container-type: inline-size; padding: round(calc(14px * var(--ui-scale)), 1px) round(calc(14px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); }
 .pet-card.is-drop .pet-sprite-wrap { height: round(calc(220px * var(--ui-scale)), 1px); }
@@ -2841,13 +2816,6 @@ main > section[class] { background: transparent; }
 .pet-tier-link:hover .pet-tier-art { box-shadow: round(calc(3px * var(--ui-scale)), 1px) round(calc(3px * var(--ui-scale)), 1px) 0 var(--shadow); }
 .pet-tier-link:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
 .pet-tier-link .tier-badge { font-size: 0.5rem; padding: round(calc(4px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px); }
-.pets-soon { margin-top: round(calc(48px * var(--ui-scale)), 1px); }
-.pets-soon-title { margin: 0 0 round(calc(16px * var(--ui-scale)), 1px); color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.75rem; font-weight: 400; line-height: 1.5; }
-.pets-soon-list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: round(calc(16px * var(--ui-scale)), 1px); }
-.pets-soon-list .pet-card { padding: round(calc(10px * var(--ui-scale)), 1px); }
-.pets-soon-list .pet-sprite-wrap { height: round(calc(96px * var(--ui-scale)), 1px); }
-.pets-soon-list .locked-title { margin: round(calc(12px * var(--ui-scale)), 1px) 0 0; }
-.pets-soon-list .locked-mark { transform: scale(0.7); }
 
 /* Meet your gotchi: 4 tiles (2×2), each a tab label + an inert mini preview + one sentence. */
 .gotchi-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: round(calc(28px * var(--ui-scale)), 1px); margin: round(calc(56px * var(--ui-scale)), 1px) 0 0; padding: 0; list-style: none; }
@@ -2894,7 +2862,6 @@ main > section[class] { background: transparent; }
 .gotchi-stats .pet-traits li { padding: round(calc(5px * var(--ui-scale)), 1px) round(calc(7px * var(--ui-scale)), 1px); font-size: 0.5rem; }
 
 .gotchi-simon { width: min(100%, round(calc(320px * var(--ui-scale)), 1px)); box-shadow: none; }
-.gotchi-simon .simon-screen { height: round(calc(110px * var(--ui-scale)), 1px); }
 .gotchi-simon .simon-pad { width: round(calc(56px * var(--ui-scale)), 1px); height: round(calc(56px * var(--ui-scale)), 1px); }
 
 .gotchi-feed { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: round(calc(16px * var(--ui-scale)), 1px); }
@@ -2956,15 +2923,11 @@ main > section[class] { background: transparent; }
 .drop-bg-tier { font-family: var(--font-pixel), monospace; font-size: 0.5rem; }
 
 @media (max-width: 1279px) {
-  .pets-soon-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .drop-tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 1023px) {
   .pets-list-drop .pet-card.is-drop { flex-basis: min(80vw, 330px); }
-  /* 3 small cards in a row, no scroll (a scroll box without focusable content fails axe). */
-  .pets-soon-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  .pets-soon-list .pet-sprite-wrap { height: 72px; }
   .section-sub { font-size: 1.0625rem; }
   .section-cta { margin-top: 36px; }
   .section-cta .button { width: 100%; min-height: 56px; }
@@ -2984,3 +2947,141 @@ main > section[class] { background: transparent; }
   .drop-tiers { grid-template-columns: minmax(0, 1fr); }
   .drop-tier { grid-template-columns: 88px minmax(0, 1fr); }
 }
+
+/* ---------- Task 049: owner feedback ---------- */
+
+/* Meet the pets: ~12% narrower cards on desktop, the row stays centered. */
+@media (min-width: 1024px) {
+  .pets-list-drop { width: 88%; margin-inline: auto; }
+}
+
+/* Tier thumbnails are buttons now (they open the lightbox). */
+.pet-tier-link { width: 100%; padding: 0; border: 0; background: none; font: inherit; cursor: zoom-in; }
+
+/* NFT lightbox (app/nft-lightbox.tsx): native modal dialog, pixel frame, crisp 512 art. */
+.nft-lightbox {
+  width: min(100% - 32px, round(calc(560px * var(--ui-scale)), 1px));
+  max-width: none;
+  max-height: calc(100svh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+.nft-lightbox::backdrop { background: rgb(20 20 20 / 0.72); }
+.nft-lightbox-box { position: relative; display: grid; justify-items: center; gap: round(calc(16px * var(--ui-scale)), 1px); padding: round(calc(44px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px); }
+.nft-lightbox-art { display: block; width: min(100%, round(calc(512px * var(--ui-scale)), 1px), calc(100svh - round(calc(250px * var(--ui-scale)), 1px))); aspect-ratio: 1; border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink); background: var(--lcd); }
+.nft-lightbox-art img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.nft-lightbox-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: round(calc(12px * var(--ui-scale)), 1px); }
+.nft-lightbox-name { margin: 0; font-family: var(--font-pixel), monospace; font-size: 0.875rem; font-weight: 400; line-height: 1.4; }
+.nft-lightbox-close {
+  position: absolute;
+  top: round(calc(8px * var(--ui-scale)), 1px);
+  right: round(calc(8px * var(--ui-scale)), 1px);
+  display: grid;
+  place-items: center;
+  width: round(calc(44px * var(--ui-scale)), 1px);
+  height: round(calc(44px * var(--ui-scale)), 1px);
+  padding: 0;
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  color: var(--text);
+  background: var(--surface);
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.nft-lightbox-close:hover { color: var(--ink); background: var(--lcd); }
+.nft-lightbox-close:focus-visible,
+.nft-lightbox-link:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
+@media (prefers-reduced-motion: no-preference) {
+  .nft-lightbox[open] { animation: nft-pop 0.18s steps(3, end); }
+  .nft-lightbox[open]::backdrop { animation: nft-fade 0.18s steps(3, end); }
+}
+@keyframes nft-pop { from { transform: scale(0.92); } to { transform: none; } }
+@keyframes nft-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* /pet top: name + drop bar, then switcher | hatch another | demo note, right under the site header. */
+.pet-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: round(calc(12px * var(--ui-scale)), 1px) round(calc(32px * var(--ui-scale)), 1px); }
+.pet-head-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: round(calc(4px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); min-width: 0; }
+.pet-head .mint-sub { margin: 0; font-size: 1.0625rem; }
+.pet-head .drop-progress { width: round(calc(400px * var(--ui-scale)), 1px); max-width: 100%; }
+.pet-hatch-row { flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: round(calc(12px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); margin: round(calc(14px * var(--ui-scale)), 1px) 0 0; }
+.pet-hatch-row .pet-switcher { flex: 0 1 auto; }
+.pet-hatch-row .mint-demo { margin-left: auto; }
+.pet-thumb { width: round(calc(76px * var(--ui-scale)), 1px); gap: round(calc(4px * var(--ui-scale)), 1px); padding: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px); }
+.pet-thumb-art { width: round(calc(52px * var(--ui-scale)), 1px); height: round(calc(52px * var(--ui-scale)), 1px); }
+
+/* Games tab: catch the snack beside its rules on a wide card; 2 "soon" cards under it. */
+.pet-games-tab { gap: round(calc(18px * var(--ui-scale)), 1px); }
+.pet-games-tab .pet-result { min-height: round(calc(24px * var(--ui-scale)), 1px); margin: round(calc(-6px * var(--ui-scale)), 1px) 0; }
+.pet-games-tab .pet-result p { margin: 0; }
+.game-card { container-type: inline-size; }
+.catch-side { display: grid; justify-items: center; gap: round(calc(14px * var(--ui-scale)), 1px); width: 100%; min-width: 0; }
+.catch-side .game-rules,
+.catch-side .games-cost { justify-self: stretch; }
+.catch-side .games-cost { font-size: 0.9375rem; }
+@container (min-width: 560px) {
+  .simon.catch { grid-template-columns: round(calc(320px * var(--ui-scale)), 1px) minmax(0, 1fr); align-items: center; justify-items: stretch; column-gap: round(calc(28px * var(--ui-scale)), 1px); margin-top: 0; }
+  .catch-side { justify-items: start; align-content: center; }
+  .catch-side .simon-controls { justify-content: flex-start; min-height: 0; }
+  .catch-side .game-blocked { justify-items: start; text-align: left; }
+}
+/* The LCD can't outgrow the cream console: one shrinkable column, and the canvas (intrinsic 4:3) sets
+   the screen's height instead of an aspect-ratio box. */
+.catch .simon-device { grid-template-columns: minmax(0, 1fr); max-width: 100%; }
+.catch-screen { aspect-ratio: auto; max-width: 100%; min-width: 0; }
+.catch-canvas { height: auto; max-width: 100%; aspect-ratio: 4 / 3; }
+.game-soon-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(round(calc(220px * var(--ui-scale)), 1px), 1fr)); gap: round(calc(18px * var(--ui-scale)), 1px); margin: 0; padding: 0; list-style: none; }
+.game-soon-list .game-card { gap: round(calc(10px * var(--ui-scale)), 1px); padding: round(calc(18px * var(--ui-scale)), 1px); }
+.game-soon-list .game-rules { font-size: 0.9375rem; }
+
+/* Landing "meet your gotchi" games tile: catch the snack mid-round (static). */
+.gotchi-catch { position: relative; aspect-ratio: 4 / 3; overflow: hidden; }
+.gotchi-catch-pet { position: absolute; bottom: 4%; left: 50%; width: auto; height: 34%; transform: translateX(-50%); image-rendering: pixelated; }
+.gotchi-catch-snack { position: absolute; top: 30%; left: 56%; width: 12%; height: auto; }
+.gotchi-simon .catch-pad { width: round(calc(64px * var(--ui-scale)), 1px); height: round(calc(50px * var(--ui-scale)), 1px); }
+
+@media (min-width: 1024px) {
+  .pet-shell .mint-section { padding: round(calc(28px * var(--ui-scale)), 1px) 0 round(calc(96px * var(--ui-scale)), 1px); }
+  .pet-layout { grid-template-columns: round(calc(440px * var(--ui-scale)), 1px) minmax(0, 1fr); gap: round(calc(40px * var(--ui-scale)), 1px) round(calc(48px * var(--ui-scale)), 1px); margin-top: round(calc(22px * var(--ui-scale)), 1px); }
+  .pet-stage { top: round(calc(100px * var(--ui-scale)), 1px); }
+  .pet-device-body { padding: round(calc(18px * var(--ui-scale)), 1px) round(calc(18px * var(--ui-scale)), 1px) round(calc(16px * var(--ui-scale)), 1px); }
+  .pet-device-frame { padding: round(calc(10px * var(--ui-scale)), 1px); }
+  .pet-device-screen { --screen-h: round(calc(280px * var(--ui-scale)), 1px); --sprite-h: round(calc(236px * var(--ui-scale)), 1px); }
+  .pet-device-buttons { margin-top: round(calc(14px * var(--ui-scale)), 1px); }
+  .pet-status { margin-top: round(calc(14px * var(--ui-scale)), 1px); font-size: 1.125rem; }
+  .pet-tablist { margin-bottom: round(calc(18px * var(--ui-scale)), 1px); }
+}
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .pet-layout { grid-template-columns: round(calc(400px * var(--ui-scale)), 1px) minmax(0, 1fr); gap: round(calc(36px * var(--ui-scale)), 1px); }
+  .pet-device-screen { --screen-h: round(calc(250px * var(--ui-scale)), 1px); --sprite-h: round(calc(210px * var(--ui-scale)), 1px); }
+}
+@media (max-width: 1023px) {
+  .pet-shell .mint-section { padding-top: 32px; }
+  .pet-head { display: grid; gap: 16px; }
+  .pet-head-title { display: block; }
+  .pet-head .mint-sub { margin-top: 10px; }
+  .pet-head .drop-progress { width: 100%; }
+  .pet-hatch-row { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 14px; margin: 20px 0 0; }
+  .pet-hatch-another { width: 100%; min-height: 56px; }
+  .pet-hatch-row .mint-demo { align-self: flex-start; margin: 0; white-space: normal; }
+  .game-soon-list { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Header at 1366–1535 with the wallet connected: the wide wallet chip pushed the centered nav into the
+   brand (seen at 1440 in task 049). Same content-sized grid as ≤1365, a slightly tighter nav. */
+@media (min-width: 1366px) and (max-width: 1535px) {
+  .site-header-inner { grid-template-columns: auto 1fr auto; gap: round(calc(36px * var(--ui-scale)), 1px); }
+  .site-nav { justify-self: center; }
+  .site-nav ul { gap: round(calc(22px * var(--ui-scale)), 1px); }
+}
+@media (min-width: 1024px) {
+  /* The CTA under the narrower pet row starts at the row's left edge. */
+  .pets-section .section-cta { width: 88%; margin-inline: auto; }
+}
+/* Lightbox art: 512 css px of image inside the 2px frame (1:1 with the webp, no dropped pixels). */
+.nft-lightbox { width: min(100% - 32px, round(calc(580px * var(--ui-scale)), 1px)); }
+.nft-lightbox-art { width: min(100%, round(calc(516px * var(--ui-scale)), 1px), calc(100svh - round(calc(250px * var(--ui-scale)), 1px))); }

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useEffectEvent, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 
 import { fill, petPage } from "../../../lib/copy";
 import { snackIds, type SnackId } from "../../../lib/shop";
@@ -81,6 +81,8 @@ type CatchSnackProps = {
   onEnd: (score: number) => void;
   onStop: () => void;
   onFeed: () => void;
+  /** Rules / cost text: beside the console on a wide card (task 049), above the play button otherwise. */
+  children?: ReactNode;
 };
 
 /**
@@ -100,6 +102,7 @@ export default function CatchSnack({
   onEnd,
   onStop,
   onFeed,
+  children,
 }: CatchSnackProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [score, setScore] = useState(0);
@@ -400,6 +403,9 @@ export default function CatchSnack({
         </div>
       </div>
 
+      <div className="catch-side">
+        {children}
+
       <p className="visually-hidden" role="status" aria-live="polite">
         {live}
       </p>
@@ -426,6 +432,7 @@ export default function CatchSnack({
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

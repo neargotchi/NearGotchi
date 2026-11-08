@@ -5,27 +5,27 @@ import Link from "next/link";
 import { useState } from "react";
 
 import Mascot from "../components/Mascot";
-import Sparkles from "../components/Sparkles";
 import TierBadge from "../components/TierBadge";
 import TitleSparkles from "../components/TitleSparkles";
 import { fill, mascots, petGallery, petTraits } from "../lib/copy";
-import { tierSample, tiers } from "../lib/drop1";
+import NftLightbox from "./nft-lightbox";
+import { tierSample, tiers, type Drop1Token } from "../lib/drop1";
 import { PETS_4_6_ENABLED } from "../lib/features";
 import {
   moods,
   petSpriteSrc,
   pets,
   upcomingPets,
-  upcomingPetSlots,
   type Mood,
   type PetProfile,
 } from "../lib/mocks";
 
 /**
  * One drop-1 pet: mood switcher, description, its 3 traits and a mini row of 4 of its NFTs (common →
- * legendary, each with its tier badge, linking to /nft/[id]). No per-pet mint link: the egg picks the pet.
+ * legendary, each with its tier badge). A thumbnail opens it enlarged in the lightbox (task 049), which
+ * links on to /nft/[id]. No per-pet mint link: the egg picks the pet.
  */
-function PetCard({ pet }: { pet: PetProfile }) {
+function PetCard({ pet, onEnlarge }: { pet: PetProfile; onEnlarge: (token: Drop1Token) => void }) {
   const { name, description } = pet;
   const [mood, setMood] = useState<Mood>("normal");
   const traits = petTraits[pet.id] ?? [];
@@ -68,17 +68,19 @@ function PetCard({ pet }: { pet: PetProfile }) {
           if (!token) return null;
           return (
             <li key={tier}>
-              <Link
+              <button
+                type="button"
                 className="pet-tier-link"
-                href={`/nft/${token.tokenId}`}
+                aria-haspopup="dialog"
                 aria-label={fill(petGallery.tierLink, { token: token.name, tier })}
+                onClick={() => onEnlarge(token)}
               >
                 <span className="pet-tier-art">
                   {/* small thumbnail: optimised down from the 512 webp (Lighthouse: ~240 KB saved) */}
                   <Image src={token.image} alt="" width={512} height={512} sizes="(max-width: 1023px) 160px, 120px" />
                 </span>
                 <TierBadge tier={tier} />
-              </Link>
+              </button>
             </li>
           );
         })}
@@ -87,32 +89,8 @@ function PetCard({ pet }: { pet: PetProfile }) {
   );
 }
 
-/** `title="p"` where the page has no h2 above the cards, so the heading order stays valid. */
-export function LockedCard({ slot, title = "h3" }: { slot: string; title?: "h3" | "p" }) {
-  const Title = title;
-  return (
-    <article className="pet-card pet-card-locked" aria-label="locked pet, soon">
-      <div className="pet-sprite-wrap locked-sprite" aria-hidden="true">
-        <span className="locked-mark">?</span>
-        <Sparkles
-          count={3}
-          colors={["var(--green)", "#ffffff"]}
-          area={[
-            { x: [8, 26], y: [10, 40] },
-            { x: [72, 90], y: [14, 44] },
-            { x: [60, 86], y: [66, 86] },
-          ]}
-          seed={`locked-${slot}`}
-          size={12}
-          duration={[3, 4.5]}
-        />
-      </div>
-      <Title className="locked-title">soon</Title>
-    </article>
-  );
-}
-
 export default function PetGallery() {
+  const [enlarged, setEnlarged] = useState<Drop1Token | null>(null);
   return (
     <section id="pets" className="pets-section" aria-labelledby="pets-title">
       <div className="pets-content">
@@ -126,20 +104,11 @@ export default function PetGallery() {
         </header>
         <div className="pets-list pets-list-drop">
           {pets.map((pet) => (
-            <PetCard key={pet.id} pet={pet} />
+            <PetCard key={pet.id} pet={pet} onEnlarge={setEnlarged} />
           ))}
-          {PETS_4_6_ENABLED ? upcomingPets.map((pet) => <PetCard key={pet.id} pet={pet} />) : null}
+          {PETS_4_6_ENABLED ? upcomingPets.map((pet) => <PetCard key={pet.id} pet={pet} onEnlarge={setEnlarged} />) : null}
         </div>
-        {PETS_4_6_ENABLED ? null : (
-          <div className="pets-soon">
-            <h3 className="pets-soon-title">{petGallery.soon}</h3>
-            <div className="pets-soon-list">
-              {upcomingPetSlots.map((slot) => (
-                <LockedCard key={slot} slot={slot} title="p" />
-              ))}
-            </div>
-          </div>
-        )}
+        <NftLightbox token={enlarged} onClose={() => setEnlarged(null)} />
         <div className="section-cta">
           <Link className="button button-primary" href="/mint">
             {petGallery.cta}

@@ -6,7 +6,6 @@ import { fill, petPage } from "../../lib/copy";
 import { canPlay, finishGame, type GameId } from "../../lib/games";
 import { findPet, petSpriteSrc, type DemoPet } from "../../lib/mocks";
 import CatchSnack from "./games/catch-snack";
-import Simon from "./games/simon";
 import type { PetTab } from "./pet-tabs";
 
 type TabGamesProps = {
@@ -21,9 +20,9 @@ type TabGamesProps = {
 };
 
 /**
- * Games tab (docs/DEVLOG.md §2, steps 7–8): simon and catch the snack. Each
- * card has its rules and best score. A hungry or sleeping pet can't start a game: the reason and "feed it
- * first" (→ feed tab) replace "play". The cost (+15 hunger) is charged when a game ends.
+ * Games tab (docs/DEVLOG.md §2, task 049): catch the snack, then two "soon" cards (fetch,
+ * hide & seek). The card has its rules and best score. A starving or sleeping pet can't start a game: the
+ * reason and "feed it first" (→ feed tab) replace "play". The cost (+10 hunger) is charged when a game ends.
  */
 export default function TabGames({ pet, shown, active, onTab, onFinished }: TabGamesProps) {
   const [message, setMessage] = useState<string | null>(null);
@@ -41,34 +40,9 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
 
   return (
     <div className="pet-games-tab">
-      <p className="games-cost">{petPage.games.cost}</p>
       <div className="pet-result" role="status">
         {message ? <p>{message}</p> : null}
       </div>
-
-      <section className="pet-card-block game-card" aria-labelledby="game-simon-title">
-        <div className="game-head">
-          <h2 id="game-simon-title" className="mint-subtitle">
-            {petPage.games.simon.title}
-          </h2>
-          <p className="game-best">
-            {petPage.games.best} <strong>{best(pet.stats.best.simon)}</strong>
-          </p>
-        </div>
-        <p className="game-rules">{petPage.games.simon.rules}</p>
-        <Simon
-          canStart={check === "ok"}
-          blockedReason={blocked}
-          active={active}
-          happySprite={{ src: petSpriteSrc(profile, "happy"), width: profile.spriteWidth, height: profile.spriteHeight }}
-          onStart={() => setMessage(null)}
-          onEnd={(score) => {
-            end("simon", score);
-          }}
-          onStop={() => setMessage(petPage.games.stopped)}
-          onFeed={() => onTab("feed")}
-        />
-      </section>
 
       <section className="pet-card-block game-card" aria-labelledby="game-snack-title">
         <div className="game-head">
@@ -79,7 +53,6 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
             {petPage.games.best} <strong>{best(pet.stats.best.snack)}</strong>
           </p>
         </div>
-        <p className="game-rules">{fill(petPage.games.snack.rules, { name: pet.name })}</p>
         <CatchSnack
           canStart={check === "ok"}
           blockedReason={blocked}
@@ -97,8 +70,23 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
           }}
           onStop={() => setMessage(petPage.games.stopped)}
           onFeed={() => onTab("feed")}
-        />
+        >
+          <p className="game-rules">{fill(petPage.games.snack.rules, { name: pet.name })}</p>
+          <p className="games-cost">{petPage.games.cost}</p>
+        </CatchSnack>
       </section>
+
+      <ul className="game-soon-list">
+        {petPage.games.upcoming.map((game) => (
+          <li key={game.title} className="pet-card-block game-card is-soon">
+            <div className="game-head">
+              <h2 className="mint-subtitle">{game.title}</h2>
+              <p className="game-best">{petPage.games.soon}</p>
+            </div>
+            <p className="game-rules">{fill(game.rules, { name: pet.name })}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
