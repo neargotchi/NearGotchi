@@ -320,6 +320,33 @@ await test("hunger tempo: 20 → 70 (hungry) in 10 min, energy unchanged", async
   assert.equal(later.mood, "hungry");
 });
 
+console.log("share + progress");
+await test("share on x: intent url, rarity-only text, link to /nft/{id}", async () => {
+  const share = await import("../lib/share.ts");
+  const t = drop.findToken(tokens.find((x) => x.petId === "pet2" && x.tier === "rare").tokenId);
+  const url = new URL(share.shareOnXUrl(t));
+  assert.equal(url.origin + url.pathname, "https://x.com/intent/tweet");
+  assert.equal(url.searchParams.get("url"), `https://neargochi.vercel.app/nft/${t.tokenId}`);
+  assert.equal(url.searchParams.get("text"), `i hatched ${t.name}, a rare dragon. one of 25 rare near dragons in neargotchi drop 1 (demo).`);
+  assert.ok(!/@/.test(url.searchParams.get("text")), "no @handle yet");
+});
+
+await test("getPet resolves /pet?id={tokenId} for the owner only", async () => {
+  await wallet.connect();
+  const a = await mocks.mintPet({ token: await drop.hatchRandom() });
+  const b = await mocks.mintPet({ token: await drop.hatchRandom() });
+  assert.equal((await mocks.getPet(String(a.token.tokenId))).id, a.id);
+  assert.equal((await mocks.getPet(b.id)).id, b.id);
+  assert.equal(await mocks.getPet("999"), null);
+  await wallet.disconnect();
+  assert.equal(await mocks.getPet(String(a.token.tokenId)), null);
+});
+
+await test("drop progress cells: 0 → none, first hatch → 1, 299 → 29, sold out → 30", async () => {
+  const cells = (minted) => drop.filledCells({ minted, total: 300 });
+  assert.deepEqual([0, 1, 9, 10, 150, 299, 300].map(cells), [0, 1, 1, 1, 15, 29, 30]);
+});
+
 console.log("copy");
 const copy = await import("../lib/copy.ts");
 await test("rarity only: no value / price / growth words in the drop-1, /mint and wallet strings", async () => {
@@ -337,6 +364,8 @@ await test("rarity only: no value / price / growth words in the drop-1, /mint an
   walk(copy.petGallery, "petGallery");
   walk(copy.header.wallet, "header.wallet");
   walk(copy.walletGate, "walletGate");
+  walk(copy.dropProgress, "dropProgress");
+  walk(copy.petPage.hatchAnother, "petPage.hatchAnother");
   assert.ok(strings.length > 30);
   const hits = strings.filter(([, text]) => banned.test(text));
   assert.deepEqual(hits, []);

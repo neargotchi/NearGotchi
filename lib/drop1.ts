@@ -40,6 +40,17 @@ export const findToken = (tokenId: unknown): Drop1Token | null =>
 /** How many tokens of this pet share the tier: "one of {n} rare near dragons". */
 export const tierCount = (petId: string, tier: Tier) => rows.filter((row) => row.petId === petId && row.tier === tier).length;
 
+/** components/DropProgress.tsx: 30 pixel cells, 10 tokens each. */
+export const PROGRESS_CELLS = 30;
+
+/** A cell lights up per 10 hatched; the first hatch already shows one, the last cell only when sold out. */
+export const filledCells = ({ minted, total }: { minted: number; total: number }) =>
+  minted <= 0
+    ? 0
+    : minted >= total
+      ? PROGRESS_CELLS
+      : Math.min(PROGRESS_CELLS - 1, Math.max(1, Math.floor((minted / total) * PROGRESS_CELLS)));
+
 /** "r08-sunset" → "sunset". */
 export const backgroundLabel = (background: string) => background.replace(/^[a-z]\d+-/, "").replace(/-/g, " ");
 

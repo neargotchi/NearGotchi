@@ -1,4 +1,5 @@
 import Image from "next/image";
+import DropProgress from "../components/DropProgress";
 import Sparkles from "../components/Sparkles";
 import PetCta from "./pet-cta";
 import type { Metadata } from "next";
@@ -71,6 +72,8 @@ export default function Home() {
                 how it works <span aria-hidden="true">↓</span>
               </a>
             </div>
+            {/* "how many are left": this browser's demo count, so it always says "demo" (docs/DEVLOG.md §3). */}
+            <DropProgress className="hero-progress" />
           </div>
 
           <div className="device-wrap">

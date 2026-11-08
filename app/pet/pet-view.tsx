@@ -11,12 +11,15 @@ import {
   isPersistent,
   moodOf,
   refillBalance,
+  getPet,
   releasePet,
+  setActivePet,
   simulatePet,
   subscribePet,
   tickPet,
   type DemoPet,
 } from "../../lib/mocks";
+import DropProgress from "../../components/DropProgress";
 import { useWallet } from "../../lib/use-wallet";
 import WalletGate from "../wallet-gate";
 import PetChat from "./pet-chat";
@@ -56,11 +59,17 @@ export default function PetView() {
     let live = true;
     setPersistent(isPersistent());
     setNow(Date.now());
-    tickPet().then((saved) => {
+    // /pet?id={tokenId} (from the /mint reveal) shows that pet: it becomes the active one. An unknown or
+    // foreign id is ignored. (?tab= is read by the tabs in step 4.)
+    const wanted = new URLSearchParams(window.location.search).get("id");
+    (async () => {
+      const chosen = wanted ? await getPet(wanted) : null;
+      if (chosen) await setActivePet(chosen.id);
+      const saved = await tickPet();
       if (!live) return;
       setPet(saved);
       setReady(true);
-    });
+    })();
     const unsubscribe = subscribePet((saved) => live && setPet(saved));
     const clock = setInterval(() => setNow(Date.now()), 1000);
     const saver = setInterval(() => document.visibilityState === "visible" && tickPet(), SAVE_EVERY_MS);
@@ -129,10 +138,11 @@ export default function PetView() {
           {petPage.empty}
         </h1>
         <div className="mint-actions">
-          <Link className="button button-primary" href="/mint">
+          <Link className="button button-primary pet-hatch-first" href="/mint">
             {petPage.emptyLink}
           </Link>
         </div>
+        <DropProgress className="pet-progress" />
       </div>
     );
   }
@@ -191,6 +201,14 @@ export default function PetView() {
         <p className="mint-demo">{mintPage.demo}</p>
         <p className="mint-sub">{fill(petPage.sub, { species: pet.species, date: hatched })}</p>
       </header>
+
+      {/* Step 3: a plain link next to the drop bar; the pet switcher joins this row in step 4. */}
+      <div className="pet-hatch-row">
+        <Link className="button button-secondary" href="/mint">
+          {petPage.hatchAnother}
+        </Link>
+        <DropProgress className="pet-progress" />
+      </div>
 
       <div className="pet-layout">
         <div className="pet-stage">

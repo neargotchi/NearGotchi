@@ -1659,16 +1659,43 @@ main > section[class] { background: transparent; }
 .mint-ready .mint-error { margin: 0; }
 .mint-hatch-button { min-width: round(calc(240px * var(--ui-scale)), 1px); }
 
-.mint-counter {
-  margin: 0;
-  padding: round(calc(8px * var(--ui-scale)), 1px) round(calc(10px * var(--ui-scale)), 1px);
+/* Drop progress (components/DropProgress.tsx): a small LCD, 30 ink cells of 10 tokens each + the count.
+   Fixed width and height from the server render ("…" and empty cells), so nothing moves when it fills. */
+.drop-progress {
+  display: grid;
+  gap: round(calc(8px * var(--ui-scale)), 1px);
+  width: min(round(calc(400px * var(--ui-scale)), 1px), 100%);
+  padding: round(calc(10px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px);
   border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
   color: var(--ink);
   background: var(--lcd);
+  box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+.drop-progress-bar {
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  gap: round(calc(2px * var(--ui-scale)), 1px);
+  height: round(calc(14px * var(--ui-scale)), 1px);
+}
+.drop-progress-bar > span { background: var(--lcd-shadow); }
+.drop-progress-bar > .is-on { background: var(--ink); }
+.drop-progress-label {
+  margin: 0;
   font-family: var(--font-pixel), monospace;
   font-size: 0.625rem;
   line-height: 1.4;
+  white-space: nowrap;
 }
+
+.hero-progress { margin-top: round(calc(32px * var(--ui-scale)), 1px); }
+.pet-hatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: round(calc(18px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px);
+  margin: round(calc(28px * var(--ui-scale)), 1px) 0 round(calc(48px * var(--ui-scale)), 1px);
+}
+.pet-stub .pet-progress { margin-top: round(calc(32px * var(--ui-scale)), 1px); }
 
 .mint-reveal {
   display: grid;
@@ -1682,18 +1709,16 @@ main > section[class] { background: transparent; }
   text-align: left;
 }
 
-.mint-reveal .mint-name-row { margin-top: round(calc(12px * var(--ui-scale)), 1px); }
-.mint-reveal .mint-input { width: auto; min-width: 0; flex: 1 1 auto; }
-.mint-reveal .mint-name-row .button { flex: none; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Reveal: name field, then "play with {name}" + "share on x". scroll-margin keeps the card clear of the
+   sticky header when it glides into view after the hatch. */
+.mint-reveal { scroll-margin: round(calc(96px * var(--ui-scale)), 1px) 0 round(calc(24px * var(--ui-scale)), 1px); }
+.mint-reveal .mint-input { display: block; width: 100%; margin-top: round(calc(12px * var(--ui-scale)), 1px); }
+.mint-reveal-actions .button { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
 .mint-soldout { display: grid; justify-items: start; gap: round(calc(18px * var(--ui-scale)), 1px); margin-top: round(calc(74px * var(--ui-scale)), 1px); }
 .mint-soldout .mint-card-text { font-size: 1.125rem; }
 .mint-soldout .mint-hint { margin: 0; }
 
-.mint-existing-body.has-token { flex-direction: column; align-items: stretch; gap: round(calc(28px * var(--ui-scale)), 1px); max-width: round(calc(860px * var(--ui-scale)), 1px); }
-.mint-existing-body.has-token .token-card { margin-bottom: 0; }
-.mint-existing-side { display: grid; justify-items: start; gap: round(calc(18px * var(--ui-scale)), 1px); }
-.mint-existing-side .mint-card-text { font-size: 1.125rem; }
 
 @media (max-width: 1023px) {
   .mint-section { min-height: calc(100svh - 71px - 151px); padding: 72px 0; }
@@ -1729,9 +1754,12 @@ main > section[class] { background: transparent; }
   .mint-ready { width: 100%; }
   .mint-hatch-button { width: 100%; min-height: 56px; }
   .mint-reveal { gap: 22px; padding: 16px; }
-  .mint-reveal .mint-name-row .button { max-width: none; }
+  .mint-reveal-actions { flex-direction: column; gap: 14px; }
+  .mint-reveal-actions .button { width: 100%; min-height: 56px; }
+  .pet-hatch-row { flex-direction: column; align-items: stretch; margin: 24px 0 32px; }
+  .pet-hatch-row .drop-progress { width: 100%; }
+  .drop-progress-label { font-size: 0.5625rem; }
   .mint-soldout { margin-top: 40px; justify-items: stretch; }
-  .mint-existing-side { justify-items: stretch; }
 
   .pet-mint-link { display: inline-flex; min-height: 44px; align-items: center; margin-top: 8px; font-size: 1rem; line-height: 22px; }
 }

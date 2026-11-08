@@ -453,15 +453,15 @@ export async function getPets(): Promise<DemoPet[]> {
 }
 
 /**
- * One pet of the connected account: by id, or the active one when no id is given.
- * null without a wallet, without pets, or for an id the account doesn't own.
+ * One pet of the connected account: by pet id or by its token id ("17", as in /pet?id=17), or the active
+ * one when no id is given. null without a wallet, without pets, or for an id the account doesn't own.
  */
 export async function getPet(id?: string): Promise<DemoPet | null> {
   const owner = connectedAccountId();
   const store = loadStore();
   if (!owner) return null;
   if (id === undefined) return activeOf(store, owner);
-  return ownedBy(store, owner).find((pet) => pet.id === id) ?? null;
+  return ownedBy(store, owner).find((pet) => pet.id === id || (pet.token && String(pet.token.tokenId) === id)) ?? null;
 }
 
 /** Picks the pet /pet shows for the connected account. */

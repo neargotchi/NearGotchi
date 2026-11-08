@@ -155,8 +155,6 @@ export const mintPage = {
   sub: "one egg. one of 300 gotchis inside. name it when it's out.",
   demo: "demo · no real mint, demo wallet only",
   mascot: { name: "near dragon", spriteFolder: "pet2", line: "i hatched once. it was a lot." },
-  /** Counts this browser's demo hatches only, so "demo" always sits next to it. */
-  counter: "{minted} / {total} hatched · demo",
   hatchButton: "hatch",
   hatchTag: "demo",
   readyHint: "you don't pick the pet. the egg does. common, rare, epic or legendary.",
@@ -169,6 +167,12 @@ export const mintPage = {
     /** h2 of the reveal, focused when it appears. */
     title: "{token} hatched.",
     nameLabel: "name it",
+    /** Submit: saves the name, then /pet?id={tokenId}&tab=games. */
+    play: "play with {name}",
+    share: "share on x",
+    shareNewTab: "(opens x in a new tab)",
+    /** x.com/intent/tweet text (PLANNER REVIEW 037): no @handle until the X account is confirmed. */
+    shareText: "i hatched {token}, a {tier} {species}. one of {count} {tier} {pet}s in neargotchi drop 1 (demo).",
   },
   nameHint: "2–12 characters. letters, numbers, spaces, - and _. empty keeps {pet}.",
   errors: {
@@ -178,17 +182,14 @@ export const mintPage = {
     no_pet: "that gotchi is gone. hatch again.",
     no_wallet: "connect the demo wallet first.",
   },
-  goTo: "go to {name}",
   soldOut: {
     title: "all {total} hatched.",
     body: "every egg in this demo drop is out. in this browser, anyway.",
     reset: "reset demo drop",
     note: "demo only: puts all {total} eggs back in this browser.",
   },
+  /** /pet "release" (start over) button; /mint no longer has an "already have a gotchi" view. */
   existing: {
-    title: "you already have a gotchi.",
-    body: "{name} the {species} is waiting.",
-    go: "go to your pet",
     startOver: "start over",
   },
   confirm: {
@@ -198,6 +199,15 @@ export const mintPage = {
   },
   storageNote: "this browser won't save your pet. it stays until you close the tab.",
   noscript: "turn on javascript to hatch a pet.",
+};
+
+/**
+ * Drop progress bar (components/DropProgress.tsx) on the landing hero, /mint and /pet. The count is this
+ * browser's demo hatches only, so "demo" is always part of it. "…" until the browser count is read.
+ */
+export const dropProgress = {
+  label: "{minted} / {total} hatched · {left} left · demo",
+  pending: "…",
 };
 
 /** Shown on /pet and /mint without a connected demo wallet (app/wallet-gate.tsx). */
@@ -213,7 +223,9 @@ export const walletGate = {
 export const petPage = {
   metaTitle: "my gotchi — NEARGOTCHI",
   empty: "no pet yet.",
-  emptyLink: "hatch one",
+  emptyLink: "hatch your gotchi",
+  /** Next to the drop progress bar on /pet (the switcher comes in step 4). */
+  hatchAnother: "hatch another",
   sub: "the {species} · hatched {date}",
   tapLabel: "pet {name}",
   status: {
