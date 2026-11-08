@@ -419,6 +419,37 @@ await test("shop: a sleeping pet eats and can wake up (asleep)", async () => {
   await assert.rejects(shop.buySnack("nobody", "cookie"), (e) => e.code === "no_pet");
 });
 
+console.log("games");
+const games = await import("../lib/games.ts");
+await test("games: canPlay asleep > hungry > ok; finishGame +15 hunger, happy 60 s, games++, best", async () => {
+  assert.deepEqual(games.GAME_RULES, { hungerCost: 15, blockedAt: 70, happyMs: 60000 });
+  assert.equal(games.canPlay({ hunger: 20, energy: 80 }), "ok");
+  assert.equal(games.canPlay({ hunger: 69.4, energy: 80 }), "ok");
+  assert.equal(games.canPlay({ hunger: 70, energy: 80 }), "hungry");
+  assert.equal(games.canPlay({ hunger: 90, energy: 10 }), "asleep");
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
+  const a = await games.finishGame(pet.id, "simon", 5);
+  assert.ok(Math.abs(a.pet.hunger - 35) < 0.1, String(a.pet.hunger));
+  assert.ok(Date.parse(a.pet.happyUntil) > Date.now() + 55000);
+  assert.equal(a.pet.stats.games, 1);
+  assert.equal(a.pet.stats.best.simon, 5);
+  assert.equal(a.newBest, true);
+  const b = await games.finishGame(pet.id, "simon", 3);
+  assert.equal(b.newBest, false);
+  assert.equal(b.pet.stats.best.simon, 5, "best keeps the higher score");
+  assert.equal(b.pet.stats.games, 2);
+  const c = await games.finishGame(pet.id, "simon", 0);
+  assert.equal(c.pet.stats.games, 3, "a game lost in round 1 still counts and costs");
+  assert.equal(account().balance, 100, "games cost food, never demo balance");
+  await mocks.updatePet({ hunger: 95 }, pet.id);
+  assert.equal((await games.finishGame(pet.id, "snack", 2)).pet.hunger, 100, "hunger caps at 100");
+  await assert.rejects(games.finishGame(pet.id, "simon", -1), (e) => e.code === "bad_score");
+  await assert.rejects(games.finishGame(pet.id, "chess", 1), (e) => e.code === "unknown_game");
+  await assert.rejects(games.finishGame("nobody", "simon", 1), (e) => e.code === "no_pet");
+});
+
 console.log("share + progress");
 await test("share on x: intent url, rarity-only text, link to /nft/{id}", async () => {
   const share = await import("../lib/share.ts");
@@ -468,6 +499,7 @@ await test("rarity only: no value / price / growth words in the drop-1, /mint an
   for (const key of ["switcher", "tabs", "stats", "release", "games"]) walk(copy.petPage[key], `petPage.${key}`);
   walk(copy.petTraits, "petTraits");
   walk(copy.petPage.shop, "petPage.shop");
+  walk(copy.petPage.games, "petPage.games");
   walk(copy.snackLabels, "snackLabels");
   assert.ok(strings.length > 30);
   const hits = strings.filter(([, text]) => banned.test(text));

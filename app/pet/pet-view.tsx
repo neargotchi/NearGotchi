@@ -26,6 +26,7 @@ import PetSwitcher from "./pet-switcher";
 import PetTabs, { isPetTab, type PetTab } from "./pet-tabs";
 import type { BuyResult, Snack } from "../../lib/shop";
 import TabFeed from "./tab-feed";
+import TabGames from "./tab-games";
 import TabStats from "./tab-stats";
 
 const SAVE_EVERY_MS = 15000;
@@ -242,15 +243,18 @@ export default function PetView() {
                 />
               ),
               games: (
-                <section className="pet-card-block pet-soon" aria-labelledby="pet-games-title">
-                  <div className="pet-soon-head">
-                    <h2 id="pet-games-title" className="mint-subtitle">
-                      {petPage.games.title}
-                    </h2>
-                    <span className="pet-soon-tag">{petPage.games.soon}</span>
-                  </div>
-                  <p className="mint-card-text">{fill(petPage.games.body, { name: pet.name })}</p>
-                </section>
+                <TabGames
+                  key={pet.id}
+                  pet={pet}
+                  shown={shown}
+                  active={tab === "games"}
+                  onTab={setTab}
+                  onFinished={(next) => {
+                    setPet(next);
+                    setHop((value) => value + 1);
+                    setBurst((value) => value + 1);
+                  }}
+                />
               ),
               feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={account.balance} now={now} onBought={onBought} />,
               chat: <PetChat key={pet.id} name={pet.name} onPet={setPet} onReply={makeHappy} />,
