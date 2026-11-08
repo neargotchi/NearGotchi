@@ -2,17 +2,7 @@
 // chat replies and simulation rules. All values here are demonstration data.
 
 import { claimRandomToken, ensureMinted, findToken, type Drop1Token } from "./drop1";
-import {
-  DEMO_ACCOUNT_ID,
-  WalletError,
-  absorbBalance,
-  connectedAccountId,
-  getAccount,
-  refill,
-  spend,
-  subscribeAccount,
-  type DemoAccount,
-} from "./wallet";
+import { DEMO_ACCOUNT_ID, absorbBalance, connectedAccountId, subscribeAccount } from "./wallet";
 
 export const moods = ["normal", "hungry", "happy", "sleep"] as const;
 export type Mood = (typeof moods)[number];
@@ -590,9 +580,6 @@ export const PET_RULES = {
   hungryAt: 70,
   /** energy ≤ 15 → asleep, doesn't talk. */
   sleepAt: 15,
-  feedPrice: 5,
-  feedHunger: 30,
-  feedEnergy: 10,
   chatEnergy: 4,
   happyMs: 3000,
   chatMax: 30,
@@ -641,37 +628,6 @@ export function simulatePet(pet: DemoPet, now: number): DemoPet {
 export async function tickPet(id?: string): Promise<DemoPet | null> {
   const current = await getPet(id);
   return current ? savePet(simulatePet(current, Date.now())) : null;
-}
-
-export type FeedResult = "fed" | "full" | "broke";
-
-/** Costs 5 demo $NEARGotchi from the wallet: −30 hunger, +10 energy. Not hungry at all → "full"; can't pay → "broke". */
-export async function feedPet(id?: string): Promise<{ pet: DemoPet; result: FeedResult }> {
-  const current = await getPet(id);
-  if (!current) throw new Error("no pet");
-  const pet = simulatePet(current, Date.now());
-  const R = PET_RULES;
-  if (levelOf(pet.hunger) <= 0) return { pet: savePet(pet), result: "full" };
-  try {
-    await spend(R.feedPrice);
-  } catch (error) {
-    if (error instanceof WalletError && error.code === "broke") return { pet: savePet(pet), result: "broke" };
-    throw error;
-  }
-  const fed = {
-    ...pet,
-    hunger: clampLevel(pet.hunger - R.feedHunger),
-    energy: clampLevel(pet.energy + R.feedEnergy),
-    stats: { ...pet.stats, snacks: pet.stats.snacks + 1 },
-  };
-  return { pet: savePet({ ...fed, mood: baseMood(fed) }), result: "fed" };
-}
-
-/** Demo only: the wallet back to 100 when a snack can't be paid; otherwise unchanged. */
-export async function refillBalance(): Promise<DemoAccount> {
-  const account = await getAccount();
-  if (!account) throw new WalletError("not_connected");
-  return account.balance < PET_RULES.feedPrice ? refill() : account;
 }
 
 // ---------- Chat (deterministic local replies; "demo · near ai soon") ----------

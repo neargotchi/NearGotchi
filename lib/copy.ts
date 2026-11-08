@@ -260,13 +260,35 @@ export const petPage = {
   },
   meters: { hunger: "hunger", energy: "energy", valueText: "{n} of 100" },
   balance: "{n} demo $NEARGotchi",
-  feed: { label: "feed", tag: "5 demo" },
-  feedResult: {
-    fed: "nom. −5 demo $NEARGotchi.",
-    full: "{name} is full. no snack needed.",
-    broke: "out of demo $NEARGotchi.",
+  /** Feed tab = snack shop (app/pet/tab-feed.tsx, lib/shop.ts). Demo $NEARGotchi only. */
+  shop: {
+    title: "snack shop",
+    note: "demo $NEARGotchi · nothing real is spent",
+    refill: "refill demo balance",
+    refillDone: "refilled to 100 demo $NEARGotchi. still not real.",
+    refillFull: "balance is already 100.",
+    cost: "{n} demo",
+    hunger: "−{n} hunger",
+    energy: "+{n} energy",
+    happy: "happy for 1 min",
+    stock: "{n} of {max} left",
+    unlimited: "always in stock",
+    restock: "+1 in {time}",
+    buy: "buy & feed",
+    reason: {
+      out_of_stock: "sold out · back in {time}",
+      broke: "not enough demo $NEARGotchi",
+      full: "{name} is full and rested",
+    },
+    result: {
+      fed: "nom. {snack} for {n} demo $NEARGotchi.",
+      asleep: "{name} woke up for the {snack}.",
+      asleepStill: "{name} ate the {snack} in its sleep. still sleepy.",
+      full: "{name} is full and rested. kept your {snack}.",
+      broke: "not enough demo $NEARGotchi for the {snack}.",
+      out_of_stock: "{snack} is sold out. back in {time}.",
+    },
   },
-  refill: { label: "refill demo balance", done: "refilled to 100 demo $NEARGotchi. still not real." },
   /** Drop-1 token card (app/pet/token-card.tsx). Rarity only, never value. */
   token: {
     title: "{token}",
@@ -293,6 +315,9 @@ export const petPage = {
     you: "you",
   },
 };
+
+/** Shop snacks (lib/shop.ts ids). */
+export const snackLabels = { cookie: "bone cookie", berries: "berries", noodles: "noodles", candy: "star candy" } as const;
 
 /** Character on the stats tab: 3 traits per pet (docs/DEVLOG.md §2, approved by the owner 2026-11-08). */
 export const petTraits: Record<string, [string, string, string]> = {

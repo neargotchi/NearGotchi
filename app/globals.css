@@ -1770,8 +1770,59 @@ main > section[class] { background: transparent; }
 .pet-feed-tab { display: grid; gap: round(calc(28px * var(--ui-scale)), 1px); }
 .pet-stats-tab .token-card { margin-bottom: 0; }
 .pet-stats-tab .pet-reset { margin-top: 0; }
-.pet-feed-tab .pet-actions { margin-top: 0; }
-.pet-feed-tab .pet-result { margin-top: round(calc(-12px * var(--ui-scale)), 1px); }
+.pet-feed-tab .pet-result { min-height: round(calc(26px * var(--ui-scale)), 1px); margin: round(calc(-14px * var(--ui-scale)), 1px) 0; }
+
+/* Snack shop (feed tab): the page's card language — 2px ink/cream frames, hard pixel shadows, LCD
+   wells for the sprites, pixel-font labels, the shared .button hover/press. Unavailable = dashed + reason. */
+.shop-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: round(calc(14px * var(--ui-scale)), 1px) round(calc(24px * var(--ui-scale)), 1px); }
+.shop-note { margin: round(calc(8px * var(--ui-scale)), 1px) 0 0; color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5625rem; line-height: 1.5; }
+.shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: round(calc(24px * var(--ui-scale)), 1px); margin: 0; padding: 0; list-style: none; }
+.snack-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: round(calc(14px * var(--ui-scale)), 1px);
+  min-width: 0;
+  padding: round(calc(18px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  box-shadow: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+.snack-top { display: flex; align-items: center; gap: round(calc(14px * var(--ui-scale)), 1px); min-width: 0; }
+.snack-art {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: round(calc(76px * var(--ui-scale)), 1px);
+  height: round(calc(76px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  background: var(--lcd);
+  box-shadow: inset round(calc(-3px * var(--ui-scale)), 1px) round(calc(-3px * var(--ui-scale)), 1px) 0 var(--lcd-shadow);
+}
+.snack-svg { display: block; width: round(calc(48px * var(--ui-scale)), 1px); height: auto; }
+.snack-title { min-width: 0; }
+.snack-name { margin: 0; font-family: var(--font-pixel), monospace; font-size: 0.8125rem; font-weight: 400; line-height: 1.4; }
+.snack-cost {
+  display: inline-block;
+  margin: round(calc(8px * var(--ui-scale)), 1px) 0 0;
+  padding: round(calc(4px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px);
+  border: round(calc(1px * var(--ui-scale)), 1px) solid var(--ink);
+  color: var(--ink);
+  background: var(--lcd);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5625rem;
+  line-height: 1;
+}
+.snack-effects { display: flex; flex-wrap: wrap; align-content: start; gap: round(calc(6px * var(--ui-scale)), 1px) round(calc(16px * var(--ui-scale)), 1px); margin: 0; padding: 0; list-style: none; font-size: 1rem; font-weight: 600; line-height: 1.4; }
+.snack-effects .is-happy { display: inline-flex; align-items: center; gap: round(calc(6px * var(--ui-scale)), 1px); }
+.snack-effects .is-happy::before { width: round(calc(8px * var(--ui-scale)), 1px); height: round(calc(8px * var(--ui-scale)), 1px); content: ""; background: var(--pink); box-shadow: 0 0 0 round(calc(1px * var(--ui-scale)), 1px) var(--line); }
+.snack-stock { display: flex; flex-wrap: wrap; justify-content: space-between; gap: round(calc(4px * var(--ui-scale)), 1px) round(calc(12px * var(--ui-scale)), 1px); margin: 0; color: var(--text-muted); font-family: var(--font-pixel), monospace; font-size: 0.5625rem; line-height: 1.5; }
+.snack-buy { width: 100%; }
+/* Always one line tall, so a reason appearing never pushes the grid around. */
+.snack-reason { display: flex; align-items: baseline; gap: round(calc(8px * var(--ui-scale)), 1px); min-height: 1.45em; margin: round(calc(-4px * var(--ui-scale)), 1px) 0 0; font-size: 0.9375rem; font-weight: 600; line-height: 1.45; }
+.snack-reason:not(:empty)::before { flex: none; width: round(calc(8px * var(--ui-scale)), 1px); height: round(calc(8px * var(--ui-scale)), 1px); content: ""; background: var(--pink); }
+.snack-card.is-out .snack-svg { opacity: 0.35; }
+.snack-card .button[aria-disabled="true"],
+.button.shop-refill[aria-disabled="true"] { border-style: dashed; color: var(--text-muted); background: var(--surface); box-shadow: none; cursor: not-allowed; }
 
 .pet-card-block {
   display: grid;
@@ -1880,6 +1931,8 @@ main > section[class] { background: transparent; }
   .pet-tab { min-height: 48px; padding: 0 4px; font-size: 0.5625rem; }
   .pet-stats-tab,
   .pet-feed-tab { gap: 20px; }
+  .shop-refill { width: 100%; min-height: 56px; }
+  .snack-card { padding: 14px; gap: 12px; }
   .pet-card-block { padding: 16px; }
   .pet-character-about { font-size: 1rem; }
   .pet-rename-row { flex-direction: column; gap: 12px; }
@@ -2135,6 +2188,10 @@ main > section[class] { background: transparent; }
 .pet-chat-form .mint-input { width: auto; flex: 1 1 auto; min-width: 0; }
 
 /* Narrow desktop: the side column can't fit 256px art + text side by side. */
+@media (max-width: 599px) {
+  .shop-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+}
+
 @media (min-width: 1024px) and (max-width: 1199px) {
   .token-card { grid-template-columns: minmax(0, 1fr); }
   .token-card .token-art { max-width: round(calc(320px * var(--ui-scale)), 1px); }
@@ -2195,6 +2252,8 @@ main > section[class] { background: transparent; }
 
 .pet-snack { position: absolute; top: round(calc(-8px * var(--ui-scale)), 1px); left: round(calc(-16px * var(--ui-scale)), 1px); width: round(calc(32px * var(--ui-scale)), 1px); height: round(calc(16px * var(--ui-scale)), 1px); }
 .pet-snack-svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
+/* The bone is 16×8 cells; the other snacks are 16×12. */
+.pet-snack:not(.is-cookie) { top: round(calc(-12px * var(--ui-scale)), 1px); height: round(calc(24px * var(--ui-scale)), 1px); }
 
 .pet-crumbs { position: absolute; top: round(calc(10px * var(--ui-scale)), 1px); left: 0; }
 

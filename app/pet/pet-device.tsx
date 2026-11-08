@@ -6,10 +6,11 @@ import type { CSSProperties } from "react";
 import Sparkles from "../../components/Sparkles";
 import { fill, petPage } from "../../lib/copy";
 import { moods, petSpriteSrc, type Mood, type PetProfile } from "../../lib/mocks";
-import FeedSnack from "./feed-snack";
+import type { SnackId } from "../../lib/shop";
+import SnackSprite from "./snack-sprites";
 
 /** One feed animation run; a new `run` remounts the layer so a click mid-animation restarts it. */
-export type FeedAnim = { run: number; kind: "fed" | "full" };
+export type FeedAnim = { run: number; kind: "fed" | "full"; snack: SnackId };
 
 type PetDeviceProps = {
   profile: PetProfile;
@@ -58,8 +59,8 @@ export default function PetDevice({ profile, name, mood, hop, burst, feed, onTap
               /* keys are prefixed: the feed layer and the burst are siblings, so equal counters must not collide */
               <span key={`feed-${feed.run}`} className={`pet-feed is-${feed.kind}`} aria-hidden="true">
                 <span className="pet-mouth">
-                <span className="pet-snack">
-                  <FeedSnack />
+                <span className={`pet-snack is-${feed.snack}`}>
+                  <SnackSprite id={feed.snack} className="pet-snack-svg" />
                 </span>
                 {feed.kind === "fed" ? (
                   <>

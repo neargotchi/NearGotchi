@@ -283,7 +283,7 @@ await test("v4: a bad pet or a duplicate is dropped alone; a bad shape resets th
   }
 });
 
-await test("mintPet saves the drawn token; rename; update keeps it; feed pays from the wallet; release keeps it minted", async () => {
+await test("mintPet saves the drawn token; rename; update keeps it; release keeps it minted", async () => {
   await wallet.connect();
   const drawn = await drop.hatchRandom();
   const pet = await mocks.mintPet({ token: drawn });
@@ -297,13 +297,6 @@ await test("mintPet saves the drawn token; rename; update keeps it; feed pays fr
   assert.equal((await mocks.renamePet("")).name, pet.name, "empty → the pet's own name");
   const fed = await mocks.updatePet({ hunger: 50 });
   assert.deepEqual(fed.token, pet.token);
-  const meal = await mocks.feedPet();
-  assert.equal(meal.result, "fed");
-  assert.equal(meal.pet.stats.snacks, 1);
-  assert.equal(account().balance, 95);
-  await wallet.spend(95);
-  assert.equal((await mocks.feedPet()).result, "broke");
-  assert.equal((await mocks.refillBalance()).balance, 100);
   await mocks.releasePet();
   assert.equal(await mocks.getPet(), null);
   assert.deepEqual(minted(), [drawn.tokenId]);
@@ -318,6 +311,91 @@ await test("hunger tempo: 20 → 70 (hungry) in 10 min, energy unchanged", async
   assert.equal(later.hunger, 70);
   assert.equal(later.energy, 50);
   assert.equal(later.mood, "hungry");
+});
+
+console.log("shop");
+const shop = await import("../lib/shop.ts");
+const SKEY = shop.SHOP_STORAGE_KEY;
+const shopPet = async (patch = {}) => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  return mocks.updatePet({ hunger: 60, energy: 60, ...patch }, pet.id);
+};
+const stockOf = async (id) => (await shop.getShop()).find((item) => item.snack.id === id);
+
+await test("shop: §1 table, full stock at first, nothing without a wallet", async () => {
+  assert.deepEqual(shop.snacks.map((s) => [s.id, s.price, s.hunger, s.energy, s.max]), [
+    ["cookie", 2, 10, 0, null], ["berries", 5, 25, 5, 3], ["noodles", 10, 50, 10, 2], ["candy", 20, 20, 40, 1],
+  ]);
+  assert.deepEqual(await shop.getShop(), []);
+  await wallet.connect();
+  assert.deepEqual((await shop.getShop()).map((i) => [i.snack.id, i.stock, i.nextAt]), [
+    ["cookie", null, null], ["berries", 3, null], ["noodles", 2, null], ["candy", 1, null],
+  ]);
+});
+
+await test("shop: buy & feed pays, feeds, counts, takes stock; cookie never runs out", async () => {
+  const pet = await shopPet();
+  const { pet: fed, result } = await shop.buySnack(pet.id, "berries");
+  assert.equal(result, "fed");
+  assert.equal(fed.hunger, 35);
+  assert.equal(fed.energy, 65);
+  assert.equal(fed.stats.snacks, 1);
+  assert.equal(account().balance, 95);
+  const berries = await stockOf("berries");
+  assert.equal(berries.stock, 2);
+  assert.ok(berries.nextAt > Date.now() && berries.nextAt <= Date.now() + 60000);
+  for (let i = 0; i < 3; i++) assert.equal((await shop.buySnack(pet.id, "cookie")).result, "fed");
+  assert.equal((await stockOf("cookie")).stock, null);
+  assert.equal(account().balance, 89);
+});
+
+await test("shop: out_of_stock costs nothing; restock adds 1 per interval up to max", async () => {
+  const pet = await shopPet();
+  assert.equal((await shop.buySnack(pet.id, "candy")).result, "fed");
+  const before = account().balance;
+  assert.equal((await shop.buySnack(pet.id, "candy")).result, "out_of_stock");
+  assert.equal(account().balance, before);
+  const candy = shop.findSnack("candy");
+  const t0 = 1_000_000;
+  assert.deepEqual(shop.restock(candy, { stock: 0, nextAt: t0 }, t0 - 1), { stock: 0, nextAt: t0 });
+  assert.deepEqual(shop.restock(candy, { stock: 0, nextAt: t0 }, t0), { stock: 1, nextAt: null });
+  const berries = shop.findSnack("berries");
+  assert.deepEqual(shop.restock(berries, { stock: 0, nextAt: t0 }, t0 + 60000 + 5), { stock: 2, nextAt: t0 + 120000 });
+  assert.deepEqual(shop.restock(berries, { stock: 0, nextAt: t0 }, t0 + 10 * 60000), { stock: 3, nextAt: null });
+  const s = JSON.parse(store.get(SKEY));
+  s.accounts["you.demo"].candy = { stock: 0, nextAt: Date.now() - 1 };
+  store.set(SKEY, JSON.stringify(s));
+  assert.equal((await stockOf("candy")).stock, 1, "restocked on read");
+});
+
+await test("shop: broke and full cost nothing; star candy makes happy; corrupt store = full stock", async () => {
+  const pet = await shopPet();
+  await wallet.spend(99);
+  assert.equal((await shop.buySnack(pet.id, "berries")).result, "broke");
+  assert.equal((await stockOf("berries")).stock, 3, "no stock taken");
+  await wallet.refill();
+  await mocks.updatePet({ hunger: 0, energy: 100 }, pet.id);
+  assert.equal((await shop.buySnack(pet.id, "noodles")).result, "full");
+  assert.equal(account().balance, 100);
+  await mocks.updatePet({ hunger: 0, energy: 50 }, pet.id);
+  const candy = await shop.buySnack(pet.id, "candy");
+  assert.equal(candy.result, "fed", "energy still helps when not hungry");
+  assert.ok(Date.parse(candy.pet.happyUntil) > Date.now() + 50000);
+  store.set(SKEY, "nope");
+  assert.equal((await stockOf("candy")).stock, 1);
+});
+
+await test("shop: a sleeping pet eats and can wake up (asleep)", async () => {
+  const pet = await shopPet({ energy: 10, hunger: 80 });
+  assert.equal(mocks.baseMood(pet), "sleep");
+  const cookie = await shop.buySnack(pet.id, "cookie");
+  assert.equal(cookie.result, "asleep");
+  assert.equal(mocks.baseMood(cookie.pet), "sleep", "a cookie has no energy");
+  const candy = await shop.buySnack(pet.id, "candy");
+  assert.equal(candy.result, "asleep");
+  assert.notEqual(mocks.baseMood(candy.pet), "sleep", "+40 energy wakes it");
+  await assert.rejects(shop.buySnack("nobody", "cookie"), (e) => e.code === "no_pet");
 });
 
 console.log("share + progress");
@@ -368,6 +446,8 @@ await test("rarity only: no value / price / growth words in the drop-1, /mint an
   walk(copy.petPage.hatchAnother, "petPage.hatchAnother");
   for (const key of ["switcher", "tabs", "stats", "release", "games"]) walk(copy.petPage[key], `petPage.${key}`);
   walk(copy.petTraits, "petTraits");
+  walk(copy.petPage.shop, "petPage.shop");
+  walk(copy.snackLabels, "snackLabels");
   assert.ok(strings.length > 30);
   const hits = strings.filter(([, text]) => banned.test(text));
   assert.deepEqual(hits, []);

@@ -7,13 +7,11 @@ import DropProgress from "../../components/DropProgress";
 import { fill, mintPage, petPage } from "../../lib/copy";
 import {
   PET_RULES,
-  feedPet,
   findPet,
   getPet,
   getPets,
   isPersistent,
   moodOf,
-  refillBalance,
   setActivePet,
   simulatePet,
   subscribePets,
@@ -26,7 +24,8 @@ import PetChat from "./pet-chat";
 import PetDevice, { type FeedAnim } from "./pet-device";
 import PetSwitcher from "./pet-switcher";
 import PetTabs, { isPetTab, type PetTab } from "./pet-tabs";
-import StatBars from "./stat-bars";
+import type { BuyResult, Snack } from "../../lib/shop";
+import TabFeed from "./tab-feed";
 import TabStats from "./tab-stats";
 
 const SAVE_EVERY_MS = 15000;
@@ -53,10 +52,7 @@ export default function PetView() {
   const [burst, setBurst] = useState(0);
   const [feedAnim, setFeedAnim] = useState<FeedAnim | null>(null);
   const feedTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const [result, setResult] = useState<string | null>(null);
-  const [broke, setBroke] = useState(false);
   const [persistent, setPersistent] = useState(true);
-  const refillRef = useRef<HTMLButtonElement>(null);
   const emptyRef = useRef<HTMLHeadingElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   /** After connecting from the gate or releasing a pet: focus the h1 that replaces it. */
@@ -114,10 +110,6 @@ export default function PetView() {
   }, [ready, pet, tab]);
 
   useEffect(() => {
-    if (broke) refillRef.current?.focus();
-  }, [broke]);
-
-  useEffect(() => {
     if (!focusTitle.current || !ready || !account) return;
     (pet ? titleRef : emptyRef).current?.focus();
     focusTitle.current = false;
@@ -157,7 +149,9 @@ export default function PetView() {
 
   const profile = findPet(pet.petId)!;
   const shown = simulatePet(pet, Math.max(now, Date.parse(pet.lastUpdated)));
-  const mood = moodOf(shown, now, happyUntil);
+  // Happy: the UI timer (tap, chat) or a stored one (star candy, games), whichever lasts longer.
+  const storedHappy = pet.happyUntil ? Date.parse(pet.happyUntil) : 0;
+  const mood = moodOf(shown, now, Math.max(happyUntil, storedHappy));
   const hatched = new Date(pet.mintedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }).toLowerCase();
 
   const makeHappy = () => {
@@ -172,36 +166,26 @@ export default function PetView() {
     feedTimers.current = [];
     setFeedAnim(null);
     setHappyUntil(0);
-    setResult(null);
-    setBroke(false);
     setPet(await tickPet());
   };
 
-  /** Snack drop → chomp + bites + crumbs → "+nom" + burst (~1.4s); "full": drop + turn away. */
-  const feed = async () => {
-    const { pet: next, result: outcome } = await feedPet(pet.id);
+  /** Bought snack drop → chomp + bites + crumbs → "+nom" + burst (~1.4s); "full": drop + turn away. */
+  const onBought = (next: DemoPet, outcome: BuyResult, snack: Snack) => {
     setPet(next);
-    setBroke(outcome === "broke");
-    setResult(fill(petPage.feedResult[outcome], { name: pet.name }));
-    // A click mid-animation restarts it: old timers cleared, the layer remounts with a new run.
+    // A purchase mid-animation restarts it: old timers cleared, the layer remounts with a new run.
     feedTimers.current.forEach(clearTimeout);
     feedTimers.current = [];
-    if (outcome === "broke") {
+    if (outcome === "broke" || outcome === "out_of_stock") {
       setFeedAnim(null);
       return;
     }
-    setFeedAnim((current) => ({ run: (current?.run ?? 0) + 1, kind: outcome }));
-    if (outcome === "fed") {
+    const kind = outcome === "full" ? "full" : "fed";
+    setFeedAnim((current) => ({ run: (current?.run ?? 0) + 1, kind, snack: snack.id }));
+    if (kind === "fed") {
       makeHappy();
       feedTimers.current.push(setTimeout(() => setBurst((value) => value + 1), 1000));
     }
     feedTimers.current.push(setTimeout(() => setFeedAnim(null), 1500));
-  };
-
-  const refill = async () => {
-    await refillBalance();
-    setBroke(false);
-    setResult(petPage.refill.done);
   };
 
   const tap = () => {
@@ -268,25 +252,7 @@ export default function PetView() {
                   <p className="mint-card-text">{fill(petPage.games.body, { name: pet.name })}</p>
                 </section>
               ),
-              feed: (
-                <div className="pet-feed-tab">
-                  <StatBars hunger={shown.hunger} energy={shown.energy} balance={account.balance} />
-                  <div className="pet-actions">
-                    <button type="button" className="button button-primary" onClick={feed}>
-                      {petPage.feed.label}
-                      <span className="mint-tag">{petPage.feed.tag}</span>
-                    </button>
-                  </div>
-                  <div className="pet-result" role="status">
-                    {result ? <p>{result}</p> : null}
-                  </div>
-                  {broke ? (
-                    <button ref={refillRef} type="button" className="button button-secondary pet-refill" onClick={refill}>
-                      {petPage.refill.label}
-                    </button>
-                  ) : null}
-                </div>
-              ),
+              feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={account.balance} now={now} onBought={onBought} />,
               chat: <PetChat key={pet.id} name={pet.name} onPet={setPet} onReply={makeHappy} />,
             }}
           />
