@@ -1,0 +1,23 @@
+# Drop 1 NFT contract: unit tests + near-workspaces sandbox (needs linux; the sandbox has no Intel macOS binary).
+name: contract-drop1
+on:
+  push:
+    paths: ["contracts/drop1/**", "metadata/drop1/**", ".github/workflows/contract-drop1.yml"]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts/drop1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts/drop1
+      - run: ./build.sh
+      - run: cargo test --lib
+      - run: cargo test --test sandbox -- --nocapture

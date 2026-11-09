@@ -9,3 +9,10 @@ __pycache__/
 docs/NEXT.md
 docs/QUEUE-*.md
 images/
+# Rust contracts: build output; keys never in the repo (they live in ~/.near-credentials)
+contracts/*/target/
+contracts/*/res/
+.near-credentials/
+*.testnet.json
+*.near.json
+.env*.local
