@@ -171,7 +171,7 @@ await test("v1 → v4: lastUpdated now, token of the same pet, minted, owner you
   assert.deepEqual(pets().pets, [pet]);
   assert.ok(!store.has(LEGACY));
   assert.equal(!("balance" in pet) && !("outfit" in pet), true);
-  assert.deepEqual(pet.stats, { games: 0, snacks: 0, messages: 0, best: { snack: 0 } });
+  assert.deepEqual(pet.stats, { games: 0, snacks: 0, messages: 0, best: { snack: 0, fetch: 0 } });
 });
 
 await test("rename: old default names become near dragon / near kat; picked names stay", async () => {
@@ -476,7 +476,7 @@ console.log("games");
 const games = await import("../lib/games.ts");
 await test("games (task 049): canPlay asleep > hungry ≥ 90 > ok; finishGame +10 hunger, happy 60 s, games++, best", async () => {
   assert.deepEqual(games.GAME_RULES, { hungerCost: 10, blockedAt: 90, happyMs: 60000 });
-  assert.deepEqual([...games.gameIds], ["snack"], "simon is gone");
+  assert.deepEqual([...games.gameIds], ["snack", "fetch"], "simon is gone, fetch is in");
   assert.equal(games.canPlay({ hunger: 20, energy: 80 }), "ok");
   assert.equal(games.canPlay({ hunger: 75, energy: 80 }), "ok", "a merely hungry pet still plays");
   assert.equal(games.canPlay({ hunger: 89.4, energy: 80 }), "ok");
@@ -537,7 +537,61 @@ await test("stats (task 049): a stored pet with the old best.simon stays valid, 
   raw.pets.find((p) => p.id === pet.id).stats = { games: 4, snacks: 1, messages: 2, best: { simon: 7, snack: 3 } };
   store.set(PKEY, JSON.stringify(raw));
   const back = await mocks.getPet(pet.id);
-  assert.deepEqual(back.stats, { games: 4, snacks: 1, messages: 2, best: { snack: 3 } });
+  assert.deepEqual(back.stats, { games: 4, snacks: 1, messages: 2, best: { snack: 3, fetch: 0 } }, "no best.fetch yet → 0");
+});
+
+await test("fetch (task 050): power ping-pong, landing, flag 3 / close 1 / miss 0, ×2 from the 3rd hit in a row", async () => {
+  const f = await import("../lib/fetch-game.ts");
+  const F = f.FETCH;
+  assert.equal(F.throws, 8);
+  assert.equal(F.roundMs, 45000);
+  assert.equal(f.powerAt(0), 0);
+  assert.equal(f.powerAt(F.powerPeriodMs / 2), 1, "top of the swing");
+  assert.equal(f.powerAt(F.powerPeriodMs), 0, "back down");
+  assert.ok(Math.abs(f.powerAt(F.powerPeriodMs / 4) - 0.5) < 1e-9);
+  assert.ok(Math.abs(f.powerAt((F.powerPeriodMs * 3) / 4) - 0.5) < 1e-9);
+  assert.equal(f.landingX(0), F.minLand);
+  assert.equal(f.landingX(1), F.maxLand);
+  assert.equal(f.landingX(7), F.maxLand, "clamped");
+  // every flag position is reachable with some power
+  for (const r of [0, 0.25, 0.5, 0.999]) {
+    const z = f.nextZone(r);
+    assert.ok(z >= F.zoneMin && z <= F.zoneMax && z >= F.minLand && z <= F.maxLand, String(z));
+  }
+  assert.ok(Math.abs(f.nextZone(0.5, f.nextZone(0.5)) - f.nextZone(0.5)) >= 12, "a new flag moves");
+  assert.deepEqual(f.scoreThrow(100, 104, 0), { kind: "hit", points: 3, streak: 1, double: false });
+  assert.deepEqual(f.scoreThrow(100, 112, 1), { kind: "near", points: 1, streak: 0, double: false });
+  assert.deepEqual(f.scoreThrow(60, 100, 2), { kind: "miss", points: 0, streak: 0, double: false });
+  assert.deepEqual(f.scoreThrow(100, 100, 2), { kind: "hit", points: 6, streak: 3, double: true });
+  assert.deepEqual(f.scoreThrow(100, 101, 5), { kind: "hit", points: 6, streak: 6, double: true });
+  // a perfect round: 3 + 3 + 6×6 = 42
+  let streak = 0, total = 0;
+  for (let i = 0; i < F.throws; i++) {
+    const r = f.scoreThrow(80, 80, streak);
+    streak = r.streak;
+    total += r.points;
+  }
+  assert.equal(total, 42);
+  assert.equal(f.isTired(0, 30000), false);
+  assert.equal(f.isTired(6, 30000), true, "7th throw");
+  assert.equal(f.isTired(2, 9000), true, "last 10 s");
+  assert.ok(f.runSpeed(6, 30000) < f.runSpeed(0, 30000));
+  const top = f.arcPoint(12, 150, 0.5), end = f.arcPoint(12, 150, 1), startP = f.arcPoint(12, 150, 0);
+  assert.equal(startP.y, f.HAND_Y);
+  assert.equal(end.y, f.BALL_GROUND_Y);
+  assert.equal(end.x, 150);
+  assert.ok(top.y < startP.y && top.y >= 0, "arcs up and stays on the LCD");
+});
+
+await test("fetch (task 050): finishGame('fetch') +10 hunger, best.fetch; same block as catch", async () => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
+  const a = await games.finishGame(pet.id, "fetch", 17);
+  assert.ok(Math.abs(a.pet.hunger - 30) < 0.1, String(a.pet.hunger));
+  assert.deepEqual(a.pet.stats.best, { snack: 0, fetch: 17 });
+  assert.equal(a.newBest, true);
+  assert.equal(games.canPlay({ hunger: 90, energy: 80 }), "hungry");
 });
 
 console.log("share + progress");

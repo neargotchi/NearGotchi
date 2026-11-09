@@ -13,7 +13,7 @@ export const GAME_RULES = {
   happyMs: 60000,
 } as const;
 
-export const gameIds = ["snack"] as const;
+export const gameIds = ["snack", "fetch"] as const;
 export type GameId = (typeof gameIds)[number];
 
 export type PlayCheck = "ok" | "hungry" | "asleep";

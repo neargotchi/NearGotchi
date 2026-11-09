@@ -131,6 +131,10 @@ export default function TabStats({ pet, shown, balance, now, onReleased }: TabSt
             <dt>{petPage.stats.snack}</dt>
             <dd>{best(pet.stats.best.snack)}</dd>
           </div>
+          <div>
+            <dt>{petPage.stats.fetch}</dt>
+            <dd>{best(pet.stats.best.fetch)}</dd>
+          </div>
         </dl>
       </section>
 

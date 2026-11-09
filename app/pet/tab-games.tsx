@@ -6,6 +6,7 @@ import { fill, petPage } from "../../lib/copy";
 import { canPlay, finishGame, type GameId } from "../../lib/games";
 import { findPet, petSpriteSrc, type DemoPet } from "../../lib/mocks";
 import CatchSnack from "./games/catch-snack";
+import FetchGame from "./games/fetch-game";
 import type { PetTab } from "./pet-tabs";
 
 type TabGamesProps = {
@@ -20,8 +21,8 @@ type TabGamesProps = {
 };
 
 /**
- * Games tab (docs/DEVLOG.md §2, task 049): catch the snack, then two "soon" cards (fetch,
- * hide & seek). The card has its rules and best score. A starving or sleeping pet can't start a game: the
+ * Games tab (docs/DEVLOG.md §2, tasks 049–050): catch the snack, fetch, then a "soon" card
+ * (hide & seek). Each card has its rules and best score. A starving or sleeping pet can't start a game: the
  * reason and "feed it first" (→ feed tab) replace "play". The cost (+10 hunger) is charged when a game ends.
  */
 export default function TabGames({ pet, shown, active, onTab, onFinished }: TabGamesProps) {
@@ -74,6 +75,39 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
           <p className="game-rules">{fill(petPage.games.snack.rules, { name: pet.name })}</p>
           <p className="games-cost">{petPage.games.cost}</p>
         </CatchSnack>
+      </section>
+
+      <section className="pet-card-block game-card" aria-labelledby="game-fetch-title">
+        <div className="game-head">
+          <h2 id="game-fetch-title" className="mint-subtitle">
+            {petPage.games.fetch.title}
+          </h2>
+          <p className="game-best">
+            {petPage.games.best} <strong>{best(pet.stats.best.fetch)}</strong>
+          </p>
+        </div>
+        <FetchGame
+          canStart={check === "ok"}
+          blockedReason={blocked}
+          active={active}
+          petName={pet.name}
+          sprites={{
+            normal: petSpriteSrc(profile, "normal"),
+            happy: petSpriteSrc(profile, "happy"),
+            sad: petSpriteSrc(profile, "hungry"),
+            width: profile.spriteWidth,
+            height: profile.spriteHeight,
+          }}
+          onStart={() => setMessage(null)}
+          onEnd={(score) => {
+            end("fetch", score);
+          }}
+          onStop={() => setMessage(petPage.games.stopped)}
+          onFeed={() => onTab("feed")}
+        >
+          <p className="game-rules">{petPage.games.fetch.rules}</p>
+          <p className="games-cost">{petPage.games.cost}</p>
+        </FetchGame>
       </section>
 
       <ul className="game-soon-list">

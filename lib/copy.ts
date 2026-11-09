@@ -31,7 +31,7 @@ export const howItWorks = {
     {
       number: 3,
       title: "play",
-      body: "catch the snack now, fetch and hide & seek soon. a game makes it happy, and a bit hungry.",
+      body: "catch the snack and fetch now, hide & seek soon. a game makes it happy, and a bit hungry.",
       sprite: { src: "/pets/pet2/happy.png", width: 489, height: 431, alt: "" },
     },
     {
@@ -49,7 +49,7 @@ export const yourGotchi = {
   sub: "every gotchi comes with a little menu. this is it.",
   tiles: {
     stats: { title: "stats", body: "its nft card, character, age and how it's doing." },
-    games: { title: "games", body: "catch the snack on a tiny lcd. fetch and hide & seek come next. games make it happy." },
+    games: { title: "games", body: "catch the snack and fetch on a tiny lcd. hide & seek comes next. games make it happy." },
     feed: { title: "feed", body: "a snack shop. each snack fills a different bar and restocks on its own time." },
     chat: { title: "chat", body: "talk to it. every pet has its own voice. each message costs a bit of energy and food." },
   },
@@ -285,6 +285,7 @@ export const petPage = {
     messages: "messages sent",
     best: "best scores",
     snack: "catch the snack",
+    fetch: "fetch",
     noScore: "—",
     renameLabel: "rename",
     renameSave: "save name",
@@ -312,10 +313,35 @@ export const petPage = {
     },
     feedFirst: "feed it first",
     /** Cards under catch the snack (games in tasks 050–051). */
-    upcoming: [
-      { title: "fetch", rules: "hold to wind up, let go to throw. {name} runs across the screen and brings the ball back." },
-      { title: "hide & seek", rules: "{name} hides behind a bush, a box or a tree. the spots shuffle. find it." },
-    ],
+    upcoming: [{ title: "hide & seek", rules: "{name} hides behind a bush, a box or a tree. the spots shuffle. find it." }],
+    /** Fetch (app/pet/games/fetch-game.tsx, lib/fetch-game.ts). */
+    fetch: {
+      title: "fetch",
+      rules:
+        "hold space, the screen or the throw button: the power bar swings up and down. let go to throw. on the flag = 3, close = 1. three hits in a row count double. 8 throws or 45 seconds, p pauses.",
+      ready: "press play",
+      hold: "hold to throw",
+      throwNo: "ball {n}/8",
+      time: "{t}",
+      score: "score {n}",
+      streak: "×2",
+      pad: "throw",
+      hit: "+{n}!",
+      near: "close +1",
+      miss: "miss",
+      over: "all done",
+      live: {
+        start: "go! 8 throws, 45 seconds. hold space to wind up, let go to throw.",
+        hit: "on the flag! +{n}. score {score}.",
+        double: "three in a row: double. +{n}. score {score}.",
+        near: "close. +1. score {score}.",
+        miss: "missed the flag. {name} brings it back anyway, a bit sad. score {score}.",
+        tired: "{name} is getting tired.",
+        paused: "paused.",
+        resumed: "go!",
+        over: "all done. score {n}.",
+      },
+    },
     finished: "+10 hunger · {name} is happy. score {score}.",
     newBest: "new best!",
     stopped: "stopped. no cost.",
