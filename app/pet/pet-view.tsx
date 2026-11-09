@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import DropProgress from "../../components/DropProgress";
 import { fill, mintPage, petPage } from "../../lib/copy";
 import {
   PET_RULES,
@@ -143,7 +142,6 @@ export default function PetView() {
             {petPage.emptyLink}
           </Link>
         </div>
-        <DropProgress className="pet-progress" />
       </div>
     );
   }
@@ -197,8 +195,9 @@ export default function PetView() {
 
   return (
     <div className="pet-page">
-      {/* Task 049: one compact block right under the site header — name + drop bar, then the switcher,
-          "hatch another" and the demo note — so the device, the tabs and a whole game fit one screen. */}
+      {/* Tasks 049 / 053: one compact block right under the site header — name + demo note, then the
+          switcher and "hatch another" — so the device, the tabs and a whole game fit one screen. The drop
+          bar lives on the landing and /mint only (owner, task 053). */}
       <header className="pet-head">
         <div className="pet-head-title">
           <h1 id="pet-title" ref={titleRef} className="mint-title" tabIndex={-1}>
@@ -206,7 +205,7 @@ export default function PetView() {
           </h1>
           <p className="mint-sub">{fill(petPage.sub, { species: pet.species, date: hatched })}</p>
         </div>
-        <DropProgress className="pet-progress" />
+        <p className="mint-demo">{mintPage.demo}</p>
       </header>
 
       <div className="pet-hatch-row">
@@ -214,7 +213,6 @@ export default function PetView() {
         <Link className="button button-secondary pet-hatch-another" href="/mint">
           {petPage.hatchAnother}
         </Link>
-        <p className="mint-demo">{mintPage.demo}</p>
       </div>
 
       <div className="pet-layout">

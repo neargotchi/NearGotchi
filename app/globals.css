@@ -2012,7 +2012,6 @@ main > section[class] { background: transparent; }
   font-size: 0.625rem;
   line-height: 1;
 }
-.pet-stub .pet-progress { margin-top: round(calc(32px * var(--ui-scale)), 1px); }
 
 .mint-reveal {
   display: grid;
@@ -3007,10 +3006,9 @@ main > section[class] { background: transparent; }
 .pet-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: round(calc(12px * var(--ui-scale)), 1px) round(calc(32px * var(--ui-scale)), 1px); }
 .pet-head-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: round(calc(4px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); min-width: 0; }
 .pet-head .mint-sub { margin: 0; font-size: 1.0625rem; }
-.pet-head .drop-progress { width: round(calc(400px * var(--ui-scale)), 1px); max-width: 100%; }
+.pet-head .mint-demo { grid-row: auto; grid-column: auto; }
 .pet-hatch-row { flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: round(calc(12px * var(--ui-scale)), 1px) round(calc(20px * var(--ui-scale)), 1px); margin: round(calc(14px * var(--ui-scale)), 1px) 0 0; }
 .pet-hatch-row .pet-switcher { flex: 0 1 auto; }
-.pet-hatch-row .mint-demo { margin-left: auto; }
 .pet-thumb { width: round(calc(76px * var(--ui-scale)), 1px); gap: round(calc(4px * var(--ui-scale)), 1px); padding: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px); }
 .pet-thumb-art { width: round(calc(52px * var(--ui-scale)), 1px); height: round(calc(52px * var(--ui-scale)), 1px); }
 
@@ -3064,10 +3062,9 @@ main > section[class] { background: transparent; }
   .pet-head { display: grid; gap: 16px; }
   .pet-head-title { display: block; }
   .pet-head .mint-sub { margin-top: 10px; }
-  .pet-head .drop-progress { width: 100%; }
   .pet-hatch-row { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 14px; margin: 20px 0 0; }
   .pet-hatch-another { width: 100%; min-height: 56px; }
-  .pet-hatch-row .mint-demo { align-self: flex-start; margin: 0; white-space: normal; }
+  .pet-head .mint-demo { justify-self: start; margin: 0; white-space: normal; }
   .game-soon-list { grid-template-columns: minmax(0, 1fr); }
 }
 
