@@ -132,3 +132,11 @@ Replaces the accessory, anchor and stacking rules above (§1 accessories, §2 en
   → contact_sheet.py             (docs/drop1-preview.png)
   ```
 - **Removed:** `data/anchors.json`, `scripts/anchor-tuner.html`, `scripts/check_anchors.py` and the anchor code in `drop1_lib.py` (in git at 59baf28). `docs/anchors-check.png` is kept as history.
+
+## Update: render v2 prototype (task 054) — not applied to the collection yet
+`python3 scripts/compose_drop1.py --proto [--grid 128|256] [--only ids]` → `docs/review/proto/{id}.png` + `docs/review/before-after.png` (before | after, red line = canvas centre). Code: `compose_v2` in `scripts/drop1_lib.py`; the shipped `compose` (and so images/drop1, public/drop1, metadata, hashes) is unchanged.
+- **Enclaves:** `ENCLAVES = {"halo": …}` — neutral white (min channel ≥ 236, chroma ≤ 4) areas ≥ 300 px in the top 20% of the sprite become transparent, plus a 2 px pale rim. Over all 39 dressed poses this hits only the 3 halo rings (676 / 941 / 998 px). Eye shines (pure white, ~270 px), the nerd glasses bridge, the pixel-glasses squares and batman's white fur (chroma 8–12) are untouched by design.
+- **Grid 128×128, ×8:** sprites are AI "pixel art" with ~10.5 px pixels, backgrounds 8–16 px. Every 8×8 cell takes its most frequent colour (4-bit bins, outline darks weighted ×1.25, the bin's mean colour), opaque when ≥ 40% covered; then a light fast-octree palette (48 colours sprite, 48 background). 128 chosen over 256: one uniform pixel size for pet and background (the "pasted / crooked" look goes); 256 keeps the AI's mixed 8/12 px pixels. Cost: smaller eye shines, simpler small highlights.
+- **Centering:** centre of mass of the opaque pixels in the top 75% of the sprite (no tail, no feet) → x 512, snapped to the 8 px grid (near kat no longer sits left of centre). Feet stay on y = 960.
+- **Shadow:** 2-tone pixel ellipse on the baseline row, feet width + 2 cells, background × 0.80 / × 0.64 (invisible on near-black backgrounds like cosmic, by design).
+- **Lean:** face mid-line slope (25–50% of the height) over all 39 poses, max 2.4°; flagged pet3/beanie +2.4°, pet3/keffiyeh +2.1° are asymmetric shapes (hat neck, keffiyeh drape), visually upright — nothing to rotate.
