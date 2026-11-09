@@ -650,6 +650,41 @@ await test("hide & seek (task 051): finishGame('hideseek') +10 hunger, best.hide
   assert.deepEqual(a.pet.stats.best, { snack: 0, fetch: 0, hideseek: 4 });
 });
 
+await test("balance (task 052): hunger 0 → 6+ games; a night alone → hungry, 1 snack at balance 100 unblocks games", async () => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  // six games back to back through the real finishGame, from a full pet
+  await mocks.updatePet({ hunger: 0, energy: 100 }, pet.id);
+  let played = 0;
+  for (const game of ["snack", "fetch", "hideseek", "snack", "fetch", "hideseek", "snack", "fetch"]) {
+    const now = mocks.simulatePet(await mocks.getPet(pet.id), Date.now());
+    if (games.canPlay(now) !== "ok") break;
+    await games.finishGame(pet.id, game, 1);
+    played++;
+  }
+  assert.ok(played >= 6, `played ${played}`);
+  // 12 h alone from a fed, rested pet: awake but starving → games blocked
+  const night = Date.now() - 12 * 3600000;
+  await mocks.updatePet({ hunger: 0, energy: 100, mood: "normal", lastUpdated: new Date(night).toISOString() }, pet.id);
+  const raw = pets();
+  raw.pets.find((p) => p.id === pet.id).lastUpdated = new Date(night).toISOString();
+  store.set(PKEY, JSON.stringify(raw));
+  const morning = mocks.simulatePet(await mocks.getPet(pet.id), Date.now());
+  assert.equal(morning.hunger, 100);
+  assert.notEqual(mocks.baseMood(morning), "sleep", "awake after the night");
+  assert.equal(games.canPlay(morning), "hungry");
+  // one snack is enough: berries (5) → 75, noodles (10) → 50; a cookie alone (−10) is not
+  assert.equal(account().balance, 100);
+  const cookie = await shop.buySnack(pet.id, "cookie");
+  assert.equal(games.canPlay(cookie.pet), "hungry", "a cookie leaves it at 90");
+  const berries = await shop.buySnack(pet.id, "berries");
+  assert.equal(berries.result, "fed");
+  assert.equal(games.canPlay(berries.pet), "ok", "cookie + berries unblock games");
+  assert.equal(account().balance, 93, "2 + 5 demo spent");
+  await wallet.refill();
+  assert.equal(account().balance, 100, "refill tops it up again");
+});
+
 console.log("share + progress");
 await test("share on x: intent url, rarity-only text, link to /nft/{id}", async () => {
   const share = await import("../lib/share.ts");
