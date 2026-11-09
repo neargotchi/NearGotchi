@@ -31,7 +31,7 @@ export const howItWorks = {
     {
       number: 3,
       title: "play",
-      body: "catch the snack and fetch now, hide & seek soon. a game makes it happy, and a bit hungry.",
+      body: "catch the snack, fetch, hide & seek. a game makes it happy, and a bit hungry.",
       sprite: { src: "/pets/pet2/happy.png", width: 489, height: 431, alt: "" },
     },
     {
@@ -49,7 +49,7 @@ export const yourGotchi = {
   sub: "every gotchi comes with a little menu. this is it.",
   tiles: {
     stats: { title: "stats", body: "its nft card, character, age and how it's doing." },
-    games: { title: "games", body: "catch the snack and fetch on a tiny lcd. hide & seek comes next. games make it happy." },
+    games: { title: "games", body: "three tiny lcd games: catch the snack, fetch and hide & seek. games make it happy." },
     feed: { title: "feed", body: "a snack shop. each snack fills a different bar and restocks on its own time." },
     chat: { title: "chat", body: "talk to it. every pet has its own voice. each message costs a bit of energy and food." },
   },
@@ -286,6 +286,7 @@ export const petPage = {
     best: "best scores",
     snack: "catch the snack",
     fetch: "fetch",
+    hideseek: "hide & seek",
     noScore: "—",
     renameLabel: "rename",
     renameSave: "save name",
@@ -313,7 +314,32 @@ export const petPage = {
     },
     feedFirst: "feed it first",
     /** Cards under catch the snack (games in tasks 050–051). */
-    upcoming: [{ title: "hide & seek", rules: "{name} hides behind a bush, a box or a tree. the spots shuffle. find it." }],
+    /** Hide & seek (app/pet/games/hide-seek.tsx, lib/hideseek-game.ts). */
+    hideseek: {
+      title: "hide & seek",
+      rules:
+        "{name} ducks behind one spot, then the spots shuffle. keep your eye on it and pick: click or tap, or press 1–5 (arrows + enter work too). one more spot every 2 rounds, a bit faster each round. a wrong pick ends the game. p pauses between rounds.",
+      ready: "press play",
+      round: "round {n}",
+      score: "found {n}",
+      pick: "your pick",
+      spot: "{n}, {kind}",
+      kinds: { bush: "bush", box: "box", tree: "tree", rock: "rock", barrel: "barrel" },
+      yay: "found!",
+      empty: "empty!",
+      over: "game over",
+      pauseNext: "pause after this round",
+      live: {
+        round: "round {n}: {name} hides behind one of {k} spots. watch the shuffle.",
+        pick: "your pick: 1 to {k}.",
+        found: "found {name} behind the {kind}! found {n}.",
+        miss: "the {kind} is empty. {name} was behind the {other} and sticks its tongue out. found {n}.",
+        pauseNext: "pausing after this round.",
+        paused: "paused.",
+        resumed: "go!",
+        over: "game over. found {n}.",
+      },
+    },
     /** Fetch (app/pet/games/fetch-game.tsx, lib/fetch-game.ts). */
     fetch: {
       title: "fetch",

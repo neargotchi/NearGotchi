@@ -171,7 +171,7 @@ await test("v1 → v4: lastUpdated now, token of the same pet, minted, owner you
   assert.deepEqual(pets().pets, [pet]);
   assert.ok(!store.has(LEGACY));
   assert.equal(!("balance" in pet) && !("outfit" in pet), true);
-  assert.deepEqual(pet.stats, { games: 0, snacks: 0, messages: 0, best: { snack: 0, fetch: 0 } });
+  assert.deepEqual(pet.stats, { games: 0, snacks: 0, messages: 0, best: { snack: 0, fetch: 0, hideseek: 0 } });
 });
 
 await test("rename: old default names become near dragon / near kat; picked names stay", async () => {
@@ -476,7 +476,7 @@ console.log("games");
 const games = await import("../lib/games.ts");
 await test("games (task 049): canPlay asleep > hungry ≥ 90 > ok; finishGame +10 hunger, happy 60 s, games++, best", async () => {
   assert.deepEqual(games.GAME_RULES, { hungerCost: 10, blockedAt: 90, happyMs: 60000 });
-  assert.deepEqual([...games.gameIds], ["snack", "fetch"], "simon is gone, fetch is in");
+  assert.deepEqual([...games.gameIds], ["snack", "fetch", "hideseek"], "simon is gone, fetch and hide & seek are in");
   assert.equal(games.canPlay({ hunger: 20, energy: 80 }), "ok");
   assert.equal(games.canPlay({ hunger: 75, energy: 80 }), "ok", "a merely hungry pet still plays");
   assert.equal(games.canPlay({ hunger: 89.4, energy: 80 }), "ok");
@@ -537,7 +537,7 @@ await test("stats (task 049): a stored pet with the old best.simon stays valid, 
   raw.pets.find((p) => p.id === pet.id).stats = { games: 4, snacks: 1, messages: 2, best: { simon: 7, snack: 3 } };
   store.set(PKEY, JSON.stringify(raw));
   const back = await mocks.getPet(pet.id);
-  assert.deepEqual(back.stats, { games: 4, snacks: 1, messages: 2, best: { snack: 3, fetch: 0 } }, "no best.fetch yet → 0");
+  assert.deepEqual(back.stats, { games: 4, snacks: 1, messages: 2, best: { snack: 3, fetch: 0, hideseek: 0 } }, "no best.fetch / best.hideseek yet → 0");
 });
 
 await test("fetch (task 050): power ping-pong, landing, flag 3 / close 1 / miss 0, ×2 from the 3rd hit in a row", async () => {
@@ -589,9 +589,65 @@ await test("fetch (task 050): finishGame('fetch') +10 hunger, best.fetch; same b
   await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
   const a = await games.finishGame(pet.id, "fetch", 17);
   assert.ok(Math.abs(a.pet.hunger - 30) < 0.1, String(a.pet.hunger));
-  assert.deepEqual(a.pet.stats.best, { snack: 0, fetch: 17 });
+  assert.deepEqual(a.pet.stats.best, { snack: 0, fetch: 17, hideseek: 0 });
   assert.equal(a.newBest, true);
   assert.equal(games.canPlay({ hunger: 90, energy: 80 }), "hungry");
+});
+
+await test("hide & seek (task 051): spots 3→5 every 2 rounds, easy start, faster later, the pet follows its spot", async () => {
+  const h = await import("../lib/hideseek-game.ts");
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 9].map(h.spotsFor), [3, 3, 4, 4, 5, 5, 5]);
+  assert.deepEqual([1, 2, 3, 11, 20].map(h.swapsFor), [2, 3, 4, 12, 12]);
+  const ms = [1, 2, 3, 4, 5, 6, 7, 8, 20].map(h.swapMsFor);
+  assert.deepEqual(ms.slice(0, 2), [760, 680], "rounds 1–2 slow");
+  for (let i = 1; i < ms.length; i++) assert.ok(ms[i] <= ms[i - 1], "never slower");
+  assert.equal(ms[ms.length - 1], h.HIDESEEK.minSwapMs);
+  // seeded random → deterministic round
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+  for (let round = 1; round <= 8; round++) {
+    const r = h.makeRound(round, rand);
+    const n = h.spotsFor(round);
+    assert.equal(r.kinds.length, n);
+    assert.equal(r.swaps.length, h.swapsFor(round));
+    for (let k = 0; k < r.swaps.length; k++) {
+      const [a, b] = r.swaps[k];
+      assert.ok(a >= 0 && b < n && a < b, `swap ${a},${b}`);
+      if (k) assert.notDeepEqual(r.swaps[k], r.swaps[k - 1], "no pair twice in a row");
+    }
+    const slots = h.finalSlots(r);
+    assert.deepEqual([...slots].sort(), [...Array(n).keys()], "a permutation");
+    // exactly one slot finds the pet, and it's where the pet's spot ended up
+    const found = [...Array(n).keys()].filter((slot) => h.isFound(r, slot));
+    assert.deepEqual(found, [slots[r.petSpot]]);
+    // the timeline: show → walk → sink → shuffle → pick; at the pick the view matches finalSlots
+    const m = h.marks(r);
+    assert.equal(h.viewAt(r, 0, false).stage, "show");
+    assert.equal(h.viewAt(r, m.walk + 1, false).stage, "walk");
+    assert.equal(h.viewAt(r, m.sink + 1, false).stage, "sink");
+    assert.equal(h.viewAt(r, m.shuffle + 1, false).stage, "shuffle");
+    for (const slow of [false, true]) {
+      const end = h.viewAt(r, m.pick, slow);
+      assert.equal(end.stage, "pick");
+      assert.deepEqual(end.spots.map((s) => s.slot), slots, `slow=${slow}`);
+      assert.equal(end.pet.visible, false, "hidden while you pick");
+      // mid-swap: normal motion glides (a fractional slot appears), reduced motion never does
+      const mid = h.viewAt(r, m.shuffle + r.swapMs * 0.3, slow);
+      const fractional = mid.spots.some((s) => s.slot % 1 !== 0);
+      assert.equal(fractional, !slow);
+      if (slow) assert.ok(h.viewAt(r, m.shuffle + 10, true).spots.some((s) => s.flash), "flash on a swap");
+    }
+  }
+  assert.ok(h.marks(h.makeRound(1, rand)).pick < 5000, "round 1 is short and readable");
+});
+
+await test("hide & seek (task 051): finishGame('hideseek') +10 hunger, best.hideseek", async () => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
+  const a = await games.finishGame(pet.id, "hideseek", 4);
+  assert.ok(Math.abs(a.pet.hunger - 30) < 0.1, String(a.pet.hunger));
+  assert.deepEqual(a.pet.stats.best, { snack: 0, fetch: 0, hideseek: 4 });
 });
 
 console.log("share + progress");

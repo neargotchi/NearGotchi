@@ -97,7 +97,7 @@ export const items: Item[] = [
 export type PetToken = Pick<Drop1Token, "tokenId" | "tier" | "background" | "accessory">;
 
 /** Counters for the stats tab; best scores per game. */
-export type PetStats = { games: number; snacks: number; messages: number; best: { snack: number; fetch: number } };
+export type PetStats = { games: number; snacks: number; messages: number; best: { snack: number; fetch: number; hideseek: number } };
 
 export type DemoPet = {
   /** 4 since demo v2: one of many pets of an account; the balance moved to the wallet. v1–v3 are migrated on read. */
@@ -279,7 +279,7 @@ const currentName = (petId: string, name: string) => {
   return renamed && name === renamed[0] ? renamed[1] : name;
 };
 
-const emptyStats = (): PetStats => ({ games: 0, snacks: 0, messages: 0, best: { snack: 0, fetch: 0 } });
+const emptyStats = (): PetStats => ({ games: 0, snacks: 0, messages: 0, best: { snack: 0, fetch: 0, hideseek: 0 } });
 
 /** v3 → v4: owned by the demo account, one more try for a token if it had none (the balance goes to the wallet in loadStore). */
 function fromLegacy(old: LegacyPet): DemoPet {
@@ -307,11 +307,12 @@ function parseStats(value: unknown): PetStats | null {
   if (!isObject(value) || !isObject(value.best)) return null;
   const { games, snacks, messages } = value;
   // Pets saved before task 049 also carry best.simon (game removed): ignored, the pet stays valid.
-  // best.fetch is new in task 050: missing = 0.
+  // best.fetch (task 050) and best.hideseek (task 051) are newer: missing = 0.
   const { snack } = value.best;
   const fetch = value.best.fetch ?? 0;
-  if (![games, snacks, messages, snack, fetch].every(isCount)) return null;
-  return { games, snacks, messages, best: { snack, fetch } } as PetStats;
+  const hideseek = value.best.hideseek ?? 0;
+  if (![games, snacks, messages, snack, fetch, hideseek].every(isCount)) return null;
+  return { games, snacks, messages, best: { snack, fetch, hideseek } } as PetStats;
 }
 
 /** One v4 pet, rebuilt field by field (unknown fields dropped), or null when anything is off. */

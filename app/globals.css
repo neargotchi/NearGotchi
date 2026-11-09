@@ -3104,3 +3104,80 @@ main > section[class] { background: transparent; }
 }
 @keyframes fetch-pop { from { transform: translate(-50%, -50%) scale(0.6); } to { transform: translate(-50%, -50%); } }
 @keyframes fetch-shake { 0%, 100% { transform: translate(-50%, -50%); } 25% { transform: translate(calc(-50% - 3px), -50%); } 75% { transform: translate(calc(-50% + 3px), -50%); } }
+
+/* ---------- Hide & seek (task 051): DOM spots on the 5:3 LCD of the catch console ---------- */
+.hide-screen { aspect-ratio: 5 / 3; overflow: hidden; }
+.hide-field { position: absolute; inset: 0; isolation: isolate; }
+.hide-ground { position: absolute; right: 0; bottom: 10%; left: 0; height: round(calc(2px * var(--ui-scale)), 1px); background: repeating-linear-gradient(90deg, var(--lcd-shadow) 0 2px, transparent 2px 4px); }
+/* Pet layer: clipped at the ground, so ducking behind a spot sinks it out of sight. */
+.hide-pet-clip { position: absolute; top: 0; right: 0; bottom: 10%; left: 0; overflow: hidden; pointer-events: none; }
+.hide-pet {
+  position: absolute;
+  z-index: 3;
+  bottom: var(--rise, 0%);
+  height: var(--pet-h);
+  aspect-ratio: 489 / 431;
+  transform: translate(-50%, calc(var(--sink, 0) * 100% - var(--hop, 0) * 8%));
+}
+.hide-pet.is-behind { z-index: 1; }
+.hide-pet img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+/* Tongue: a pink pixel block under the mouth (sprites look left). */
+.hide-tongue {
+  position: absolute;
+  top: calc(var(--mouth-y) * 100% + 4%);
+  left: calc(var(--mouth-x) * 100% - 6%);
+  width: 10%;
+  height: 14%;
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--ink);
+  border-top: 0;
+  background: #ff6b9d;
+}
+.hide-spot {
+  position: absolute;
+  z-index: 2;
+  bottom: 10%;
+  width: var(--spot-w);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: translate(-50%, calc(var(--lift, 0) * -55%));
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.hide-spot[aria-disabled="true"] { cursor: default; }
+.hide-spot-art { display: block; width: 100%; height: 100%; }
+.hide-spot:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(2px * var(--ui-scale)), 1px); }
+@media (hover: hover) {
+  .hide-spot:not([aria-disabled="true"]):hover { outline: round(calc(2px * var(--ui-scale)), 1px) dashed var(--ink); outline-offset: round(calc(2px * var(--ui-scale)), 1px); }
+}
+/* Reduced motion: the two swapped spots flash their frame instead of gliding. */
+.hide-spot.is-flash { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--ink); outline-offset: round(calc(1px * var(--ui-scale)), 1px); }
+.hide-spot.is-empty::after {
+  content: "";
+  position: absolute;
+  right: 20%;
+  bottom: -2%;
+  left: 20%;
+  height: round(calc(2px * var(--ui-scale)), 1px);
+  background: var(--ink);
+}
+/* Number keys under the spots while you pick. */
+.hide-spot-key {
+  position: absolute;
+  top: calc(100% + round(calc(3px * var(--ui-scale)), 1px));
+  left: 50%;
+  color: var(--ink);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  line-height: 1;
+  transform: translateX(-50%);
+}
+.hide-banner { top: 24%; }
+.hide-banner.is-yay { color: var(--lcd); background: var(--ink); }
+.hide-banner.is-empty { border-style: dashed; }
+@media (prefers-reduced-motion: no-preference) {
+  .hide-banner.is-yay,
+  .hide-banner.is-empty { animation: fetch-pop 0.24s steps(3, end); }
+}
