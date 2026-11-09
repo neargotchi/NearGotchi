@@ -52,7 +52,7 @@ PROTO_IDS = [3, 8, 21, 39, 56, 2, 11, 12, 15, 41, 18, 36]
 
 
 def proto(args):
-    """Task 054 prototype of render v2: docs/review/proto/{id}.png + docs/review/before-after.png.
+    """Render v1 vs v2 for some tokens (tasks 054–055): docs/review/proto/{id}.png + docs/review/before-after.png.
     Never touches images/drop1, public/drop1, metadata or hashes."""
     from PIL import ImageDraw
     grid = int(args[args.index("--grid") + 1]) if "--grid" in args else L.GRID
@@ -64,7 +64,7 @@ def proto(args):
         t = by_id[tid]
         after, info = L.compose_v2(t["petId"], t["accessory"], t["background"], grid=grid)
         after.save(os.path.join(PROTO_DIR, f"{tid}.png"), optimize=True)
-        before = L.compose_token(t)
+        before = L.compose(t["petId"], t["accessory"], t["background"])   # render v1
         rows.append((tid, t, before, after, info))
         print(f"  #{tid} {t['petId']}/{t['accessory']} on {t['background']}: body centre x {info['center_x']}, enclave px {info['removed']}")
     # before | after, 384 px each (nearest), red line at the canvas centre

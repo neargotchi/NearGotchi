@@ -140,3 +140,9 @@ Replaces the accessory, anchor and stacking rules above (§1 accessories, §2 en
 - **Centering:** centre of mass of the opaque pixels in the top 75% of the sprite (no tail, no feet) → x 512, snapped to the 8 px grid (near kat no longer sits left of centre). Feet stay on y = 960.
 - **Shadow:** 2-tone pixel ellipse on the baseline row, feet width + 2 cells, background × 0.80 / × 0.64 (invisible on near-black backgrounds like cosmic, by design).
 - **Lean:** face mid-line slope (25–50% of the height) over all 39 poses, max 2.4°; flagged pet3/beanie +2.4°, pet3/keffiyeh +2.1° are asymmetric shapes (hat neck, keffiyeh drape), visually upright — nothing to rotate.
+
+## Update: render v2 shipped (task 055) — overrides the task 054 prototype notes where they differ
+- All 300 tokens are now rendered with `compose_v2` (`compose_token`): images/drop1, public/drop1, metadata/drop1 (+ media_hash), metadata/hashes.json, public/og/drop1, docs/drop1-preview.png. `lib/drop1-tokens.json` is unchanged (no hashes in it). `compose` (v1) stays only for before/after sheets.
+- **Backgrounds are no longer re-gridded:** re-gridding broke c06's grid lines, c01's icons and r07's stars (`docs/review/backgrounds.png`). Only the pet is on the 128×128 grid; the shadow is applied to the original background in whole 8 px cells.
+- **Darker priority in the pet's cells:** "dark" = luminance < 100 (was 60), weight ×1.8 (was ×1.25): near kat's nose stays a dark triangle instead of a light blob, eyes and smile stay crisp (`docs/review/faces.png`; batman's nose also cleaner, the dragon unchanged).
+- Review sheets: `docs/review/after-sheet.png` (24 random tokens, red = centre), `docs/review/before-after.png` (v1 | v2, 12 tokens).
