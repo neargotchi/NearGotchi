@@ -20,7 +20,7 @@ Nothing here has been sent or published. The owner does every step after their o
 - Repo: https://github.com/neargotchi/NearGochi (visibility = owner's decision)
 - Contract (NEAR testnet): `neargotchi-drop1-ng57.testnet` · https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet
 - Test mint (admin account, token #83): `9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB` · https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB
-- Mint from the website: not recorded yet (see checklist).
+- Mint from the website (`nft_mint`, 2 NEAR, token #10, account `buyer1.testnet`): `D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7` · https://testnet.nearblocks.io/txns/D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7
 
 ## Description (paste into the form, English, ~1,300 characters)
 NEARGOTCHI is an AI Tamagotchi on NEAR. You hatch a pixel pet, name it, feed it, play mini-games with it and talk to it.
@@ -52,9 +52,9 @@ we built NEARGOTCHI for the @NEARProtocol hackathon: hatch a pixel pet on NEAR t
 - [ ] README has "Quick start for judges", the on/off-chain table, the contract and the mint hash
 - [ ] LICENSE (MIT) is in the repo
 - [ ] Vercel env: `NEXT_PUBLIC_CHAIN=testnet`, `NEAR_AI_API_KEY` (server-side, no NEXT_PUBLIC_), redeploy
-- [ ] Live check on the deployed site: connect, hatch, then replace "Mint from the website" above with its hash
+- [x] Live check on the deployed site: hatch from the website done (hash above); shop purchases and NEAR AI chat were checked live by the owner
 - [ ] Live NEAR AI check: `NEAR_AI_API_KEY=... npm run check:chat -- --live`, and one chat in the browser
-- [ ] One purchase in the shop (snack or energy pack) works on testnet
+- [x] One purchase in the shop works on testnet (checked by the owner)
 - [ ] Fill in all placeholders above
 - [ ] X post published, [X POST URL] pasted into the form
 - [ ] Submit on nearhackathon.com (owner only)

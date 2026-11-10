@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const SITE_URL = "https://neargochi.vercel.app";
 export const SITE_NAME = "NEARGOTCHI";
 /** Default meta description (copy v1 META). */
-export const SITE_DESCRIPTION = "hatch one of 300 pixel pets. feed it, play with it, talk to it. demo now, near next.";
+export const SITE_DESCRIPTION = "hatch one of 300 pixel pets. feed it, play with it, talk to it. on near.";
 
 type ShareImage = { url: string; width: number; height: number; alt: string };
 type PageMetaInput = { path: string; title: string; description: string; noindex?: boolean; image?: ShareImage };

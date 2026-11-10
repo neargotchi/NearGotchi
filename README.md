@@ -6,6 +6,7 @@ Built for the NEAR hackathon (deadline 2026-11-14). **Testnet only.**
 - Live site: https://neargochi.vercel.app (real testnet mode needs `NEXT_PUBLIC_CHAIN=testnet`; without it the site runs the offline demo)
 - Drop 1 NFT contract (testnet): [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
 - Test mint (admin account, token #83): [`9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB`](https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB)
+- Mint from the website (token #10, `buyer1.testnet`): [`D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7`](https://testnet.nearblocks.io/txns/D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7)
 
 ## Quick start for judges (no install)
 
