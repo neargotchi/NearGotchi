@@ -40,6 +40,7 @@ await test("success: 200, reply trimmed, request goes to NEAR AI with Bearer key
   assert.equal(seen.init.headers.authorization, `Bearer ${KEY}`);
   assert.equal(seen.body.model, ai.DEFAULT_MODEL);
   assert.equal(seen.body.max_tokens, 150);
+  assert.equal(seen.body.reasoning_effort, "low", "a reasoning model must not burn the token budget thinking");
   assert.equal(seen.body.messages.length, 1 + 8 + 1, "system + 8 history + the message");
   assert.equal(seen.body.messages.at(-1).content, "gm");
   assert.equal(seen.body.messages[1].content, "m4", "only the last 8");

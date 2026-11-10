@@ -147,6 +147,8 @@ export async function handleChat(
         messages: buildMessages(parsed.value),
         max_tokens: LIMITS.maxTokens,
         temperature: 0.8,
+        // The default model reasons: with the default effort it can spend all 150 tokens thinking and return nothing.
+        reasoning_effort: "low",
         stream: false,
       }),
       signal: AbortSignal.timeout(LIMITS.timeoutMs),
