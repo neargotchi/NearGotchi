@@ -468,6 +468,10 @@ export const petPage = {
   chat: {
     title: "talk",
     note: "demo · near ai soon",
+    noteAi: "powered by near ai",
+    noteMock: "demo mode (mock answers)",
+    thinking: "{name} is thinking…",
+    aiError: "the signal dropped. nothing was spent, try again.",
     label: "message",
     placeholder: "say something to {name}",
     hint: "each message uses 4 energy. food is not touched.",

@@ -2,6 +2,7 @@
 // chat replies and simulation rules. All values here are demonstration data.
 
 import { isTestnet } from "./chain";
+import type { AiAnswer, AiRequest } from "./chat-client";
 import { claimRandomToken, ensureMinted, findToken, getOwnedTokens, type Drop1Token } from "./drop1";
 import { DEMO_ACCOUNT_ID, absorbBalance, connectedAccountId, subscribeAccount } from "./wallet";
 
@@ -669,7 +670,7 @@ export type ChatMessage = {
   at: string;
 };
 
-export type ChatKind = "reply" | "hungry" | "no_energy";
+export type ChatKind = "reply" | "hungry" | "no_energy" | "ai_error";
 
 export const CHAT_STORAGE_KEY = "neargotchi-chat";
 
@@ -818,7 +819,9 @@ const chatMessage = (from: ChatMessage["from"], text: string, now: number): Chat
 export async function chatWithPet(
   text: string,
   id?: string,
-): Promise<{ pet: DemoPet; messages: ChatMessage[]; reply: ChatMessage; kind: ChatKind }> {
+  /** NEAR AI (task 060): asked for the reply once the pet has the energy; "no_key" → the mock answers, "error" → friendly note, nothing spent. */
+  ask?: (request: AiRequest) => Promise<AiAnswer>,
+): Promise<{ pet: DemoPet; messages: ChatMessage[]; reply: ChatMessage; kind: ChatKind; source: "ai" | "mock" }> {
   const current = await getPet(id);
   if (!current) throw new Error("no pet");
   const clean = text.trim().slice(0, PET_RULES.messageMax);
@@ -831,18 +834,36 @@ export async function chatWithPet(
   const mood = baseMood(pet);
   let reply: ChatMessage;
   let kind: ChatKind;
+  let source: "ai" | "mock" = "mock";
   if (levelOf(pet.energy) < PET_RULES.chatEnergy) {
     // Not enough energy: nothing is spent, the UI links to the energy pack.
     reply = chatMessage("note", "no_energy", now);
     kind = "no_energy";
-  } else if (mood === "hungry") {
-    reply = chatMessage("pet", (petLines[pet.petId] ?? petLines.pet1).hungry, now);
-    kind = "hungry";
   } else {
-    reply = chatMessage("pet", pickReply(pet, clean, sent), now);
-    kind = "reply";
+    kind = mood === "hungry" ? "hungry" : "reply";
+    const answer: AiAnswer = ask
+      ? await ask({
+          petType: pet.petId,
+          petName: pet.name,
+          stats: { hunger: levelOf(pet.hunger), energy: levelOf(pet.energy), mood },
+          history: log.filter((m): m is ChatMessage & { from: "you" | "pet" } => m.from !== "note").slice(-8).map((m) => ({ from: m.from, text: m.text })),
+          message: clean,
+        })
+      : { status: "no_key" };
+    if (answer.status === "ok") {
+      reply = chatMessage("pet", answer.text, now);
+      source = "ai";
+    } else if (answer.status === "error") {
+      // The AI failed: a friendly note, and the energy stays.
+      reply = chatMessage("note", "ai_error", now);
+      kind = "ai_error";
+    } else if (kind === "hungry") {
+      reply = chatMessage("pet", (petLines[pet.petId] ?? petLines.pet1).hungry, now);
+    } else {
+      reply = chatMessage("pet", pickReply(pet, clean, sent), now);
+    }
   }
-  if (kind !== "no_energy") {
+  if (kind !== "no_energy" && kind !== "ai_error") {
     // every answered message (also the hungry line) costs energy; food is not touched
     const spent = { ...pet, energy: clampLevel(pet.energy - PET_RULES.chatEnergy), hunger: clampLevel(pet.hunger + PET_RULES.chatHunger) };
     pet = { ...spent, mood: baseMood(spent) };
@@ -850,7 +871,7 @@ export async function chatWithPet(
   pet = { ...pet, stats: { ...pet.stats, messages: pet.stats.messages + 1 } };
   const messages = [...log, mine, reply].slice(-PET_RULES.chatMax);
   writeChatLog(pet.id, messages);
-  return { pet: savePet(pet), messages, reply, kind };
+  return { pet: savePet(pet), messages, reply, kind, source };
 }
 
 /** Other tabs' chat changes (storage event). */

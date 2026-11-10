@@ -33,10 +33,23 @@ You need a NEAR **testnet** account with at least ~2.1 testnet NEAR (get some fr
 - **Images:** the contract's `base_uri` is `https://neargochi.vercel.app/drop1-full/`; for now it serves 512px WebP renders
   (the `media_hash` in the metadata is for the original PNGs, which move to IPFS later, so it does not match the served bytes yet).
 
+## NEAR AI
+
+The pet chat runs on [NEAR AI Cloud](https://docs.near.ai/cloud/guides/openai-compatibility) (OpenAI-compatible API) through a server route, `app/api/chat/route.ts`.
+The key never reaches the browser.
+
+1. Create a NEAR AI Cloud API key.
+2. Locally: put `NEAR_AI_API_KEY=<your key>` in `.env.local` (gitignored). On Vercel: Project Settings → Environment Variables → `NEAR_AI_API_KEY`, then redeploy.
+   Optional: `NEAR_AI_MODEL` (default `z-ai/glm-5.3-flash`).
+3. Open `/pet` → chat tab. The note under the title says "powered by near ai". Each answered message costs 4 energy; a failed AI call costs nothing.
+
+Without the key the chat falls back to scripted answers and says "demo mode (mock answers)". Limits: 300 chars per message, 8 messages of history,
+150 output tokens, 15 s timeout, 12 requests per minute per IP. Tests: `npm run check:chat` (mocked fetch).
+
 ## What is a mock
 
 - Pet state (hunger, energy, stats), the snack shop, mini-games and the $NEARGotchi balance: demo, stored in your browser.
-- Chat: scripted answers. NEAR AI integration is not built yet.
+- Chat: real NEAR AI when `NEAR_AI_API_KEY` is set (see above), scripted answers otherwise.
 - Nothing about the game state is on-chain; only ownership of the NFT is.
 
 ## Honest notes

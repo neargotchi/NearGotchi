@@ -357,6 +357,32 @@ await test("chat (task 059): an answered message costs 4 energy and NO hunger; h
   assert.equal((await mocks.chatWithPet("gm", pet.id)).kind, "reply", "exactly the cost is enough");
 });
 
+await test("chat on NEAR AI (task 060): energy is taken only after a good answer; error / no key", async () => {
+  await wallet.connect();
+  const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
+  await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
+  let asked;
+  const ok = await mocks.chatWithPet("gm", pet.id, async (req) => ((asked = req), { status: "ok", text: "rawr from ai" }));
+  assert.equal(ok.source, "ai");
+  assert.equal(ok.reply.text, "rawr from ai");
+  assert.ok(Math.abs(ok.pet.energy - 76) < 0.1);
+  assert.equal(asked.message, "gm");
+  assert.equal(asked.petType, pet.petId);
+  assert.deepEqual(Object.keys(asked.stats).sort(), ["energy", "hunger", "mood"]);
+  const bad = await mocks.chatWithPet("again", pet.id, async () => ({ status: "error" }));
+  assert.equal(bad.kind, "ai_error");
+  assert.ok(Math.abs(bad.pet.energy - 76) < 0.1, "API error: energy stays");
+  const nokey = await mocks.chatWithPet("gm", pet.id, async () => ({ status: "no_key" }));
+  assert.equal(nokey.source, "mock");
+  assert.equal(nokey.kind, "reply");
+  assert.ok(Math.abs(nokey.pet.energy - 72) < 0.1, "no key: the mock answers and costs energy");
+  await mocks.updatePet({ energy: 2 }, pet.id);
+  let called = false;
+  const blocked = await mocks.chatWithPet("gm", pet.id, async () => ((called = true), { status: "ok", text: "x" }));
+  assert.equal(blocked.kind, "no_energy");
+  assert.equal(called, false, "no energy: the AI is not even asked");
+});
+
 await test("energy (task 059): constant over any time, no sleep from low energy; hunger still rises", async () => {
   const start = Date.parse("2026-11-02T10:00:00.000Z");
   const base = { ...basePet(4), owner: "you.demo", happyUntil: null, lastUpdated: new Date(start).toISOString() };

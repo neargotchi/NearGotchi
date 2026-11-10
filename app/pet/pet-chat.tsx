@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { askNearAi, nearAiEnabled } from "../../lib/chat-client";
 import { fill, petPage } from "../../lib/copy";
 import {
   PET_RULES,
@@ -35,6 +36,10 @@ const typingDelay = (reply: ChatMessage) => {
 export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typing, setTyping] = useState(false);
+  /** The pet is waiting for NEAR AI (the energy is spent only once the answer is in). */
+  const [thinking, setThinking] = useState(false);
+  /** null = unknown yet; true = real NEAR AI; false = mock answers. */
+  const [aiOn, setAiOn] = useState<boolean | null>(null);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -49,6 +54,7 @@ export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) 
     const load = () => getChat().then((log) => live && !busy.current && setMessages(log));
     load();
     const unsubscribe = subscribeChat(load);
+    nearAiEnabled().then((on) => live && setAiOn(on));
     return () => {
       live = false;
       unsubscribe();
@@ -64,14 +70,29 @@ export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) 
 
   const run = async (text: string) => {
     busy.current = true;
-    let result: { pet: DemoPet; messages: ChatMessage[]; reply: ChatMessage; kind: ChatKind };
+    let result: Awaited<ReturnType<typeof chatWithPet>>;
+    setMessages((current) => [...current, { id: "pending", from: "you", text, at: new Date().toISOString() }]);
+    setThinking(true);
     try {
-      result = await chatWithPet(text);
+      result = await chatWithPet(text, undefined, askNearAi);
     } catch {
+      setThinking(false);
       busy.current = false;
       return;
     }
+    setThinking(false);
     callbacks.current.onPet(result.pet);
+    if (result.kind !== "no_energy" && result.kind !== "ai_error") setAiOn(result.source === "ai");
+    if (result.source === "ai" || result.kind === "ai_error" || result.kind === "no_energy") {
+      // the wait already happened: show the answer at once
+      setMessages(result.messages);
+      if (result.kind === "reply" || result.kind === "hungry") callbacks.current.onReply();
+      busy.current = false;
+      const next = queued.current;
+      queued.current = null;
+      if (next) run(next);
+      return;
+    }
     setMessages(result.messages.slice(0, -1));
     setTyping(true);
     timer.current = setTimeout(() => {
@@ -108,17 +129,23 @@ export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) 
         <h2 id="pet-chat-title" className="mint-subtitle">
           {petPage.chat.title}
         </h2>
-        <p className="pet-chat-note">{petPage.chat.note}</p>
+        <p className="pet-chat-note">{aiOn === null ? petPage.chat.note : aiOn ? petPage.chat.noteAi : petPage.chat.noteMock}</p>
       </div>
       <div ref={logRef} className="pet-chat-log" role="log" aria-live="polite" aria-labelledby="pet-chat-title" tabIndex={0}>
         {messages.length === 0 && !typing ? <p className="pet-chat-empty">{petPage.chat.empty}</p> : null}
         {messages.map((message) =>
           message.from === "note" ? (
             <p key={message.id} className="pet-msg is-note">
-              {fill(petPage.chat.noEnergy, { name })}{" "}
-              <button type="button" className="chat-shop-link" onClick={onShop}>
-                {petPage.chat.noEnergyLink}
-              </button>
+              {message.text === "ai_error" ? (
+                petPage.chat.aiError
+              ) : (
+                <>
+                  {fill(petPage.chat.noEnergy, { name })}{" "}
+                  <button type="button" className="chat-shop-link" onClick={onShop}>
+                    {petPage.chat.noEnergyLink}
+                  </button>
+                </>
+              )}
             </p>
           ) : (
             <p key={message.id} className={message.from === "you" ? "pet-msg is-you" : "pet-msg is-pet"}>
@@ -127,9 +154,9 @@ export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) 
             </p>
           ),
         )}
-        {typing ? (
+        {typing || thinking ? (
           <p className="pet-typing" aria-hidden="true">
-            {fill(petPage.chat.typing, { name })}
+            {fill(thinking ? petPage.chat.thinking : petPage.chat.typing, { name })}
           </p>
         ) : null}
       </div>
