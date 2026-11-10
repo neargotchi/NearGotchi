@@ -3,7 +3,7 @@
 An AI pet on NEAR. Hatch one of 300 pixel gotchis (common / rare / epic / legendary) for 2 NEAR, name it, feed it, play with it.
 Built for the NEAR hackathon (deadline 2026-11-14). **Testnet only.**
 
-- Live site: https://neargochi.vercel.app (real testnet mode needs `NEXT_PUBLIC_CHAIN=testnet`; without it the site runs the offline demo)
+- Live site: https://neargochi.vercel.app (built with `NEXT_PUBLIC_CHAIN=testnet`; without that variable the same code runs an offline demo)
 - Drop 1 NFT contract (testnet): [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
 - Test mint (admin account, token #83): [`9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB`](https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB)
 - Mint from the website (token #10, `buyer1.testnet`): [`D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7`](https://testnet.nearblocks.io/txns/D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7)
@@ -27,21 +27,14 @@ You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 testn
 | Mini-games (catch the snack, fetch, hide & seek) | | yes |
 | Chat answers | | NEAR AI Cloud API (Claude Haiku 5.5, GLM fallback) via a server route |
 
-- Contract: [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
-- Test mint (admin account, token #83): [`9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB`](https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB)
-
 ## Run it locally
 
 1. `npm install`
-2. `cp .env.example .env.local` and set `NEXT_PUBLIC_CHAIN=testnet`
-3. `npm run dev`, open http://localhost:3000/mint
-   → you see the real counter from the contract, "x / 300 hatched · y left".
-4. Click **connect wallet**, pick MyNearWallet or Meteor, sign in with your testnet account
-   → the button shows your real account id.
-5. Click **hatch** (2 NEAR + gas), approve in the wallet
-   → the egg cracks and shows the pet the contract drew for you (tier, species, name). The counter goes up by one.
-6. Open **/pet** → every token your account owns on the contract is listed as a pet.
-   Without `NEXT_PUBLIC_CHAIN` (or `=demo`) the site runs fully offline on a localStorage mock, no wallet needed.
+2. `cp .env.example .env.local`, then set `NEXT_PUBLIC_CHAIN=testnet` (and `NEAR_AI_API_KEY` for real chat answers, see "NEAR AI")
+3. `npm run dev` and open http://localhost:3000/mint, then follow steps 1–5 above on localhost.
+
+Without `NEXT_PUBLIC_CHAIN` (or with `=demo`) the site runs fully offline on a localStorage mock: no wallet, no chain.
+Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mocked), `cd contracts/drop1 && cargo test --lib` (contract).
 
 ## How it works
 
@@ -65,11 +58,11 @@ The key never reaches the browser.
 3. Open `/pet` → chat tab. The note under the title says "powered by near ai". Each answered message costs 4 energy; a failed AI call costs nothing.
 
 Without the key the chat falls back to scripted answers and says "demo mode (mock answers)". Limits: 300 chars per message, 8 messages of history,
-150 output tokens, 15 s timeout, 12 requests per minute per IP. Tests: `npm run check:chat` (mocked fetch).
+150 output tokens, 9 s timeout per model attempt, 12 requests per minute per IP. Tests: `npm run check:chat` (mocked fetch).
 
 ## What is a mock
 
-- Pet state (hunger, energy, stats), the snack shop, mini-games and the $NEARGotchi balance: demo, stored in your browser.
+- Pet state (hunger, energy, stats), shop stock and the mini-games live in your browser. The demo balance in $NEARGotchi exists only in demo mode.
 - Chat: real answers through the NEAR AI Cloud API when `NEAR_AI_API_KEY` is set (see above), scripted answers otherwise.
 - Nothing about the game state is on-chain; only ownership of the NFT is.
 
