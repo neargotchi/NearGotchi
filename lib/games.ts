@@ -1,5 +1,5 @@
 // Mini-games (docs/DEVLOG.md §1, step 7). A game makes the pet happy and a bit hungry. The cost is
-// charged when a game ends (finishGame); quitting before the end costs nothing. A hungry or sleeping pet
+// charged when a game ends (finishGame); quitting before the end costs nothing. A starving pet
 // doesn't play. Async on purpose, like the rest of lib/*.
 
 import { baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
@@ -16,11 +16,10 @@ export const GAME_RULES = {
 export const gameIds = ["snack", "fetch", "hideseek"] as const;
 export type GameId = (typeof gameIds)[number];
 
-export type PlayCheck = "ok" | "hungry" | "asleep";
+export type PlayCheck = "ok" | "hungry";
 
-/** Asleep first (it can't play at all), then hungry. */
+/** Only hunger blocks a game; energy never does (task 059). */
 export function canPlay(pet: Pick<DemoPet, "hunger" | "energy">): PlayCheck {
-  if (baseMood(pet) === "sleep") return "asleep";
   if (levelOf(pet.hunger) >= GAME_RULES.blockedAt) return "hungry";
   return "ok";
 }

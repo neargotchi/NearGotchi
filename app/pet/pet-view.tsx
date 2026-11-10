@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { fill, mintPage, petPage } from "../../lib/copy";
+import { isTestnet } from "../../lib/chain";
+import { fill, mintPage, petPage, snackLabels } from "../../lib/copy";
 import {
   PET_RULES,
   findPet,
@@ -23,7 +24,7 @@ import PetChat from "./pet-chat";
 import PetDevice, { type FeedAnim } from "./pet-device";
 import PetSwitcher from "./pet-switcher";
 import PetTabs, { isPetTab, type PetTab } from "./pet-tabs";
-import type { BuyResult, Snack } from "../../lib/shop";
+import { ENERGY_PACK, NEAR_PRICES, resumePurchase, type BuyResult, type ItemId } from "../../lib/shop";
 import TabFeed from "./tab-feed";
 import TabGames from "./tab-games";
 import TabStats from "./tab-stats";
@@ -51,6 +52,8 @@ export default function PetView() {
   const [hop, setHop] = useState(0);
   const [burst, setBurst] = useState(0);
   const [feedAnim, setFeedAnim] = useState<FeedAnim | null>(null);
+  /** Result of a testnet purchase finished after a wallet redirect (shown in the feed tab). */
+  const [notice, setNotice] = useState<string | null>(null);
   const feedTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [persistent, setPersistent] = useState(true);
   const emptyRef = useRef<HTMLHeadingElement>(null);
@@ -77,6 +80,20 @@ export default function PetView() {
       const chosen = wanted ? await getPet(wanted) : null;
       if (chosen) await setActivePet(chosen.id);
       await tickPet();
+      const bought = await resumePurchase();
+      if (bought && live) {
+        const label = bought.item === ENERGY_PACK.id ? petPage.shop.pack.alt : snackLabels[bought.item];
+        setTab("feed");
+        setNotice(
+          fill(petPage.shop.result[bought.result === "charged" ? "charged" : bought.result], {
+            name: bought.pet.name,
+            snack: label,
+            n: fill(petPage.shop.costNear, { n: NEAR_PRICES[bought.item] }),
+            e: String(ENERGY_PACK.energy),
+            time: "",
+          }),
+        );
+      }
       await reload();
       if (live) setReady(true);
     })();
@@ -169,17 +186,18 @@ export default function PetView() {
   };
 
   /** Bought snack drop → chomp + bites + crumbs → "+nom" + burst (~1.4s); "full": drop + turn away. */
-  const onBought = (next: DemoPet, outcome: BuyResult, snack: Snack) => {
+  const onBought = (next: DemoPet, outcome: BuyResult, item: ItemId) => {
     setPet(next);
     // A purchase mid-animation restarts it: old timers cleared, the layer remounts with a new run.
     feedTimers.current.forEach(clearTimeout);
     feedTimers.current = [];
-    if (outcome === "broke" || outcome === "out_of_stock") {
+    if (outcome !== "fed" && outcome !== "full") {
       setFeedAnim(null);
       return;
     }
+    if (item === ENERGY_PACK.id) return; // no snack to chew on
     const kind = outcome === "full" ? "full" : "fed";
-    setFeedAnim((current) => ({ run: (current?.run ?? 0) + 1, kind, snack: snack.id }));
+    setFeedAnim((current) => ({ run: (current?.run ?? 0) + 1, kind, snack: item }));
     if (kind === "fed") {
       makeHappy();
       feedTimers.current.push(setTimeout(() => setBurst((value) => value + 1), 1000));
@@ -233,7 +251,7 @@ export default function PetView() {
                   key={pet.id}
                   pet={pet}
                   shown={shown}
-                  balance={account.balance}
+                  balance={isTestnet ? null : account.balance}
                   now={now}
                   onReleased={() => {
                     focusTitle.current = true;
@@ -254,8 +272,8 @@ export default function PetView() {
                   }}
                 />
               ),
-              feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={account.balance} now={now} onBought={onBought} />,
-              chat: <PetChat key={pet.id} name={pet.name} onPet={setPet} onReply={makeHappy} />,
+              feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={isTestnet ? null : account.balance} now={now} onBought={onBought} notice={notice} />,
+              chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} />,
             }}
           />
         </div>

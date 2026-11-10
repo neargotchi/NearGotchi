@@ -25,7 +25,7 @@ export const howItWorks = {
     {
       number: 2,
       title: "feed",
-      body: "snacks cost $NEARGotchi. a starving pet won't play.",
+      body: "snacks fill the hunger bar. a starving pet won't play.",
       sprite: { src: "/pets/pet1/hungry.png", width: 489, height: 431, alt: "" },
     },
     {
@@ -37,7 +37,7 @@ export const howItWorks = {
     {
       number: 4,
       title: "talk",
-      body: "every message uses energy and food. near ai comes next; the demo answers on its own.",
+      body: "every message uses energy. an energy pack refills it. near ai comes next; the demo answers on its own.",
       sprite: { src: "/pets/pet3/happy.png", width: 489, height: 431, alt: "" },
     },
   ] as HowItWorksStep[],
@@ -50,8 +50,8 @@ export const yourGotchi = {
   tiles: {
     stats: { title: "stats", body: "its nft card, character, age and how it's doing." },
     games: { title: "games", body: "three tiny lcd games: catch the snack, fetch and hide & seek. games make it happy." },
-    feed: { title: "feed", body: "a snack shop. each snack fills a different bar and restocks on its own time." },
-    chat: { title: "chat", body: "talk to it. every pet has its own voice. each message costs a bit of energy and food." },
+    feed: { title: "feed", body: "snacks fill hunger. an energy pack refills the talk bar. snacks restock on their own time." },
+    chat: { title: "chat", body: "talk to it. every pet has its own voice. each message costs a bit of energy." },
   },
   /** Fixed sample data for the previews (not a real pet). */
   sample: {
@@ -86,7 +86,7 @@ export const tokenomics = {
     { label: "split", value: ["33% team /", "33% stakers /", "34% buyback & burn"] },
   ],
   // Under the tiles (body font).
-  note: "applies to hatches, platform fees and the 5% royalty. demo snacks burn nothing.",
+  note: "applies to hatches, platform fees and the 5% royalty. demo snacks and energy packs burn nothing.",
   closing: { lead: "every snack ", accent: "burns." },
 };
 
@@ -103,11 +103,11 @@ export const faq = {
     },
     {
       question: "why does my pet need tokens?",
-      answer: "talking runs on near ai. tokens = energy. no energy, no words.",
+      answer: "talking runs on near ai. energy is the fuel: only chatting spends it, and an energy pack refills it. no energy, no words.",
     },
     {
       question: "what if i don't feed it?",
-      answer: "it gets sad and slowly loses energy. it won't die. it will just sulk. dramatically.",
+      answer: "it gets hungry, then sad. it won't die. it will just sulk. dramatically. snacks fix hunger, games make it a bit hungrier.",
     },
     {
       question: "where do the fees go?",
@@ -115,7 +115,7 @@ export const faq = {
     },
     {
       question: "is this live?",
-      answer: "it's a demo. hatching, your pets and the snacks live in your browser. the near mint comes later.",
+      answer: "it's a testnet demo. the mint is real on near testnet; snacks, games and chat are still mocks in your browser.",
     },
   ],
 };
@@ -322,7 +322,6 @@ export const petPage = {
     stop: "stop",
     blocked: {
       hungry: "{name} is too hungry to play.",
-      asleep: "{name} is recharging. back at 40 energy.",
     },
     feedFirst: "feed it first",
     /** Cards under catch the snack (games in tasks 050–051). */
@@ -407,23 +406,32 @@ export const petPage = {
   sub: "the {species} · hatched {date}",
   tapLabel: "pet {name}",
   status: {
-    sleep: "zzz… {name} is recharging.",
+    sleep: "{name} is chilling.",
     happy: "{name} is happy.",
     hungry: "{name} is hungry.",
     normal: "{name} is chilling.",
   },
   meters: { hunger: "hunger", energy: "energy", valueText: "{n} of 100" },
   balance: "{n} demo $NEARGotchi",
-  /** Feed tab = snack shop (app/pet/tab-feed.tsx, lib/shop.ts). Demo $NEARGotchi only. */
+  /** Feed tab = shop (app/pet/tab-feed.tsx, lib/shop.ts): snacks fill hunger, the energy pack fills energy. */
   shop: {
     title: "snack shop",
-    note: "demo $NEARGotchi · nothing real is spent",
+    note: "snacks fill hunger. energy is for talking.",
+    noteDemo: "demo $NEARGotchi · nothing real is spent",
+    noteChain: "paid in testnet near",
     refill: "refill demo balance",
     refillDone: "refilled to 100 demo $NEARGotchi. still not real.",
     refillFull: "balance is already 100.",
     cost: "{n} demo",
+    costNear: "{n} testnet near",
     hunger: "−{n} hunger",
     energy: "+{n} energy",
+    pack: {
+      title: "energy pack",
+      body: "fuel for talking. each message uses 4 energy.",
+      buy: "buy energy",
+      alt: "energy pack",
+    },
     happy: "happy for 1 min",
     stock: "{n} of {max} left",
     unlimited: "always in stock",
@@ -432,15 +440,18 @@ export const petPage = {
     reason: {
       out_of_stock: "sold out · back in {time}",
       broke: "not enough demo $NEARGotchi",
-      full: "{name} is full and rested",
+      full: "{name} is full",
+      fullEnergy: "{name} has full energy",
     },
     result: {
-      fed: "nom. {snack} for {n} demo $NEARGotchi.",
-      asleep: "{name} woke up for the {snack}.",
-      asleepStill: "{name} ate the {snack} in its sleep. still sleepy.",
-      full: "{name} is full and rested. kept your {snack}.",
+      fed: "nom. {snack} for {n}.",
+      charged: "+{e} energy for {n}. {name} has plenty to say.",
+      full: "{name} is full. kept your {snack}.",
+      fullEnergy: "{name} already has full energy. kept your pack.",
       broke: "not enough demo $NEARGotchi for the {snack}.",
       out_of_stock: "{snack} is sold out. back in {time}.",
+      cancelled: "cancelled in the wallet. nothing was spent.",
+      failed: "the payment didn't go through. check your wallet and try again.",
     },
   },
   /** Drop-1 token card (app/pet/token-card.tsx). Rarity only, never value. */
@@ -459,13 +470,14 @@ export const petPage = {
     note: "demo · near ai soon",
     label: "message",
     placeholder: "say something to {name}",
-    hint: "each message uses 4 energy and 3 food.",
+    hint: "each message uses 4 energy. food is not touched.",
     send: "send",
     typing: "{name} is typing…",
     empty: "no messages yet. say hi.",
     tooLong: "140 characters max.",
     blank: "type something first.",
-    asleep: "zzz… {name} is recharging. a snack with energy wakes it up.",
+    noEnergy: "{name} has no energy left to talk.",
+    noEnergyLink: "buy an energy pack",
     you: "you",
   },
 };

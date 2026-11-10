@@ -24,15 +24,15 @@ function Meter({ label, value, warn }: { label: string; value: number; warn: boo
   );
 }
 
-/** Hunger + energy as 10-segment pixel meters, and the demo balance. */
-export default function StatBars({ hunger, energy, balance }: { hunger: number; energy: number; balance: number }) {
+/** Hunger + energy as 10-segment pixel meters, and the demo balance (null on testnet: payments are real testnet NEAR). */
+export default function StatBars({ hunger, energy, balance }: { hunger: number; energy: number; balance: number | null }) {
   const h = levelOf(hunger);
   const e = levelOf(energy);
   return (
     <div className="pet-stats">
       <Meter label={petPage.meters.hunger} value={h} warn={h >= PET_RULES.hungryAt} />
       <Meter label={petPage.meters.energy} value={e} warn={false} />
-      <p className="pet-balance">{fill(petPage.balance, { n: String(balance) })}</p>
+      {balance === null ? null : <p className="pet-balance">{fill(petPage.balance, { n: String(balance) })}</p>}
     </div>
   );
 }

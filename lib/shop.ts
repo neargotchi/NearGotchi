@@ -1,7 +1,10 @@
-// Snack shop (docs/DEVLOG.md §1 table, step 5). Mock: stock lives in localStorage per demo account
-// and restocks on read (like hunger). Prices are demo $NEARGotchi from the wallet. Async on purpose: the
-// UI only calls getShop / buySnack / subscribeShop, so a contract can replace the bodies later.
+// Shop (docs/DEVLOG.md §1 table, step 5; task 059). Snacks fill ONLY hunger; the energy pack fills ONLY
+// energy (energy is spent only by chatting). Stock lives in localStorage per account and restocks on read.
+// Payment: demo = $NEARGotchi from the demo wallet; NEXT_PUBLIC_CHAIN=testnet = a real testnet NEAR transfer to the
+// team treasury, and the effect is applied only after the transaction is confirmed (popup wallets: right away;
+// redirect wallets: resumePurchase() on return). Async on purpose: the UI only calls the functions below.
 
+import { TREASURY_ACCOUNT, isTestnet, nearToYocto, txStatus, type TxOutcome } from "./chain";
 import { baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
 import { WalletError, connectedAccountId, spend } from "./wallet";
 
@@ -14,8 +17,6 @@ export type Snack = {
   price: number;
   /** taken off hunger */
   hunger: number;
-  /** added to energy */
-  energy: number;
   /** null = always in stock */
   max: number | null;
   /** +1 stock every … ms while below max */
@@ -26,12 +27,22 @@ export type Snack = {
 
 const MIN = 60000;
 
+/** Testnet NEAR prices (one place, task 059). Small amounts of worthless testnet NEAR. */
+export const NEAR_PRICES = { cookie: "0.05", berries: "0.1", noodles: "0.2", candy: "0.3", energy: "0.5" } as const;
+
+/** The energy pack: +50 energy, no limit. Demo price in $NEARGotchi. */
+export const ENERGY_PACK = { id: "energy", price: 25, energy: 50 } as const;
+
+export type ItemId = SnackId | typeof ENERGY_PACK.id;
+export const isItemId = (id: unknown): id is ItemId => id === ENERGY_PACK.id || snackIds.some((snack) => snack === id);
+export const demoPriceOf = (id: ItemId) => (id === ENERGY_PACK.id ? ENERGY_PACK.price : findSnack(id)!.price);
+
 /** §1 table: bone cookie / berries / noodles / star candy. */
 export const snacks: Snack[] = [
-  { id: "cookie", price: 2, hunger: 10, energy: 0, max: null, restockMs: null, happyMs: 0 },
-  { id: "berries", price: 5, hunger: 25, energy: 5, max: 3, restockMs: 1 * MIN, happyMs: 0 },
-  { id: "noodles", price: 10, hunger: 50, energy: 10, max: 2, restockMs: 3 * MIN, happyMs: 0 },
-  { id: "candy", price: 20, hunger: 20, energy: 40, max: 1, restockMs: 10 * MIN, happyMs: 60000 },
+  { id: "cookie", price: 2, hunger: 10, max: null, restockMs: null, happyMs: 0 },
+  { id: "berries", price: 5, hunger: 25, max: 3, restockMs: 1 * MIN, happyMs: 0 },
+  { id: "noodles", price: 10, hunger: 50, max: 2, restockMs: 3 * MIN, happyMs: 0 },
+  { id: "candy", price: 20, hunger: 20, max: 1, restockMs: 10 * MIN, happyMs: 60000 },
 ];
 
 export const findSnack = (id: unknown) => snacks.find((snack) => snack.id === id) ?? null;
@@ -50,7 +61,7 @@ export type ShopItem = {
   nextAt: number | null;
 };
 
-export type BuyResult = "fed" | "asleep" | "full" | "broke" | "out_of_stock";
+export type BuyResult = "fed" | "charged" | "full" | "broke" | "out_of_stock" | "cancelled" | "failed";
 
 export class ShopError extends Error {
   constructor(public readonly code: "no_pet" | "unknown_snack") {
@@ -141,49 +152,154 @@ export async function getShop(): Promise<ShopItem[]> {
   return owner ? itemsFor(readStore(), owner, Date.now()) : [];
 }
 
+const PENDING_KEY = "neargotchi-pending-buy";
+const USED_KEY = "neargotchi-used-tx";
+
+type Pending = { item: ItemId; petId: string; owner: string };
+
+const clamp = (value: number) => Math.round(Math.min(100, Math.max(0, value)) * 100) / 100;
+const readJson = <T,>(key: string, fallback: T): T => {
+  try {
+    return JSON.parse(window.localStorage.getItem(key) ?? "null") ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+const writeJson = (key: string, value: unknown) => {
+  try {
+    if (value === null) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage blocked: a redirect purchase cannot be resumed
+  }
+};
+
+/** Pure: the pet after eating a snack or drinking an energy pack (only the bar of that item moves). */
+export function applyItem(pet: DemoPet, item: ItemId, now: number): DemoPet {
+  if (item === ENERGY_PACK.id) {
+    const next = { ...pet, energy: clamp(pet.energy + ENERGY_PACK.energy) };
+    return { ...next, mood: baseMood(next) };
+  }
+  const snack = findSnack(item)!;
+  const next = {
+    ...pet,
+    hunger: clamp(pet.hunger - snack.hunger),
+    happyUntil: snack.happyMs > 0 ? new Date(now + snack.happyMs).toISOString() : pet.happyUntil,
+    stats: { ...pet.stats, snacks: pet.stats.snacks + 1 },
+  };
+  return { ...next, mood: baseMood(next) };
+}
+
+/** Takes one unit of a limited snack from the account's stock (after payment). */
+function takeStock(owner: string, snack: Snack, now: number) {
+  if (snack.max === null || snack.restockMs === null) return;
+  const store = readStore();
+  const slots = { ...(store.accounts[owner] ?? {}) };
+  const slot = restock(snack, slots[snack.id], now);
+  slots[snack.id] = { stock: Math.max(0, slot.stock - 1), nextAt: slot.nextAt ?? now + snack.restockMs };
+  writeStore({ v: 1, accounts: { ...store.accounts, [owner]: slots } });
+}
+
+/** Testnet: sends the NEAR transfer. "paid" only when a confirmed successful outcome came back in this tab. */
+async function payNear(owner: string, item: ItemId, petId: string): Promise<"paid" | "cancelled" | "failed"> {
+  const { getNear } = await import("./near");
+  const { actionCreators } = await import("@near-wallet-selector/core");
+  const { selector } = await getNear();
+  writeJson(PENDING_KEY, { item, petId, owner } satisfies Pending);
+  try {
+    const wallet = await selector.wallet();
+    // Redirect wallets leave the page here; resumePurchase() finishes it on return.
+    const outcome = (await wallet.signAndSendTransaction({
+      receiverId: TREASURY_ACCOUNT,
+      actions: [actionCreators.transfer(BigInt(nearToYocto(NEAR_PRICES[item])))],
+    })) as TxOutcome | void;
+    writeJson(PENDING_KEY, null);
+    const status = outcome && typeof outcome.status === "object" ? outcome.status : null;
+    if (!status || status.Failure) return "failed";
+    const hash = outcome?.transaction?.hash;
+    if (hash) writeJson(USED_KEY, [...readJson<string[]>(USED_KEY, []), hash].slice(-50));
+    return "paid";
+  } catch (error) {
+    writeJson(PENDING_KEY, null);
+    return /reject|denied|cancel|closed|declin/i.test(String((error as Error)?.message ?? error)) ? "cancelled" : "failed";
+  }
+}
+
 /**
- * Buys one snack for one of the account's pets and feeds it right away. Checks in order: out of stock,
- * full (nothing to eat for: hunger 0 and no energy to add), broke. A sleeping pet eats too ("asleep":
- * the energy can wake it up). Counts stats.snacks; star candy keeps the pet happy for 60s.
+ * Buys one snack (and feeds it right away) or the energy pack for one of the account's pets. Checks in order:
+ * out of stock, nothing to do (snack at hunger 0 / pack at 100 energy), payment (demo balance or testnet NEAR).
+ * Snacks count stats.snacks; star candy keeps the pet happy for 60s.
  */
-export async function buySnack(petId: string, snackId: SnackId): Promise<{ pet: DemoPet; result: BuyResult }> {
-  const snack = findSnack(snackId);
-  if (!snack) throw new ShopError("unknown_snack");
+export async function buyItem(petId: string, itemId: ItemId): Promise<{ pet: DemoPet; result: BuyResult }> {
+  if (!isItemId(itemId)) throw new ShopError("unknown_snack");
+  const snack = itemId === ENERGY_PACK.id ? null : findSnack(itemId);
   const owner = connectedAccountId();
   const current = await getPet(petId);
   if (!owner || !current) throw new ShopError("no_pet");
   const now = Date.now();
   const pet = simulatePet(current, now);
-  const store = readStore();
-  const slots = { ...(store.accounts[owner] ?? {}) };
-  const slot = snack.max === null ? null : restock(snack, slots[snack.id], now);
+  const slot = snack && snack.max !== null ? restock(snack, readStore().accounts[owner]?.[snack.id], now) : null;
 
   const keep = async (result: BuyResult) => ({ pet: await updatePet(pet, pet.id), result });
   if (slot && slot.stock <= 0) return keep("out_of_stock");
-  const nothingToDo = levelOf(pet.hunger) <= 0 && (snack.energy === 0 || levelOf(pet.energy) >= 100);
+  const nothingToDo = snack ? levelOf(pet.hunger) <= 0 : levelOf(pet.energy) >= 100;
   if (nothingToDo) return keep("full");
+  if (isTestnet) {
+    const paid = await payNear(owner, itemId, pet.id);
+    if (paid !== "paid") return keep(paid);
+  } else {
+    try {
+      await spend(demoPriceOf(itemId));
+    } catch (error) {
+      if (error instanceof WalletError && error.code === "broke") return keep("broke");
+      throw error;
+    }
+  }
+  if (snack) takeStock(owner, snack, now);
+  const saved = await updatePet(applyItem(pet, itemId, now), pet.id);
+  return { pet: saved, result: snack ? "fed" : "charged" };
+}
+
+/**
+ * Testnet, on /pet after a redirect wallet returns with ?transactionHashes=: verifies the transfer (signer,
+ * treasury receiver, exact amount, not used before), then applies the purchase that was pending. null = nothing to do.
+ */
+export async function resumePurchase(): Promise<{ pet: DemoPet; result: BuyResult; item: ItemId } | null> {
+  if (!isTestnet || typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const hash = params.get("transactionHashes")?.split(",").pop();
+  const failed = params.get("errorCode") || params.get("errorMessage");
+  const pending = readJson<Pending | null>(PENDING_KEY, null);
+  if (!pending || (!hash && !failed)) return null;
+  writeJson(PENDING_KEY, null);
+  const owner = connectedAccountId();
+  if (!owner || owner !== pending.owner || !isItemId(pending.item)) return null;
+  const current = await getPet(pending.petId);
+  if (!current) return null;
+  const keep = async (result: BuyResult) => ({ pet: current, result, item: pending.item });
+  if (failed || !hash) return keep("cancelled");
+  const used = readJson<string[]>(USED_KEY, []);
+  if (used.includes(hash)) return null;
   try {
-    await spend(snack.price);
-  } catch (error) {
-    if (error instanceof WalletError && error.code === "broke") return keep("broke");
-    throw error;
+    const tx = await txStatus(hash, owner);
+    const deposit = JSON.stringify(tx.transaction?.actions ?? []);
+    const ok =
+      typeof tx.status === "object" &&
+      !tx.status.Failure &&
+      tx.transaction?.signer_id === owner &&
+      tx.transaction?.receiver_id === TREASURY_ACCOUNT &&
+      deposit.includes(nearToYocto(NEAR_PRICES[pending.item]));
+    if (!ok) return keep("failed");
+  } catch {
+    return keep("failed");
   }
-  if (slot && snack.max !== null && snack.restockMs !== null) {
-    const stock = slot.stock - 1;
-    slots[snack.id] = { stock, nextAt: slot.nextAt ?? now + snack.restockMs };
-    writeStore({ v: 1, accounts: { ...store.accounts, [owner]: slots } });
-  }
-  const wasAsleep = baseMood(pet) === "sleep";
-  const clamp = (value: number) => Math.round(Math.min(100, Math.max(0, value)) * 100) / 100;
-  const fed = {
-    ...pet,
-    hunger: clamp(pet.hunger - snack.hunger),
-    energy: clamp(pet.energy + snack.energy),
-    happyUntil: snack.happyMs > 0 ? new Date(now + snack.happyMs).toISOString() : pet.happyUntil,
-    stats: { ...pet.stats, snacks: pet.stats.snacks + 1 },
-  };
-  const saved = await updatePet({ ...fed, mood: baseMood(fed) }, pet.id);
-  return { pet: saved, result: wasAsleep ? "asleep" : "fed" };
+  writeJson(USED_KEY, [...used, hash].slice(-50));
+  const now = Date.now();
+  const snack = pending.item === ENERGY_PACK.id ? null : findSnack(pending.item);
+  if (snack) takeStock(owner, snack, now);
+  const pet = simulatePet(current, now);
+  const saved = await updatePet(applyItem(pet, pending.item, now), pet.id);
+  return { pet: saved, result: snack ? "fed" : "charged", item: pending.item };
 }
 
 /** Stock changes in this tab and in other tabs. */

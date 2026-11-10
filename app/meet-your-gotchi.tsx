@@ -83,7 +83,6 @@ function SnackCard({ id, stock }: { id: SnackId; stock: string }) {
       </div>
       <ul className="snack-effects">
         <li>{fill(petPage.shop.hunger, { n: String(snack.hunger) })}</li>
-        {snack.energy > 0 ? <li>{fill(petPage.shop.energy, { n: String(snack.energy) })}</li> : null}
       </ul>
       <p className="snack-stock">{stock}</p>
       <span className="button button-primary snack-buy">{petPage.shop.buy}</span>

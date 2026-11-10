@@ -6,6 +6,8 @@ export const isTestnet = CHAIN === "testnet";
 
 export const DROP1_CONTRACT = process.env.NEXT_PUBLIC_DROP1_CONTRACT || "neargotchi-drop1-ng57.testnet";
 export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.near.org";
+/** Where testnet snack / energy-pack payments go (docs/CONTRACT-SETUP.md: team treasury). */
+export const TREASURY_ACCOUNT = process.env.NEXT_PUBLIC_TREASURY || "neargotchi-team-ng57.testnet";
 export const EXPLORER_URL = "https://testnet.nearblocks.io";
 
 /** 2 NEAR in yoctoNEAR (contract PRICE) and 100 Tgas (plan: mint measured at 6–12 Tgas, the rest is refunded). */
@@ -43,7 +45,16 @@ export async function txStatus(hash: string, signerId: string): Promise<TxOutcom
   return rpc<TxOutcome>("tx", { tx_hash: hash, sender_account_id: signerId, wait_until: "FINAL" });
 }
 
-export type TxOutcome = { status?: { SuccessValue?: string; Failure?: unknown } | string };
+export type TxOutcome = {
+  status?: { SuccessValue?: string; Failure?: unknown } | string;
+  transaction?: { hash?: string; signer_id?: string; receiver_id?: string; actions?: unknown[] };
+};
+
+/** "0.05" → yoctoNEAR string (exact, no floats). */
+export function nearToYocto(near: string): string {
+  const [whole, frac = ""] = near.split(".");
+  return (BigInt(whole) * BigInt(10) ** BigInt(24) + BigInt(frac.padEnd(24, "0").slice(0, 24))).toString();
+}
 
 /** The JSON a successful transaction returned (SuccessValue is base64), or null. */
 export function outcomeValue<T>(outcome: TxOutcome | void | undefined): T | null {

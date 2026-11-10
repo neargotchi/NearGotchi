@@ -31,7 +31,7 @@ type TabStatsProps = {
   pet: DemoPet;
   /** Hunger / energy simulated to now, for the bars. */
   shown: Pick<DemoPet, "hunger" | "energy">;
-  balance: number;
+  balance: number | null;
   now: number;
   /** After "release": the page moves focus to what replaces this pet. */
   onReleased: () => void;

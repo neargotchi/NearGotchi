@@ -3178,3 +3178,9 @@ main > section[class] { background: transparent; }
   .hide-banner.is-yay,
   .hide-banner.is-empty { animation: fetch-pop 0.24s steps(3, end); }
 }
+
+/* Energy pack (task 059): one card under the snack grid, same card style; link in the chat's "no energy" note. */
+.energy-pack { margin-top: 1rem; max-width: 22rem; }
+.energy-pack .snack-svg { color: var(--accent, currentColor); }
+.chat-shop-link { background: none; border: 0; padding: 0; font: inherit; color: var(--text); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.chat-shop-link:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }

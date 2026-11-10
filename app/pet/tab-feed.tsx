@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 import { fill, petPage, snackLabels } from "../../lib/copy";
-import { baseMood, levelOf, type DemoPet } from "../../lib/mocks";
-import { buySnack, getShop, subscribeShop, type BuyResult, type ShopItem, type Snack } from "../../lib/shop";
+import { isTestnet } from "../../lib/chain";
+import { levelOf, type DemoPet } from "../../lib/mocks";
+import { ENERGY_PACK, NEAR_PRICES, buyItem, getShop, subscribeShop, type BuyResult, type ItemId, type ShopItem } from "../../lib/shop";
 import { refill } from "../../lib/wallet";
 import SnackSprite from "./snack-sprites";
 import StatBars from "./stat-bars";
@@ -21,10 +22,13 @@ type TabFeedProps = {
   pet: DemoPet;
   /** Hunger / energy simulated to now. */
   shown: Pick<DemoPet, "hunger" | "energy">;
-  balance: number;
+  /** null on testnet (no demo balance). */
+  balance: number | null;
   now: number;
-  /** A snack was bought (or refused): the page plays the feed animation and updates the pet. */
-  onBought: (pet: DemoPet, result: BuyResult, snack: Snack) => void;
+  /** A purchase finished (or was refused): the page plays the feed animation and updates the pet. */
+  onBought: (pet: DemoPet, result: BuyResult, item: ItemId) => void;
+  /** Message from a purchase finished after a wallet redirect. */
+  notice?: string | null;
 };
 
 /**
@@ -32,9 +36,9 @@ type TabFeedProps = {
  * 4 snack cards (pixel sprite, cost, effect, stock + restock countdown, "buy & feed"). A card that can't
  * be bought says why (sold out / not enough demo balance / full and rested). Demo $NEARGotchi only.
  */
-export default function TabFeed({ pet, shown, balance, now, onBought }: TabFeedProps) {
+export default function TabFeed({ pet, shown, balance, now, onBought, notice = null }: TabFeedProps) {
   const [items, setItems] = useState<ShopItem[]>([]);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(notice);
   const busy = useRef(false);
 
   useEffect(() => {
@@ -60,32 +64,41 @@ export default function TabFeed({ pet, shown, balance, now, onBought }: TabFeedP
   }, [due]);
 
   const restful = levelOf(shown.hunger) <= 0;
+  const energyFull = levelOf(shown.energy) >= 100;
+  const price = (id: ItemId) => (id === ENERGY_PACK.id ? ENERGY_PACK.price : (items.find((i) => i.snack.id === id)?.snack.price ?? 0));
+  /** Price text: testnet NEAR on testnet, demo $NEARGotchi otherwise. */
+  const priceOf = (id: ItemId) =>
+    isTestnet ? fill(petPage.shop.costNear, { n: NEAR_PRICES[id] }) : fill(petPage.shop.cost, { n: String(price(id)) });
+
   const reasonFor = (item: ShopItem): string | null => {
     if (item.stock !== null && item.stock <= 0)
       return fill(petPage.shop.reason.out_of_stock, { time: clock((item.nextAt ?? now) - now) });
-    if (balance < item.snack.price) return petPage.shop.reason.broke;
-    if (restful && (item.snack.energy === 0 || levelOf(shown.energy) >= 100)) return fill(petPage.shop.reason.full, { name: pet.name });
+    if (!isTestnet && balance !== null && balance < item.snack.price) return petPage.shop.reason.broke;
+    if (restful) return fill(petPage.shop.reason.full, { name: pet.name });
+    return null;
+  };
+  const packReason = (): string | null => {
+    if (!isTestnet && balance !== null && balance < ENERGY_PACK.price) return petPage.shop.reason.broke;
+    if (energyFull) return fill(petPage.shop.reason.fullEnergy, { name: pet.name });
     return null;
   };
 
-  const buy = async (item: ShopItem) => {
-    if (busy.current || reasonFor(item)) return;
+  const buy = async (id: ItemId, reason: string | null, timeLeft: number) => {
+    if (busy.current || reason) return;
     busy.current = true;
     try {
-      const { pet: next, result } = await buySnack(pet.id, item.snack.id);
-      const snack = snackLabels[item.snack.id];
-      const awake = baseMood(next) !== "sleep";
-      const text =
-        result === "asleep"
-          ? fill(awake ? petPage.shop.result.asleep : petPage.shop.result.asleepStill, { name: pet.name, snack })
-          : fill(petPage.shop.result[result], {
-              name: pet.name,
-              snack,
-              n: String(item.snack.price),
-              time: clock((item.nextAt ?? now) - now),
-            });
+      const { pet: next, result } = await buyItem(pet.id, id);
+      const snack = id === ENERGY_PACK.id ? petPage.shop.pack.alt : snackLabels[id];
+      const key = result === "full" && id === ENERGY_PACK.id ? "fullEnergy" : result;
+      const text = fill(petPage.shop.result[key], {
+        name: pet.name,
+        snack,
+        n: isTestnet ? fill(petPage.shop.costNear, { n: NEAR_PRICES[id] }) : `${price(id)} demo $NEARGotchi`,
+        e: String(ENERGY_PACK.energy),
+        time: clock(timeLeft),
+      });
       setMessage(text);
-      onBought(next, result, item.snack);
+      onBought(next, result, id);
       setItems(await getShop());
     } finally {
       busy.current = false;
@@ -93,7 +106,7 @@ export default function TabFeed({ pet, shown, balance, now, onBought }: TabFeedP
   };
 
   const refillWallet = async () => {
-    if (balance >= START_BALANCE) {
+    if ((balance ?? 0) >= START_BALANCE) {
       setMessage(petPage.shop.refillFull);
       return;
     }
@@ -107,16 +120,18 @@ export default function TabFeed({ pet, shown, balance, now, onBought }: TabFeedP
       <div className="shop-head">
         <div>
           <h2 className="mint-subtitle">{petPage.shop.title}</h2>
-          <p className="shop-note">{petPage.shop.note}</p>
+          <p className="shop-note">{petPage.shop.note} {isTestnet ? petPage.shop.noteChain : petPage.shop.noteDemo}</p>
         </div>
-        <button
-          type="button"
-          className="button button-secondary shop-refill"
-          aria-disabled={balance >= START_BALANCE || undefined}
-          onClick={refillWallet}
-        >
-          {petPage.shop.refill}
-        </button>
+        {isTestnet ? null : (
+          <button
+            type="button"
+            className="button button-secondary shop-refill"
+            aria-disabled={(balance ?? 0) >= START_BALANCE || undefined}
+            onClick={refillWallet}
+          >
+            {petPage.shop.refill}
+          </button>
+        )}
       </div>
       <div className="pet-result" role="status">
         {message ? <p>{message}</p> : null}
@@ -135,12 +150,11 @@ export default function TabFeed({ pet, shown, balance, now, onBought }: TabFeedP
                 </span>
                 <div className="snack-title">
                   <h3 className="snack-name">{snackLabels[snack.id]}</h3>
-                  <p className="snack-cost">{fill(petPage.shop.cost, { n: String(snack.price) })}</p>
+                  <p className="snack-cost">{priceOf(snack.id)}</p>
                 </div>
               </div>
               <ul className="snack-effects">
                 <li>{fill(petPage.shop.hunger, { n: String(snack.hunger) })}</li>
-                {snack.energy > 0 ? <li>{fill(petPage.shop.energy, { n: String(snack.energy) })}</li> : null}
                 {snack.happyMs > 0 ? <li className="is-happy">{petPage.shop.happy}</li> : null}
               </ul>
               <p className="snack-stock">
@@ -156,7 +170,7 @@ export default function TabFeed({ pet, shown, balance, now, onBought }: TabFeedP
                 className="button button-primary snack-buy"
                 aria-disabled={reason ? true : undefined}
                 aria-describedby={reason ? reasonId : undefined}
-                onClick={() => buy(item)}
+                onClick={() => buy(snack.id, reason, (item.nextAt ?? now) - now)}
               >
                 {petPage.shop.buy}
               </button>
@@ -167,6 +181,47 @@ export default function TabFeed({ pet, shown, balance, now, onBought }: TabFeedP
           );
         })}
       </ul>
+      <section className="energy-pack" aria-labelledby="energy-pack-title">
+        <div className="snack-card">
+          <div className="snack-top">
+            <span className="snack-art">
+              <EnergyBolt />
+            </span>
+            <div className="snack-title">
+              <h3 id="energy-pack-title" className="snack-name">
+                {petPage.shop.pack.title}
+              </h3>
+              <p className="snack-cost">{priceOf(ENERGY_PACK.id)}</p>
+            </div>
+          </div>
+          <ul className="snack-effects">
+            <li>{fill(petPage.shop.energy, { n: String(ENERGY_PACK.energy) })}</li>
+          </ul>
+          <p className="snack-stock">{petPage.shop.pack.body}</p>
+          <button
+            type="button"
+            className="button button-primary snack-buy"
+            aria-disabled={packReason() ? true : undefined}
+            aria-describedby="shop-reason-energy"
+            onClick={() => buy(ENERGY_PACK.id, packReason(), 0)}
+          >
+            {petPage.shop.pack.buy}
+          </button>
+          <p id="shop-reason-energy" className="snack-reason">
+            {packReason()}
+          </p>
+        </div>
+      </section>
     </div>
+  );
+}
+
+/** Pixel lightning bolt (8×8 grid), same flat style as the snack sprites. */
+function EnergyBolt() {
+  const cells = ["....XX..", "...XX...", "..XX....", ".XXXXXX.", "...XXX..", "..XX....", ".XX.....", "XX......"];
+  return (
+    <svg className="snack-svg" viewBox="0 0 8 8" shapeRendering="crispEdges" aria-hidden="true" fill="currentColor">
+      {cells.flatMap((row, y) => [...row].map((c, x) => (c === "X" ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" /> : null)))}
+    </svg>
   );
 }

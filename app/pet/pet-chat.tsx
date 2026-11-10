@@ -15,6 +15,8 @@ import {
 
 type PetChatProps = {
   name: string;
+  /** "buy an energy pack": opens the shop tab. */
+  onShop: () => void;
   /** The pet after a message (energy spent). */
   onPet: (pet: DemoPet) => void;
   /** A real reply was revealed → happy for 3s. */
@@ -30,7 +32,7 @@ const typingDelay = (reply: ChatMessage) => {
  * Local chat: your message shows at once; the reply (already stored) is revealed after a short
  * pixel "typing…" delay. One reply at a time, one message queued behind it.
  */
-export default function PetChat({ name, onPet, onReply }: PetChatProps) {
+export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typing, setTyping] = useState(false);
   const [draft, setDraft] = useState("");
@@ -113,7 +115,10 @@ export default function PetChat({ name, onPet, onReply }: PetChatProps) {
         {messages.map((message) =>
           message.from === "note" ? (
             <p key={message.id} className="pet-msg is-note">
-              {fill(petPage.chat.asleep, { name })}
+              {fill(petPage.chat.noEnergy, { name })}{" "}
+              <button type="button" className="chat-shop-link" onClick={onShop}>
+                {petPage.chat.noEnergyLink}
+              </button>
             </p>
           ) : (
             <p key={message.id} className={message.from === "you" ? "pet-msg is-you" : "pet-msg is-pet"}>

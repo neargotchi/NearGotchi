@@ -322,64 +322,55 @@ await test("mintPet saves the drawn token; rename; update keeps it; release keep
   await assert.rejects(mocks.renamePet("scout"), (e) => e.code === "no_pet");
 });
 
-await test("hunger tempo (task 049): +3/min, 20 → 50 in 10 min, energy unchanged", async () => {
+await test("hunger tempo (task 049): +3/min, 20 → 50 in 10 min; energy does not move (task 059)", async () => {
   const start = Date.parse("2026-11-02T10:00:00.000Z");
   const pet = { ...basePet(4), hunger: 20, energy: 100, lastUpdated: new Date(start).toISOString() };
   assert.equal(mocks.PET_RULES.hungerPerMin, 3);
   const later = mocks.simulatePet(pet, start + 10 * 60000);
   assert.equal(later.hunger, 50);
-  assert.equal(later.energy, 50);
+  assert.equal(later.energy, 100, "energy is constant over time");
   assert.equal(later.mood, "normal");
 });
 
-await test("chat: an answered message costs 4 energy and 3 hunger; hungry / asleep answers are free", async () => {
+await test("chat (task 059): an answered message costs 4 energy and NO hunger; hungry answer also costs energy; < 4 energy = blocked", async () => {
   await wallet.connect();
   const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
   await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
   const a = await mocks.chatWithPet("gm", pet.id);
   assert.equal(a.kind, "reply");
   assert.ok(Math.abs(a.pet.energy - 76) < 0.1, String(a.pet.energy));
-  assert.ok(Math.abs(a.pet.hunger - 23) < 0.1, String(a.pet.hunger));
+  assert.ok(Math.abs(a.pet.hunger - 20) < 0.1, "chat leaves hunger alone");
   assert.equal(a.pet.stats.messages, 1);
-  assert.equal(mocks.PET_RULES.chatHunger, 3);
+  assert.equal(mocks.PET_RULES.chatHunger, 0);
+  assert.equal(mocks.PET_RULES.chatEnergy, 4);
   await mocks.updatePet({ hunger: 90, energy: 80 }, pet.id);
   const b = await mocks.chatWithPet("gm", pet.id);
   assert.equal(b.kind, "hungry");
-  assert.ok(Math.abs(b.pet.hunger - 90) < 0.1 && Math.abs(b.pet.energy - 80) < 0.1);
-  await mocks.updatePet({ hunger: 20, energy: 10 }, pet.id);
+  assert.ok(Math.abs(b.pet.hunger - 90) < 0.1 && Math.abs(b.pet.energy - 76) < 0.1);
+  await mocks.updatePet({ hunger: 20, energy: 3 }, pet.id);
   const c = await mocks.chatWithPet("gm", pet.id);
-  assert.equal(c.kind, "asleep");
-  assert.ok(Math.abs(c.pet.hunger - 20) < 0.1 && Math.abs(c.pet.energy - 10) < 0.1);
+  assert.equal(c.kind, "no_energy");
+  assert.equal(c.reply.text, "no_energy");
+  assert.ok(Math.abs(c.pet.hunger - 20) < 0.1 && Math.abs(c.pet.energy - 3) < 0.1, "blocked chat spends nothing");
   assert.equal(c.pet.stats.messages, 3);
+  await mocks.updatePet({ energy: 4 }, pet.id);
+  assert.equal((await mocks.chatWithPet("gm", pet.id)).kind, "reply", "exactly the cost is enough");
 });
 
-await test("sleep: recharges +3/min, wakes at 40; hunger keeps rising; 1 h alone → awake and hungry", async () => {
+await test("energy (task 059): constant over any time, no sleep from low energy; hunger still rises", async () => {
   const start = Date.parse("2026-11-02T10:00:00.000Z");
-  const at = (min) => start + min * 60000;
   const base = { ...basePet(4), owner: "you.demo", happyUntil: null, lastUpdated: new Date(start).toISOString() };
-  const asleep = { ...base, hunger: 30, energy: 10, mood: "sleep" };
-  const five = mocks.simulatePet(asleep, at(5));
-  assert.equal(five.energy, 25);
-  assert.equal(five.hunger, 45);
-  assert.equal(five.mood, "sleep", "still recharging below 40");
-  const ten = mocks.simulatePet(asleep, at(10));
-  assert.equal(ten.energy, 40);
-  assert.notEqual(ten.mood, "sleep", "wakes up at 40");
-  const fresh = { ...base, hunger: 20, energy: 100, mood: "normal" };
-  const hour = mocks.simulatePet(fresh, at(60));
+  for (const energy of [0, 10, 30, 100]) {
+    for (const minutes of [1, 60, 24 * 60]) {
+      const later = mocks.simulatePet({ ...base, hunger: 0, energy, mood: "normal" }, start + minutes * 60000);
+      assert.equal(later.energy, energy, `energy ${energy} after ${minutes} min`);
+      assert.notEqual(later.mood, "sleep");
+    }
+  }
+  const hour = mocks.simulatePet({ ...base, hunger: 20, energy: 100, mood: "normal" }, start + 60 * 60000);
   assert.equal(hour.hunger, 100);
-  // task 049 (hunger +3/min): hungry at ~16.7 min with energy ~16.7, already under 40, so it just holds there
-  assert.ok(hour.energy > mocks.PET_RULES.sleepAt && hour.energy < 17, String(hour.energy));
   assert.equal(hour.mood, "hungry");
-  const tired = { ...base, hunger: 0, energy: 30, mood: "normal" };
-  const nap = mocks.simulatePet(tired, at(3));
-  assert.equal(nap.energy, 15);
-  assert.equal(nap.mood, "sleep", "not hungry + tired → falls asleep");
-  const later = mocks.simulatePet(tired, at(60));
-  assert.notEqual(later.mood, "sleep", "…and wakes up by itself");
-  assert.ok(later.energy >= 15 && later.hunger === 100);
-  assert.equal(mocks.baseMood({ hunger: 0, energy: 30, mood: "sleep" }), "sleep", "between 15 and 40: still asleep if it was");
-  assert.equal(mocks.baseMood({ hunger: 0, energy: 30, mood: "normal" }), "normal");
+  assert.equal(mocks.baseMood({ hunger: 0, energy: 0, mood: "sleep" }), "normal", "a stored sleep mood is ignored");
 });
 
 await test("chat: the 'who' line uses the pet's own name", async () => {
@@ -398,9 +389,10 @@ const shopPet = async (patch = {}) => {
 const stockOf = async (id) => (await shop.getShop()).find((item) => item.snack.id === id);
 
 await test("shop: §1 table, full stock at first, nothing without a wallet", async () => {
-  assert.deepEqual(shop.snacks.map((s) => [s.id, s.price, s.hunger, s.energy, s.max]), [
-    ["cookie", 2, 10, 0, null], ["berries", 5, 25, 5, 3], ["noodles", 10, 50, 10, 2], ["candy", 20, 20, 40, 1],
+  assert.deepEqual(shop.snacks.map((s) => [s.id, s.price, s.hunger, s.max]), [
+    ["cookie", 2, 10, null], ["berries", 5, 25, 3], ["noodles", 10, 50, 2], ["candy", 20, 20, 1],
   ]);
+  for (const snack of shop.snacks) assert.equal("energy" in snack, false, "snacks have no energy effect");
   assert.deepEqual(await shop.getShop(), []);
   await wallet.connect();
   assert.deepEqual((await shop.getShop()).map((i) => [i.snack.id, i.stock, i.nextAt]), [
@@ -410,25 +402,25 @@ await test("shop: §1 table, full stock at first, nothing without a wallet", asy
 
 await test("shop: buy & feed pays, feeds, counts, takes stock; cookie never runs out", async () => {
   const pet = await shopPet();
-  const { pet: fed, result } = await shop.buySnack(pet.id, "berries");
+  const { pet: fed, result } = await shop.buyItem(pet.id, "berries");
   assert.equal(result, "fed");
   assert.equal(fed.hunger, 35);
-  assert.equal(fed.energy, 65);
+  assert.equal(fed.energy, 60, "a snack does not touch energy (task 059)");
   assert.equal(fed.stats.snacks, 1);
   assert.equal(account().balance, 95);
   const berries = await stockOf("berries");
   assert.equal(berries.stock, 2);
   assert.ok(berries.nextAt > Date.now() && berries.nextAt <= Date.now() + 60000);
-  for (let i = 0; i < 3; i++) assert.equal((await shop.buySnack(pet.id, "cookie")).result, "fed");
+  for (let i = 0; i < 3; i++) assert.equal((await shop.buyItem(pet.id, "cookie")).result, "fed");
   assert.equal((await stockOf("cookie")).stock, null);
   assert.equal(account().balance, 89);
 });
 
 await test("shop: out_of_stock costs nothing; restock adds 1 per interval up to max", async () => {
   const pet = await shopPet();
-  assert.equal((await shop.buySnack(pet.id, "candy")).result, "fed");
+  assert.equal((await shop.buyItem(pet.id, "candy")).result, "fed");
   const before = account().balance;
-  assert.equal((await shop.buySnack(pet.id, "candy")).result, "out_of_stock");
+  assert.equal((await shop.buyItem(pet.id, "candy")).result, "out_of_stock");
   assert.equal(account().balance, before);
   const candy = shop.findSnack("candy");
   const t0 = 1_000_000;
@@ -446,42 +438,53 @@ await test("shop: out_of_stock costs nothing; restock adds 1 per interval up to 
 await test("shop: broke and full cost nothing; star candy makes happy; corrupt store = full stock", async () => {
   const pet = await shopPet();
   await wallet.spend(99);
-  assert.equal((await shop.buySnack(pet.id, "berries")).result, "broke");
+  assert.equal((await shop.buyItem(pet.id, "berries")).result, "broke");
   assert.equal((await stockOf("berries")).stock, 3, "no stock taken");
   await wallet.refill();
-  await mocks.updatePet({ hunger: 0, energy: 100 }, pet.id);
-  assert.equal((await shop.buySnack(pet.id, "noodles")).result, "full");
-  assert.equal(account().balance, 100);
   await mocks.updatePet({ hunger: 0, energy: 50 }, pet.id);
-  const candy = await shop.buySnack(pet.id, "candy");
-  assert.equal(candy.result, "fed", "energy still helps when not hungry");
+  assert.equal((await shop.buyItem(pet.id, "noodles")).result, "full", "no hunger left: energy is no reason to eat");
+  assert.equal(account().balance, 100);
+  await mocks.updatePet({ hunger: 40, energy: 50 }, pet.id);
+  const candy = await shop.buyItem(pet.id, "candy");
+  assert.equal(candy.result, "fed");
+  assert.equal(candy.pet.energy, 50);
   assert.ok(Date.parse(candy.pet.happyUntil) > Date.now() + 50000);
   store.set(SKEY, "nope");
   assert.equal((await stockOf("candy")).stock, 1);
 });
 
-await test("shop: a sleeping pet eats and can wake up (asleep)", async () => {
+await test("shop (task 059): energy pack = +50 energy only (capped, no stock); snacks = hunger only; full energy refuses", async () => {
   const pet = await shopPet({ energy: 10, hunger: 80 });
-  assert.equal(mocks.baseMood(pet), "sleep");
-  const cookie = await shop.buySnack(pet.id, "cookie");
-  assert.equal(cookie.result, "asleep");
-  assert.equal(mocks.baseMood(cookie.pet), "sleep", "a cookie has no energy");
-  const candy = await shop.buySnack(pet.id, "candy");
-  assert.equal(candy.result, "asleep");
-  assert.notEqual(mocks.baseMood(candy.pet), "sleep", "+40 energy wakes it");
-  await assert.rejects(shop.buySnack("nobody", "cookie"), (e) => e.code === "no_pet");
+  const cookie = await shop.buyItem(pet.id, "cookie");
+  assert.equal(cookie.result, "fed");
+  assert.equal(cookie.pet.energy, 10, "snack: energy untouched");
+  assert.equal(cookie.pet.hunger, 70);
+  const before = account().balance;
+  const pack = await shop.buyItem(pet.id, "energy");
+  assert.equal(pack.result, "charged");
+  assert.equal(pack.pet.energy, 60);
+  assert.equal(pack.pet.hunger, 70, "pack: hunger untouched");
+  assert.equal(account().balance, before - shop.ENERGY_PACK.price);
+  assert.equal(shop.ENERGY_PACK.energy, 50);
+  const top = await shop.buyItem(pet.id, "energy");
+  assert.equal(top.pet.energy, 100, "capped at 100");
+  const cash = account().balance;
+  assert.equal((await shop.buyItem(pet.id, "energy")).result, "full", "full energy refuses");
+  assert.equal(account().balance, cash, "and costs nothing");
+  assert.equal(shop.NEAR_PRICES.energy, "0.5");
+  await assert.rejects(shop.buyItem("nobody", "cookie"), (e) => e.code === "no_pet");
 });
 
 console.log("games");
 const games = await import("../lib/games.ts");
-await test("games (task 049): canPlay asleep > hungry ≥ 90 > ok; finishGame +10 hunger, happy 60 s, games++, best", async () => {
+await test("games (task 049): canPlay hungry ≥ 90 > ok (energy never blocks); finishGame +10 hunger, happy 60 s, games++, best", async () => {
   assert.deepEqual(games.GAME_RULES, { hungerCost: 10, blockedAt: 90, happyMs: 60000 });
   assert.deepEqual([...games.gameIds], ["snack", "fetch", "hideseek"], "simon is gone, fetch and hide & seek are in");
   assert.equal(games.canPlay({ hunger: 20, energy: 80 }), "ok");
   assert.equal(games.canPlay({ hunger: 75, energy: 80 }), "ok", "a merely hungry pet still plays");
   assert.equal(games.canPlay({ hunger: 89.4, energy: 80 }), "ok");
   assert.equal(games.canPlay({ hunger: 90, energy: 80 }), "hungry");
-  assert.equal(games.canPlay({ hunger: 95, energy: 10 }), "asleep");
+  assert.equal(games.canPlay({ hunger: 20, energy: 0 }), "ok", "no energy still plays");
   await wallet.connect();
   const pet = await mocks.mintPet({ token: await drop.hatchRandom() });
   await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
@@ -675,9 +678,9 @@ await test("balance (task 052): hunger 0 → 6+ games; a night alone → hungry,
   assert.equal(games.canPlay(morning), "hungry");
   // one snack is enough: berries (5) → 75, noodles (10) → 50; a cookie alone (−10) is not
   assert.equal(account().balance, 100);
-  const cookie = await shop.buySnack(pet.id, "cookie");
+  const cookie = await shop.buyItem(pet.id, "cookie");
   assert.equal(games.canPlay(cookie.pet), "hungry", "a cookie leaves it at 90");
-  const berries = await shop.buySnack(pet.id, "berries");
+  const berries = await shop.buyItem(pet.id, "berries");
   assert.equal(berries.result, "fed");
   assert.equal(games.canPlay(berries.pet), "ok", "cookie + berries unblock games");
   assert.equal(account().balance, 93, "2 + 5 demo spent");
