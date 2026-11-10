@@ -38,9 +38,9 @@ await test("success: 200, reply trimmed, request goes to NEAR AI with Bearer key
   assert.deepEqual(res.body, { reply: "rawr. tiny fire." });
   assert.equal(seen.url, "https://cloud-api.near.ai/v1/chat/completions");
   assert.equal(seen.init.headers.authorization, `Bearer ${KEY}`);
-  assert.equal(seen.body.model, ai.DEFAULT_MODEL);
+  assert.equal(seen.body.model, "anthropic/claude-haiku-5-5", "default = Haiku 5.5 (task 065)");
   assert.equal(seen.body.max_tokens, 150);
-  assert.equal(seen.body.reasoning_effort, "low", "a reasoning model must not burn the token budget thinking");
+  assert.ok(!("reasoning_effort" in seen.body), "Haiku rejects reasoning_effort (HTTP 400): not sent");
   assert.equal(seen.body.messages.length, 1 + 8 + 1, "system + 8 history + the message");
   assert.equal(seen.body.messages.at(-1).content, "gm");
   assert.equal(seen.body.messages[1].content, "m4", "only the last 8");
@@ -96,6 +96,53 @@ await test("rate limit: 12 per minute per IP, then 429; another IP is fine; it f
   assert.deepEqual((await ai.handleChat(good, "6.6.6.6", env, reply("ok"))).body, { error: "rate_limited" });
   assert.equal((await ai.handleChat(good, "7.7.7.7", env, reply("ok"))).status, 200);
   assert.equal(ai.rateLimited("6.6.6.6", Date.now() + 61000), false);
+});
+
+await test("fallback (task 065): Haiku 400 → one retry on GLM with reasoning_effort low → reply", async () => {
+  const calls = [];
+  const res = await ai.handleChat(good, "9.9.9.1", env, async (url, init) => {
+    const b = JSON.parse(init.body);
+    calls.push(b);
+    return b.model === "anthropic/claude-haiku-5-5"
+      ? new Response(JSON.stringify({ error: { message: "reasoning_effort: Extra inputs are not permitted" } }), { status: 400 })
+      : reply("rawr from glm")();
+  });
+  assert.deepEqual(res, { status: 200, body: { reply: "rawr from glm" } });
+  assert.deepEqual(calls.map((c) => c.model), ["anthropic/claude-haiku-5-5", "z-ai/glm-5.3-flash"]);
+  assert.ok(!("reasoning_effort" in calls[0]));
+  assert.equal(calls[1].reasoning_effort, "low");
+});
+
+await test("fallback: Haiku timeout or empty content also retries on GLM", async () => {
+  for (const first of [async () => { throw Object.assign(new Error("t"), { name: "TimeoutError" }); }, reply("   ")]) {
+    let n = 0;
+    const res = await ai.handleChat(good, "9.9.9.2", env, async (url, init) => (++n === 1 ? first() : reply("glm ok")()));
+    assert.deepEqual(res.body, { reply: "glm ok" });
+    assert.equal(n, 2);
+  }
+});
+
+await test("both models fail → error (502, or 504 when the last one timed out); the UI then spends no energy", async () => {
+  let n = 0;
+  const both = await ai.handleChat(good, "9.9.9.3", env, async () => (++n, new Response("{}", { status: 500 })));
+  assert.deepEqual(both, { status: 502, body: { error: "upstream" } });
+  assert.equal(n, 2, "exactly one retry, no loop");
+  const slow = await ai.handleChat(good, "9.9.9.4", env, async () => { throw Object.assign(new Error("t"), { name: "TimeoutError" }); });
+  assert.equal(slow.status, 504);
+});
+
+await test("NEAR_AI_MODEL override: used as the first model; GLM chosen explicitly means no second attempt and reasoning_effort", async () => {
+  const seen = [];
+  await ai.handleChat(good, "9.9.9.5", { key: KEY, model: "google/gemini-2.5-flash-lite" }, async (u, init) => (seen.push(JSON.parse(init.body)), reply("ok")()));
+  assert.equal(seen[0].model, "google/gemini-2.5-flash-lite");
+  assert.ok(!("reasoning_effort" in seen[0]));
+  let n = 0;
+  const res = await ai.handleChat(good, "9.9.9.6", { key: KEY, model: "z-ai/glm-5.3-flash" }, async (u, init) => (++n, seen.push(JSON.parse(init.body)), new Response("{}", { status: 500 })));
+  assert.equal(res.status, 502);
+  assert.equal(n, 1, "no retry on itself");
+  assert.equal(seen.at(-1).reasoning_effort, "low");
+  assert.equal(ai.acceptsReasoningEffort("anthropic/claude-haiku-5-5"), false);
+  assert.equal(ai.acceptsReasoningEffort("z-ai/glm-5.3-flash"), true);
 });
 
 await test("<think> blocks are stripped from the reply", async () => {

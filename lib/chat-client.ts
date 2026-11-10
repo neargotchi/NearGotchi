@@ -10,7 +10,8 @@ export type AiRequest = {
   message: string;
 };
 
-const CLIENT_TIMEOUT_MS = 20000;
+/** the server may try the default model and then the fallback (9 s each) */
+const CLIENT_TIMEOUT_MS = 22000;
 
 export async function askNearAi(request: AiRequest): Promise<AiAnswer> {
   try {

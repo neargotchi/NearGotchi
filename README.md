@@ -25,7 +25,7 @@ You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 testn
 | Snack and energy-pack payments | yes (plain NEAR transfer to the team account) | the effect (hunger, energy, stock) |
 | Hunger, energy, stats, chat history | | yes |
 | Mini-games (catch the snack, fetch, hide & seek) | | yes |
-| Chat answers | | NEAR AI Cloud via a server route |
+| Chat answers | | NEAR AI Cloud API (Claude Haiku 5.5, GLM fallback) via a server route |
 
 - Contract: [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
 - Test mint (admin account, token #83): [`9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB`](https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB)
@@ -56,12 +56,12 @@ You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 testn
 
 ## NEAR AI
 
-The pet chat runs on [NEAR AI Cloud](https://docs.near.ai/cloud/guides/openai-compatibility) (OpenAI-compatible API) through a server route, `app/api/chat/route.ts`.
+Chat via the [NEAR AI Cloud](https://docs.near.ai/cloud/guides/openai-compatibility) API (OpenAI-compatible; Claude Haiku 5.5, GLM as fallback), called from a server route, `app/api/chat/route.ts`. Haiku is an external provider behind NEAR AI Cloud.
 The key never reaches the browser.
 
 1. Create a NEAR AI Cloud API key.
 2. Locally: put `NEAR_AI_API_KEY=<your key>` in `.env.local` (gitignored). On Vercel: Project Settings → Environment Variables → `NEAR_AI_API_KEY`, then redeploy.
-   Optional: `NEAR_AI_MODEL` (default `z-ai/glm-5.3-flash`).
+   Optional: `NEAR_AI_MODEL` (default `anthropic/claude-haiku-5-5`; if it fails, one retry on `z-ai/glm-5.3-flash`).
 3. Open `/pet` → chat tab. The note under the title says "powered by near ai". Each answered message costs 4 energy; a failed AI call costs nothing.
 
 Without the key the chat falls back to scripted answers and says "demo mode (mock answers)". Limits: 300 chars per message, 8 messages of history,
@@ -70,7 +70,7 @@ Without the key the chat falls back to scripted answers and says "demo mode (moc
 ## What is a mock
 
 - Pet state (hunger, energy, stats), the snack shop, mini-games and the $NEARGotchi balance: demo, stored in your browser.
-- Chat: real NEAR AI when `NEAR_AI_API_KEY` is set (see above), scripted answers otherwise.
+- Chat: real answers through the NEAR AI Cloud API when `NEAR_AI_API_KEY` is set (see above), scripted answers otherwise.
 - Nothing about the game state is on-chain; only ownership of the NFT is.
 
 ## Honest notes

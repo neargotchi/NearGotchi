@@ -3,15 +3,25 @@
 // NEAR AI Cloud is OpenAI-compatible: POST {base}/chat/completions with a Bearer key.
 
 export const NEAR_AI_BASE = "https://cloud-api.near.ai/v1";
-/** Cheap, fast, private (vLLM) chat model from https://cloud-api.near.ai/v1/model/list. Override with NEAR_AI_MODEL. */
-export const DEFAULT_MODEL = "z-ai/glm-5.3-flash";
+/**
+ * Default chat model (task 065, owner decision): Claude Haiku 5.5 through NEAR AI Cloud: best Polish and ~2x faster
+ * than GLM in the model comparison (REPORT "MODELE"). It is an external provider behind the NEAR AI Cloud API,
+ * not NEAR's private inference. Override with NEAR_AI_MODEL.
+ */
+export const DEFAULT_MODEL = "anthropic/claude-haiku-5-5";
+/** One retry on this model when the default fails (HTTP error, timeout or empty content). */
+export const FALLBACK_MODEL = "z-ai/glm-5.3-flash";
+
+/** Only reasoning models of this family take `reasoning_effort` (Haiku answers HTTP 400 "Extra inputs are not permitted"). */
+export const acceptsReasoningEffort = (model: string) => model.startsWith("z-ai/");
 
 export const LIMITS = {
   messageMax: 300,
   historyMax: 8,
   nameMax: 20,
   maxTokens: 150,
-  timeoutMs: 15000,
+  /** per attempt (default model, then the fallback): the client waits for both */
+  timeoutMs: 9000,
   /** per IP per minute */
   perMinute: 12,
 } as const;
@@ -127,6 +137,36 @@ export type Result =
 
 type Env = { key?: string; model?: string };
 
+type Attempt = { ok: true; reply: string } | { ok: false; timeout: boolean };
+
+/** One call to one model. Never throws. */
+async function callModel(model: string, req: ChatRequest, key: string, doFetch: typeof fetch): Promise<Attempt> {
+  try {
+    const response = await doFetch(`${NEAR_AI_BASE}/chat/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model,
+        messages: buildMessages(req),
+        max_tokens: LIMITS.maxTokens,
+        temperature: 0.8,
+        // GLM reasons: with the default effort it can spend all 150 tokens thinking and return nothing.
+        ...(acceptsReasoningEffort(model) ? { reasoning_effort: "low" } : {}),
+        stream: false,
+      }),
+      signal: AbortSignal.timeout(LIMITS.timeoutMs),
+      cache: "no-store",
+    });
+    if (!response.ok) return { ok: false, timeout: false };
+    const data = (await response.json()) as { choices?: { message?: { content?: unknown } }[] };
+    const content = data.choices?.[0]?.message?.content;
+    const reply = typeof content === "string" ? content.replace(/<think>[\s\S]*?<\/think>/g, "").trim().slice(0, 400) : "";
+    return reply ? { ok: true, reply } : { ok: false, timeout: false };
+  } catch (error) {
+    return { ok: false, timeout: error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError") };
+  }
+}
+
 /** Whole POST logic with an injectable fetch, so it runs in tests without network. */
 export async function handleChat(
   body: unknown,
@@ -138,30 +178,9 @@ export async function handleChat(
   const parsed = parseRequest(body);
   if (!parsed.ok) return { status: 400, body: { error: parsed.error } };
   if (rateLimited(ip)) return { status: 429, body: { error: "rate_limited" } };
-  try {
-    const response = await doFetch(`${NEAR_AI_BASE}/chat/completions`, {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${env.key}` },
-      body: JSON.stringify({
-        model: env.model || DEFAULT_MODEL,
-        messages: buildMessages(parsed.value),
-        max_tokens: LIMITS.maxTokens,
-        temperature: 0.8,
-        // The default model reasons: with the default effort it can spend all 150 tokens thinking and return nothing.
-        reasoning_effort: "low",
-        stream: false,
-      }),
-      signal: AbortSignal.timeout(LIMITS.timeoutMs),
-      cache: "no-store",
-    });
-    if (!response.ok) return { status: 502, body: { error: "upstream" } };
-    const data = (await response.json()) as { choices?: { message?: { content?: unknown } }[] };
-    const content = data.choices?.[0]?.message?.content;
-    const reply = typeof content === "string" ? content.replace(/<think>[\s\S]*?<\/think>/g, "").trim().slice(0, 400) : "";
-    if (!reply) return { status: 502, body: { error: "upstream" } };
-    return { status: 200, body: { reply } };
-  } catch (error) {
-    const timeout = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
-    return timeout ? { status: 504, body: { error: "timeout" } } : { status: 502, body: { error: "upstream" } };
-  }
+  const primary = env.model || DEFAULT_MODEL;
+  let attempt = await callModel(primary, parsed.value, env.key, doFetch);
+  if (!attempt.ok && primary !== FALLBACK_MODEL) attempt = await callModel(FALLBACK_MODEL, parsed.value, env.key, doFetch);
+  if (attempt.ok) return { status: 200, body: { reply: attempt.reply } };
+  return attempt.timeout ? { status: 504, body: { error: "timeout" } } : { status: 502, body: { error: "upstream" } };
 }
