@@ -26,6 +26,8 @@ export default function WalletGate({ context, heading = false, onConnected, ref 
     try {
       await connect();
       onConnected?.();
+    } catch {
+      // wallet modal closed without signing in
     } finally {
       setBusy(false);
     }

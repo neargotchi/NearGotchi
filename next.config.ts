@@ -15,6 +15,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The contract's base_uri is https://neargochi.vercel.app/drop1-full/ and each token's media is "{id}.png"
+  // (hash of the 1024px PNG, 148 MB for 300 files: not shipped). Until the PNGs are on IPFS, that URL serves the
+  // 512px webp from /public/drop1 (docs/CONTRACT-SETUP.md: media_hash will not match the served bytes).
+  async rewrites() {
+    return [{ source: "/drop1-full/:id(\\d+).png", destination: "/drop1/:id.webp" }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

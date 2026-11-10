@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Press_Start_2P, Space_Grotesk } from "next/font/google";
+import "@near-wallet-selector/modal-ui/styles.css";
 import "./globals.css";
 import BackgroundSparkles from "../components/BackgroundSparkles";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";

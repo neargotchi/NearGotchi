@@ -66,8 +66,12 @@ export default function WalletMenu({ variant = "header" }: { variant?: "header" 
       setOpen((value) => !value);
       return;
     }
-    const next = await connect();
-    say(fill(header.wallet.connected, { account: next.accountId }));
+    try {
+      const next = await connect();
+      say(fill(header.wallet.connected, { account: next.accountId }));
+    } catch {
+      // wallet modal closed without signing in
+    }
   };
 
   const onDisconnect = async () => {

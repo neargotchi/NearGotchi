@@ -1,7 +1,8 @@
 // Single mocks module (PLAN.md §4): the only place for demo pets, items, balances,
 // chat replies and simulation rules. All values here are demonstration data.
 
-import { claimRandomToken, ensureMinted, findToken, type Drop1Token } from "./drop1";
+import { isTestnet } from "./chain";
+import { claimRandomToken, ensureMinted, findToken, getOwnedTokens, type Drop1Token } from "./drop1";
 import { DEMO_ACCOUNT_ID, absorbBalance, connectedAccountId, subscribeAccount } from "./wallet";
 
 export const moods = ["normal", "hungry", "happy", "sleep"] as const;
@@ -439,9 +440,36 @@ export function isPersistent(): boolean {
   }
 }
 
+let ownedSync: { owner: string; at: number; run: Promise<void> } | null = null;
+
+/** Testnet: every token the account owns on the contract gets a (local game-state) pet. Cached 15 s per account. */
+async function syncOwned(owner: string) {
+  if (!isTestnet) return;
+  if (!ownedSync || ownedSync.owner !== owner || Date.now() - ownedSync.at > 15000) {
+    ownedSync = {
+      owner,
+      at: Date.now(),
+      run: (async () => {
+        try {
+          const tokens = await getOwnedTokens(owner);
+          for (const token of tokens) {
+            const store = loadStore();
+            if (ownedBy(store, owner).some((pet) => pet.token?.tokenId === token.tokenId)) continue;
+            await mintPet({ token }).catch(() => {});
+          }
+        } catch {
+          // RPC down: show what is stored
+        }
+      })(),
+    };
+  }
+  await ownedSync.run;
+}
+
 /** The connected account's pets, oldest first; [] when no wallet is connected. */
 export async function getPets(): Promise<DemoPet[]> {
   const owner = connectedAccountId();
+  if (owner) await syncOwned(owner);
   const store = loadStore();
   return owner ? ownedBy(store, owner) : [];
 }
@@ -452,6 +480,7 @@ export async function getPets(): Promise<DemoPet[]> {
  */
 export async function getPet(id?: string): Promise<DemoPet | null> {
   const owner = connectedAccountId();
+  if (owner) await syncOwned(owner);
   const store = loadStore();
   if (!owner) return null;
   if (id === undefined) return activeOf(store, owner);

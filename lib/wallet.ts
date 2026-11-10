@@ -1,6 +1,10 @@
 // Demo wallet (docs/DEVLOG.md §1). Mock only: no wallet library, no network, nothing is signed.
 // Async on purpose: on NEAR, connect/disconnect/getAccount map to wallet-selector and spend/balance to
 // the $NEARGotchi FT (§7); the UI only uses these functions.
+// NEXT_PUBLIC_CHAIN=testnet (lib/chain.ts): connect / disconnect / getAccount use a real NEAR testnet wallet
+// (wallet-selector); the balance stays demo $NEARGotchi (snacks are task 059). Demo mode is unchanged.
+
+import { isTestnet } from "./chain";
 
 /** One browser = one demo account (owner decision 1). */
 export const DEMO_ACCOUNT_ID = "you.demo";
@@ -19,7 +23,7 @@ export type DemoAccount = {
   balance: number;
 };
 
-export type WalletErrorCode = "not_connected" | "broke";
+export type WalletErrorCode = "not_connected" | "broke" | "cancelled";
 
 export class WalletError extends Error {
   constructor(public readonly code: WalletErrorCode) {
@@ -60,7 +64,7 @@ function parse(raw: string): DemoAccount | null {
     const ok =
       !!data &&
       data.v === 1 &&
-      data.accountId === DEMO_ACCOUNT_ID &&
+      (isTestnet ? typeof data.accountId === "string" && data.accountId.length > 0 : data.accountId === DEMO_ACCOUNT_ID) &&
       typeof data.connected === "boolean" &&
       typeof data.connectedAt === "string" &&
       Number.isFinite(Date.parse(data.connectedAt)) &&
@@ -117,14 +121,66 @@ export function absorbBalance(balance: number) {
   });
 }
 
-/** The connected demo account, or null (never connected / disconnected). */
+/** Testnet: aligns the stored record with the wallet-selector session (also after a redirect wallet returns). */
+async function syncChain(): Promise<DemoAccount | null> {
+  const { getNear, activeAccountId } = await import("./near");
+  const { selector } = await getNear();
+  const accountId = activeAccountId(selector);
+  const record = readRecord();
+  if (!accountId) {
+    if (record?.connected) save({ ...record, connected: false });
+    return null;
+  }
+  const now = new Date().toISOString();
+  if (record && record.accountId === accountId) return record.connected ? record : save({ ...record, connected: true, connectedAt: now });
+  return save({ v: 1, accountId, connected: true, connectedAt: now, balance: WALLET_RULES.startBalance });
+}
+
+/** The connected account, or null (never connected / disconnected). */
 export async function getAccount(): Promise<DemoAccount | null> {
+  if (isTestnet && inBrowser()) {
+    try {
+      return await syncChain();
+    } catch {
+      // wallet library unavailable: fall through to the stored record
+    }
+  }
   const record = readRecord();
   return record?.connected ? record : null;
 }
 
-/** "Connects": reuses this browser's demo account (balance and pets come back) or creates it with 100. */
+/** Opens the wallet modal and resolves once an account signed in. Throws WalletError("cancelled") if closed. */
+async function connectChain(): Promise<DemoAccount> {
+  const { getNear } = await import("./near");
+  const { selector, modal } = await getNear();
+  const existing = await syncChain();
+  if (existing) return existing;
+  return new Promise<DemoAccount>((resolve, reject) => {
+    const offIn = selector.on("signedIn", () => {
+      cleanup();
+      syncChain().then((account) => (account ? resolve(account) : reject(new WalletError("cancelled"))), reject);
+    });
+    const offHide = modal.on("onHide", () => {
+      // the sign-in event can follow the hide event; give it a moment
+      setTimeout(() => {
+        cleanup();
+        reject(new WalletError("cancelled"));
+      }, 400);
+    });
+    const cleanup = () => {
+      offIn.remove();
+      offHide.remove();
+    };
+    modal.show();
+  });
+}
+
+/**
+ * Demo: reuses this browser's demo account (balance and pets come back) or creates it with 100.
+ * Testnet: real wallet sign-in (throws WalletError("cancelled") when the modal is closed).
+ */
 export async function connect(): Promise<DemoAccount> {
+  if (isTestnet) return connectChain();
   const record = readRecord();
   const now = new Date().toISOString();
   return save(
@@ -136,6 +192,15 @@ export async function connect(): Promise<DemoAccount> {
 
 /** Hides the account; nothing is deleted. */
 export async function disconnect(): Promise<void> {
+  if (isTestnet) {
+    try {
+      const { getNear } = await import("./near");
+      const { selector } = await getNear();
+      if (selector.isSignedIn()) await (await selector.wallet()).signOut();
+    } catch {
+      // already signed out
+    }
+  }
   const record = readRecord();
   if (record?.connected) save({ ...record, connected: false });
 }

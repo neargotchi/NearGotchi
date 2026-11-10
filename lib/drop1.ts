@@ -3,6 +3,7 @@
 // (getDropStatus → nft_total_supply, hatchRandom → nft_mint + nft_token, getToken → nft_token).
 // Nothing here is a real mint. Copy rule: rarity only, never value.
 
+import { DROP1_CONTRACT, MINT_DEPOSIT, MINT_GAS, isTestnet, outcomeValue, txStatus, viewCall, type TxOutcome } from "./chain";
 import list from "./drop1-tokens.json";
 
 export const tiers = ["common", "rare", "epic", "legendary"] as const;
@@ -22,7 +23,7 @@ const byId = new Map<number, Drop1Token>(rows.map((row) => [row.tokenId, { ...ro
 export const DROP1_TOTAL = rows.length;
 export const MINTED_STORAGE_KEY = "neargotchi-drop1-minted";
 
-export type DropErrorCode = "sold_out";
+export type DropErrorCode = "sold_out" | "paused" | "no_funds" | "rejected" | "failed";
 
 export class DropError extends Error {
   readonly code: DropErrorCode;
@@ -151,14 +152,128 @@ export function ensureMinted(tokenId: number) {
   if (findToken(tokenId) && !minted.includes(tokenId)) writeMinted([...minted, tokenId]);
 }
 
+// ---------- testnet (contracts/drop1): drop_status, nft_mint, nft_tokens_for_owner ----------
+
+type ChainStatus = { minted: number; total: number; sold_out: boolean; paused: boolean };
+type ChainToken = { token_id: string };
+
+/** Local view of the contract's drop_status. */
+const chainStatus = async (): Promise<DropStatus> => {
+  const s = await viewCall<ChainStatus>("drop_status");
+  return { minted: s.minted, total: s.total, soldOut: s.sold_out, paused: s.paused };
+};
+
+/** Maps a wallet / RPC / contract failure to a DropError. */
+function toDropError(error: unknown): DropError {
+  if (error instanceof DropError) return error;
+  const text = String((error as { message?: string } | null)?.message ?? error).toLowerCase();
+  if (text.includes("sold out")) return new DropError("sold_out");
+  if (text.includes("paused")) return new DropError("paused");
+  if (/not enough|notenoughbalance|insufficient|lack ?balance|exceeds the balance/.test(text)) return new DropError("no_funds");
+  if (/reject|denied|cancel|closed|declin/.test(text)) return new DropError("rejected");
+  return new DropError("failed");
+}
+
+const failureText = (outcome: TxOutcome | void | undefined) => {
+  const status = outcome && typeof outcome.status === "object" ? outcome.status : null;
+  return status?.Failure ? JSON.stringify(status.Failure) : null;
+};
+
+/** The token a successful nft_mint outcome returned (nft_mint's promise result = on_reveal's Token). */
+function tokenFromOutcome(outcome: TxOutcome | void | undefined): Drop1Token | null {
+  const failure = failureText(outcome);
+  if (failure) throw toDropError(new Error(failure));
+  const token = outcomeValue<ChainToken>(outcome);
+  return token ? findToken(Number(token.token_id)) : null;
+}
+
+const SNAPSHOT_KEY = "neargotchi-drop1-owned-before";
+const ownedIds = async (accountId: string) =>
+  (await viewCall<ChainToken[]>("nft_tokens_for_owner", { account_id: accountId, from_index: "0", limit: 300 })).map((t) => Number(t.token_id));
+
+/** Ids the connected account owns on the contract (My NFTs: /pet and /mint). */
+export async function getOwnedTokens(accountId: string): Promise<Drop1Token[]> {
+  const ids = await ownedIds(accountId);
+  return ids.map((id) => findToken(id)).filter((t): t is Drop1Token => !!t);
+}
+
+/** Fallback when the outcome has no token: the one id the account owns now that it didn't before the mint. */
+async function tokenFromOwnership(accountId: string): Promise<Drop1Token | null> {
+  let before: number[] = [];
+  try {
+    before = JSON.parse(window.sessionStorage.getItem(SNAPSHOT_KEY) ?? "[]") as number[];
+  } catch {
+    // storage blocked: any owned token counts as new
+  }
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const fresh = (await ownedIds(accountId)).filter((id) => !before.includes(id));
+    if (fresh.length) return findToken(fresh[fresh.length - 1]);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  return null;
+}
+
+async function chainHatch(): Promise<Drop1Token> {
+  const { getNear, activeAccountId } = await import("./near");
+  const { selector } = await getNear();
+  const accountId = activeAccountId(selector);
+  if (!accountId) throw new DropError("failed");
+  const status = await chainStatus();
+  if (status.soldOut) throw new DropError("sold_out");
+  if (status.paused) throw new DropError("paused");
+  try {
+    window.sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(await ownedIds(accountId)));
+  } catch {
+    // snapshot only helps the fallback
+  }
+  try {
+    const { actionCreators } = await import("@near-wallet-selector/core");
+    const wallet = await selector.wallet();
+    // Redirect wallets (MyNearWallet) leave the page here and return to /mint?transactionHashes=… (see resumeMint).
+    const outcome = await wallet.signAndSendTransaction({
+      receiverId: DROP1_CONTRACT,
+      actions: [actionCreators.functionCall("nft_mint", {}, BigInt(MINT_GAS), BigInt(MINT_DEPOSIT))],
+    });
+    const token = tokenFromOutcome(outcome as TxOutcome | void) ?? (await tokenFromOwnership(accountId));
+    if (!token) throw new DropError("failed");
+    return token;
+  } catch (error) {
+    throw toDropError(error);
+  }
+}
+
+/** /mint after a redirect wallet: reads the finished nft_mint (?transactionHashes=) and returns its token. */
+export async function resumeMint(hash: string, accountId: string): Promise<Drop1Token> {
+  try {
+    const token = tokenFromOutcome(await txStatus(hash, accountId)) ?? (await tokenFromOwnership(accountId));
+    if (!token) throw new DropError("failed");
+    return token;
+  } catch (error) {
+    throw toDropError(error);
+  }
+}
+
+/** Wallet error params on the return URL (MyNearWallet: ?errorCode=…&errorMessage=…). */
+export const dropErrorFromUrl = (message: string) => toDropError(new Error(message));
+
 // ---------- async API (what the UI calls) ----------
 
-export async function getDropStatus(): Promise<{ minted: number; total: number; soldOut: boolean }> {
+export type DropStatus = { minted: number; total: number; soldOut: boolean; paused?: boolean };
+
+export async function getDropStatus(): Promise<DropStatus> {
+  if (isTestnet) {
+    try {
+      return await chainStatus();
+    } catch {
+      return { minted: 0, total: DROP1_TOTAL, soldOut: false };
+    }
+  }
   return status(readMinted());
 }
 
-/** Draws one free token from the whole pool and marks it minted. Throws DropError("sold_out"). */
+/** Draws one free token from the whole pool and marks it minted. Throws DropError. Testnet: a real 2 NEAR mint. */
 export async function hatchRandom(): Promise<Drop1Token> {
+  if (isTestnet) return chainHatch();
   const token = claimRandomToken();
   if (!token) throw new DropError("sold_out");
   return token;
@@ -170,12 +285,19 @@ export async function getToken(tokenId: number): Promise<Drop1Token | null> {
 
 /** Demo only (sold-out screen): forgets every minted id in this browser. A saved pet keeps its token. */
 export async function resetDrop(): Promise<void> {
+  if (isTestnet) return;
   writeMinted([]);
   listeners.forEach((listener) => listener([]));
 }
 
-/** Calls back with the new status on claims in this tab and on storage changes from other tabs. */
-export function subscribeDrop(callback: (next: { minted: number; total: number; soldOut: boolean }) => void): () => void {
+/** Calls back with the new status on claims in this tab and on storage changes from other tabs (testnet: polls every 10 s). */
+export function subscribeDrop(callback: (next: DropStatus) => void): () => void {
+  if (isTestnet) {
+    const timer = setInterval(() => {
+      chainStatus().then(callback, () => {});
+    }, 10000);
+    return () => clearInterval(timer);
+  }
   const local = (minted: number[]) => callback(status(minted));
   listeners.add(local);
   const onStorage = (event: StorageEvent) => {

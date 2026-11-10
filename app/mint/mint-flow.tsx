@@ -5,19 +5,24 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import DropProgress from "../../components/DropProgress";
 import { fill, mintPage } from "../../lib/copy";
+import { isTestnet } from "../../lib/chain";
 import {
   DROP1_TOTAL,
   DropError,
+  dropErrorFromUrl,
   getDropStatus,
   hatchRandom,
   resetDrop,
+  resumeMint,
   subscribeDrop,
   type Drop1Token,
+  type DropErrorCode,
 } from "../../lib/drop1";
 import {
   MintError,
   PET_NAME_MAX,
   findPet,
+  getPet,
   getPets,
   isPersistent,
   mintPet,
@@ -36,7 +41,7 @@ import HatchStage from "./hatch-stage";
 /** loading → ready | soldOut; ready → hatching (draw, animation, reveal) → /pet. */
 type View = "loading" | "ready" | "soldOut" | "hatching";
 type Focus = "hatch" | "line" | "reveal" | "soldOut" | null;
-type Status = { minted: number; total: number; soldOut: boolean };
+type Status = { minted: number; total: number; soldOut: boolean; paused?: boolean };
 
 /**
  * Dev-only QA hook: /mint?debughatch=slow delays the draw by 3s (wobble loop), =fail makes it throw
@@ -74,7 +79,7 @@ export default function MintFlow() {
   const [pet, setPet] = useState<DemoPet | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [line, setLine] = useState("");
-  const [hatchError, setHatchError] = useState(false);
+  const [hatchError, setHatchError] = useState<DropErrorCode | "demo" | null>(null);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<NameError | null>(null);
   const [leaving, setLeaving] = useState(false);
@@ -144,17 +149,27 @@ export default function MintFlow() {
     setHatchKey((key) => key + 1);
   };
 
-  const hatch = async () => {
-    if (viewRef.current !== "ready" || !account) return;
-    setHatchError(false);
+  /** Shared by a fresh hatch and by the return from a redirect wallet: `draw` yields the token, then it is saved as a pet. */
+  const runHatch = async (draw: () => Promise<Drop1Token>) => {
+    setHatchError(null);
     go("hatching");
     setStarted(true);
-    setLine(mintPage.hatching);
+    setLine(isTestnet ? mintPage.chain.waitingWallet : mintPage.hatching);
     setFocus("line");
     try {
       await debugHatch();
-      const drawn = await hatchRandom();
-      setPet(await mintPet({ token: drawn }));
+      const drawn = await draw();
+      setLine(mintPage.hatching);
+      let saved: DemoPet;
+      try {
+        saved = await mintPet({ token: drawn });
+      } catch (error) {
+        // reloaded after the mint: the pet already exists
+        const existing = isTestnet && error instanceof MintError ? await getPet(String(drawn.tokenId)) : null;
+        if (!existing) throw error;
+        saved = existing;
+      }
+      setPet(saved);
       setToken(drawn);
     } catch (error) {
       resetHatch();
@@ -164,11 +179,34 @@ export default function MintFlow() {
         setFocus("soldOut");
       } else {
         go("ready");
-        setHatchError(true);
+        setHatchError(error instanceof DropError ? error.code : "demo");
         setFocus("hatch");
       }
     }
   };
+
+  const hatch = () => {
+    if (viewRef.current !== "ready" || !account) return;
+    return runHatch(hatchRandom);
+  };
+
+  // Redirect wallets return to /mint?transactionHashes=… (or ?errorCode=…): finish that mint once.
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (!isTestnet || !walletReady || !account || resumed.current || view !== "ready") return;
+    const params = new URLSearchParams(window.location.search);
+    const hash = params.get("transactionHashes")?.split(",").pop();
+    const failure = params.get("errorMessage") || params.get("errorCode");
+    if (!hash && !failure) return;
+    resumed.current = true;
+    window.history.replaceState(null, "", window.location.pathname);
+    if (failure) {
+      setHatchError(dropErrorFromUrl(decodeURIComponent(failure)).code);
+      return;
+    }
+    void runHatch(() => resumeMint(hash!, account.accountId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTestnet, walletReady, account, view]);
 
   const hatched = () => {
     if (!token) return;
@@ -250,15 +288,15 @@ export default function MintFlow() {
             ) : (
               <button ref={hatchRef} type="button" className="button button-primary mint-hatch-button" onClick={hatch}>
                 {mintPage.hatchButton}
-                <span className="mint-tag">{mintPage.hatchTag}</span>
+                <span className="mint-tag">{isTestnet ? mintPage.chain.hatchTag : mintPage.hatchTag}</span>
               </button>
             )}
             {hatchError ? (
               <p className="mint-error" role="alert">
-                {mintPage.hatchError}
+                {hatchError === "demo" || hatchError === "sold_out" ? mintPage.hatchError : mintPage.chain.errors[hatchError]}
               </p>
             ) : null}
-            <p className="mint-hint">{mintPage.readyHint}</p>
+            <p className="mint-hint">{isTestnet ? mintPage.chain.readyHint : mintPage.readyHint}</p>
           </div>
         ) : null}
 

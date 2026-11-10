@@ -211,6 +211,18 @@ export const mintPage = {
   hatchTag: "demo",
   readyHint: "you don't pick the pet. the egg does. common, rare, epic or legendary.",
   hatchError: "the egg didn't crack. try again.",
+  /** testnet (NEXT_PUBLIC_CHAIN=testnet): real 2 NEAR mint */
+  chain: {
+    hatchTag: "2 near · testnet",
+    readyHint: "2 near on testnet. the contract picks the pet, not you. common, rare, epic or legendary.",
+    waitingWallet: "confirm in your wallet…",
+    errors: {
+      paused: "hatching is paused right now. try again soon.",
+      no_funds: "not enough testnet near. you need 2 near plus a little gas.",
+      rejected: "cancelled in the wallet. nothing was spent.",
+      failed: "the egg didn't crack. check your wallet and try again.",
+    },
+  },
   hatching: "hatching…",
   waiting: "almost… the egg is still wobbling.",
   /** role=status line once the pet is out. */
