@@ -41,7 +41,7 @@ You need a NEAR **testnet** account with at least ~2.1 testnet NEAR (get some fr
 
 ## Honest notes
 
-- The project started on 2026-11-05, before the hackathon window; the art and site pre-date the contract and wallet work.
+- The git history starts on 2026-11-05: the site, art and demo game pre-date the contract and wallet work (tasks 057-058).
   We use no private libraries, only public npm and crates.io dependencies.
 - Testnet only. No audit. Do not use with real funds.
 
