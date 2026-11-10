@@ -116,7 +116,7 @@ await test("fallback (task 065): Haiku 400 → one retry on GLM with reasoning_e
 await test("fallback: Haiku timeout or empty content also retries on GLM", async () => {
   for (const first of [async () => { throw Object.assign(new Error("t"), { name: "TimeoutError" }); }, reply("   ")]) {
     let n = 0;
-    const res = await ai.handleChat(good, "9.9.9.2", env, async (url, init) => (++n === 1 ? first() : reply("glm ok")()));
+    const res = await ai.handleChat(good, "9.9.9.2", env, async () => (++n === 1 ? first() : reply("glm ok")()));
     assert.deepEqual(res.body, { reply: "glm ok" });
     assert.equal(n, 2);
   }

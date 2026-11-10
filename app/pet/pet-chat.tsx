@@ -9,7 +9,6 @@ import {
   chatWithPet,
   getChat,
   subscribeChat,
-  type ChatKind,
   type ChatMessage,
   type DemoPet,
 } from "../../lib/mocks";
