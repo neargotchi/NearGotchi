@@ -252,12 +252,16 @@ export default function MintFlow() {
         </h2>
         <p className="mint-card-text">{mintPage.soldOut.body}</p>
         <DropProgress className="mint-progress" />
-        <div className="mint-actions">
-          <button type="button" className="button button-secondary" onClick={resetDemoDrop}>
-            {mintPage.soldOut.reset}
-          </button>
-        </div>
-        <p className="mint-hint">{fill(mintPage.soldOut.note, { total: String(status.total) })}</p>
+        {isTestnet ? null : (
+          <>
+            <div className="mint-actions">
+              <button type="button" className="button button-secondary" onClick={resetDemoDrop}>
+                {mintPage.soldOut.reset}
+              </button>
+            </div>
+            <p className="mint-hint">{fill(mintPage.soldOut.note, { total: String(status.total) })}</p>
+          </>
+        )}
       </div>
     );
   }

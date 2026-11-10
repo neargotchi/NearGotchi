@@ -3,13 +3,33 @@
 An AI pet on NEAR. Hatch one of 300 pixel gotchis (common / rare / epic / legendary) for 2 NEAR, name it, feed it, play with it.
 Built for the NEAR hackathon (deadline 2026-11-14). **Testnet only.**
 
-- Live site: https://neargochi.vercel.app (demo mode by default)
+- Live site: https://neargochi.vercel.app (real testnet mode needs `NEXT_PUBLIC_CHAIN=testnet`; without it the site runs the offline demo)
 - Drop 1 NFT contract (testnet): [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
 - Test mint (admin account, token #83): [`9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB`](https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB)
 
-## Try it (about 3 minutes)
+## Quick start for judges (no install)
 
-You need a NEAR **testnet** account with at least ~2.1 testnet NEAR (get some from a testnet faucet; it is free and has no value).
+You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 testnet NEAR (free from a testnet faucet, no value).
+
+1. Open https://neargochi.vercel.app/mint → you see the live counter from the contract, "x / 300 hatched".
+2. Click **connect wallet** and sign in → the header shows your real account id.
+3. Click **hatch** (2 NEAR + gas) and approve in the wallet → the egg cracks and shows the pet the contract drew for you, with its tier. The counter goes up by one.
+4. Open **/pet** → feed tab → **buy & feed** a snack (small testnet NEAR payment, approve in the wallet) → the pet eats and its hunger drops.
+5. Open the **chat** tab and talk to it → answers come from NEAR AI ("powered by near ai"), each answered message costs 4 energy. The **energy pack** in the feed tab refills it.
+
+| | On-chain (NEAR testnet) | Off-chain (your browser) |
+|---|---|---|
+| Pet NFT, ownership, random draw | yes (`neargotchi-drop1-ng57.testnet`) | |
+| Hatch payment (2 NEAR), 33/33/34 split, 5% royalty | yes | |
+| Snack and energy-pack payments | yes (plain NEAR transfer to the team account) | the effect (hunger, energy, stock) |
+| Hunger, energy, stats, chat history | | yes |
+| Mini-games (catch the snack, fetch, hide & seek) | | yes |
+| Chat answers | | NEAR AI Cloud via a server route |
+
+- Contract: [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
+- Test mint (admin account, token #83): [`9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB`](https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB)
+
+## Run it locally
 
 1. `npm install`
 2. `cp .env.example .env.local` and set `NEXT_PUBLIC_CHAIN=testnet`
@@ -55,7 +75,7 @@ Without the key the chat falls back to scripted answers and says "demo mode (moc
 ## Honest notes
 
 - The git history starts on 2026-11-05: the site, art and demo game pre-date the contract and wallet work (tasks 057-058).
-  We use no private libraries, only public npm and crates.io dependencies.
+  [USER: list of own libraries or "none"]
 - Testnet only. No audit. Do not use with real funds.
 
 ## Stack
