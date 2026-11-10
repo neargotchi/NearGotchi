@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { isTestnet } from "../../lib/chain";
+import PetLoader from "../../components/PetLoader";
 import { fill, mintPage, petPage, snackLabels } from "../../lib/copy";
 import {
   PET_RULES,
@@ -132,7 +133,7 @@ export default function PetView() {
     focusTitle.current = false;
   }, [ready, account, pet]);
 
-  if (!ready || !walletReady) return <div className="mint-loading" aria-busy="true" />;
+  if (!ready || !walletReady) return <PetLoader />;
 
   if (!account) {
     return (

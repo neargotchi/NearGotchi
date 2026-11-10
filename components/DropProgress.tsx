@@ -14,11 +14,21 @@ type Status = { minted: number; total: number };
  */
 export default function DropProgress({ className }: { className?: string }) {
   const [status, setStatus] = useState<Status | null>(null);
+  /** The contract could not be read: show "—", never a made-up 0. */
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let live = true;
-    getDropStatus().then((next) => live && setStatus(next));
-    const unsubscribe = subscribeDrop((next) => live && setStatus(next));
+    getDropStatus().then((next) => {
+      if (!live) return;
+      if (next) setStatus(next);
+      else setFailed(true);
+    });
+    const unsubscribe = subscribeDrop((next) => {
+      if (!live) return;
+      setStatus(next);
+      setFailed(false);
+    });
     return () => {
       live = false;
       unsubscribe();
@@ -28,13 +38,13 @@ export default function DropProgress({ className }: { className?: string }) {
   const total = status?.total ?? DROP1_TOTAL;
   const on = status ? filledCells(status) : 0;
   const label = fill(dropProgress.label, {
-    minted: status ? String(status.minted) : dropProgress.pending,
+    minted: status ? String(status.minted) : failed ? dropProgress.unavailable : dropProgress.pending,
     total: String(total),
-    left: status ? String(total - status.minted) : dropProgress.pending,
+    left: status ? String(total - status.minted) : failed ? dropProgress.unavailable : dropProgress.pending,
   });
 
   return (
-    <div className={["drop-progress", className].filter(Boolean).join(" ")} aria-busy={status ? undefined : true}>
+    <div className={["drop-progress", className].filter(Boolean).join(" ")} aria-busy={status || failed ? undefined : true}>
       <div className="drop-progress-bar" aria-hidden="true">
         {Array.from({ length: CELLS }, (_, index) => (
           <span key={index} className={index < on ? "is-on" : undefined} />

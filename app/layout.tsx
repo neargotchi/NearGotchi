@@ -7,6 +7,7 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
 import { THEME_COLORS, themeInitScript } from "../lib/theme";
 import SiteFooter from "./site-footer";
 import SiteHeader from "./site-header";
+import Toaster from "./toaster";
 
 const pressStart = Press_Start_2P({
   subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({
         <SiteHeader />
         {children}
         <SiteFooter />
+        <Toaster />
       </body>
     </html>
   );

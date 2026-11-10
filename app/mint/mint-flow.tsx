@@ -104,8 +104,9 @@ export default function MintFlow() {
     getPets().then(async () => {
       const next = await getDropStatus();
       if (!live || viewRef.current !== "loading") return;
-      setStatus(next);
-      go(next.soldOut ? "soldOut" : "ready");
+      // RPC failed (null): keep going, the hatch itself re-checks the contract; the bar shows "—"
+      if (next) setStatus(next);
+      go(next?.soldOut ? "soldOut" : "ready");
     });
 
     // Other tabs keep the view in sync; a running hatch/reveal is left alone.
@@ -173,7 +174,8 @@ export default function MintFlow() {
       setToken(drawn);
     } catch (error) {
       resetHatch();
-      setStatus(await getDropStatus());
+      const fresh = await getDropStatus();
+      if (fresh) setStatus(fresh);
       if (error instanceof DropError && error.code === "sold_out") {
         go("soldOut");
         setFocus("soldOut");
@@ -238,7 +240,8 @@ export default function MintFlow() {
 
   const resetDemoDrop = async () => {
     await resetDrop();
-    setStatus(await getDropStatus());
+    const fresh = await getDropStatus();
+    if (fresh) setStatus(fresh);
     resetHatch();
     go("ready");
     setFocus("hatch");

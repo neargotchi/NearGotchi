@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { toast } from "../lib/toast";
+
 import { fill, header } from "../lib/copy";
 import { useWallet } from "../lib/use-wallet";
 import { DEMO_ACCOUNT_ID, connect, disconnect } from "../lib/wallet";
-
-const NOTE_MS = 4000;
 
 /**
  * Header + burger wallet (docs/DEVLOG.md §2). Disconnected: "connect wallet · demo" connects the
@@ -19,24 +19,14 @@ export default function WalletMenu({ variant = "header" }: { variant?: "header" 
   const { account } = useWallet();
   const connected = account !== null;
   const [open, setOpen] = useState(false);
-  const [note, setNote] = useState<string | null>(null);
-  const noteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
 
+  /** Connect / disconnect messages go to the shared toast (bottom right). */
   const say = (text: string | null) => {
-    if (noteTimer.current) clearTimeout(noteTimer.current);
-    setNote(text);
-    if (text) noteTimer.current = setTimeout(() => setNote(null), NOTE_MS);
+    if (text) toast(text);
   };
-
-  useEffect(
-    () => () => {
-      if (noteTimer.current) clearTimeout(noteTimer.current);
-    },
-    [],
-  );
 
   // The panel closes on Esc (focus back to the chip) and, in the header, on a tap outside.
   useEffect(() => {
@@ -117,9 +107,6 @@ export default function WalletMenu({ variant = "header" }: { variant?: "header" 
           </button>
         </div>
       ) : null}
-      <p className="wallet-note" role="status">
-        {note}
-      </p>
     </div>
   );
 }

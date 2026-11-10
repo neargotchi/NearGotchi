@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useEffectEvent, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 
 import { fill, petPage } from "../../../lib/copy";
+import { useGameModal } from "./use-game-modal";
 import {
   BALL_GROUND_Y,
   FETCH,
@@ -441,7 +442,7 @@ export default function FetchGame({
     deviceRef.current?.focus({ preventScroll: true });
   };
 
-  const stop = () => {
+  const reset = (announce: boolean) => {
     if (frame.current !== null) cancelAnimationFrame(frame.current);
     frame.current = null;
     game.current = fresh();
@@ -453,8 +454,11 @@ export default function FetchGame({
     go("idle");
     setLive("");
     draw();
-    onStop();
+    if (announce) onStop();
   };
+
+  /** Quit a running round (announces "stopped"). */
+  const stop = () => reset(true);
 
   // Keyboard: space held to swing, released to throw; P pauses / resumes.
   const onKey = useEffectEvent((event: KeyboardEvent, down: boolean) => {
@@ -513,11 +517,20 @@ export default function FetchGame({
     press();
   };
 
+  /** The game opens as a big modal while a round is running, paused or showing its result (task 064). */
+  const modal = phase !== "idle";
+  const close = () => (phase === "over" ? reset(false) : stop());
+  useGameModal(modal, close);
   const playing = phase === "run" || phase === "paused";
   const time = `0:${String(seconds).padStart(2, "0")}`;
 
   return (
-    <div className="simon catch fetch">
+    <div className={modal ? "simon catch fetch is-modal" : "simon catch fetch"} role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-label={modal ? copy.title : undefined}>
+      {modal ? (
+        <button type="button" className="game-modal-close button button-secondary" aria-label={petPage.games.close} onClick={close}>
+          <span aria-hidden="true">×</span>
+        </button>
+      ) : null}
       <div ref={deviceRef} className="simon-device" tabIndex={-1}>
         <div className="catch-screen fetch-screen">
           <canvas

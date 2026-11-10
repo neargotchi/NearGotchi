@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { fill, petPage } from "../../../lib/copy";
+import { useGameModal } from "./use-game-modal";
 import { HIDESEEK, finalSlots, isFound, makeRound, marks, steps4, viewAt, type Round, type SpotView } from "../../../lib/hideseek-game";
 import SpotSprite, { SPOT_TOP } from "./hide-spots";
 
@@ -209,7 +210,7 @@ export default function HideSeek({
     deviceRef.current?.focus({ preventScroll: true });
   };
 
-  const stop = () => {
+  const reset = (announce: boolean) => {
     if (frame.current !== null) cancelAnimationFrame(frame.current);
     frame.current = null;
     game.current = { ...game.current, round: PREVIEW, t: 0, reveal: null, score: 0, pauseNext: false };
@@ -218,8 +219,11 @@ export default function HideSeek({
     go("idle");
     setLive("");
     redraw();
-    onStop();
+    if (announce) onStop();
   };
+
+  /** Quit a running round (announces "stopped"). */
+  const stop = () => reset(true);
 
   const canPick = () => {
     const g = game.current;
@@ -343,11 +347,20 @@ export default function HideSeek({
             ? copy.pick
             : null;
   const order = spots.map((s, i) => i).sort((a, b) => spots[a].slot - spots[b].slot);
+  /** The game opens as a big modal while a round is running, paused or showing its result (task 064). */
+  const modal = phase !== "idle";
+  const close = () => (phase === "over" ? reset(false) : stop());
+  useGameModal(modal, close);
   const playing = phase === "run" || phase === "paused";
   const width = spotWidth(n);
 
   return (
-    <div className="simon catch hide">
+    <div className={modal ? "simon catch hide is-modal" : "simon catch hide"} role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-label={modal ? copy.title : undefined}>
+      {modal ? (
+        <button type="button" className="game-modal-close button button-secondary" aria-label={petPage.games.close} onClick={close}>
+          <span aria-hidden="true">×</span>
+        </button>
+      ) : null}
       <div ref={deviceRef} className="simon-device" tabIndex={-1}>
         <div className="catch-screen hide-screen">
           <div className="hide-field" style={{ "--spot-w": `${width}%`, "--pet-h": `${PET_H}%` } as CSSProperties}>

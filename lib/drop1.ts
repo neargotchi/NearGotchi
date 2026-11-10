@@ -260,13 +260,20 @@ export const dropErrorFromUrl = (message: string) => toDropError(new Error(messa
 
 export type DropStatus = { minted: number; total: number; soldOut: boolean; paused?: boolean };
 
-export async function getDropStatus(): Promise<DropStatus> {
+/**
+ * The drop counter. Testnet: read from the contract (one retry); null when the RPC failed, so the UI can show
+ * "—" instead of a made-up 0 (task 064). Demo: this browser's list, never null.
+ */
+export async function getDropStatus(): Promise<DropStatus | null> {
   if (isTestnet) {
-    try {
-      return await chainStatus();
-    } catch {
-      return { minted: 0, total: DROP1_TOTAL, soldOut: false };
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await chainStatus();
+      } catch {
+        if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 800));
+      }
     }
+    return null;
   }
   return status(readMinted());
 }

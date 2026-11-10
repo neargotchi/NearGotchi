@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { fill, petPage, snackLabels } from "../../lib/copy";
 import { isTestnet } from "../../lib/chain";
+import { toast } from "../../lib/toast";
 import { levelOf, type DemoPet } from "../../lib/mocks";
 import { ENERGY_PACK, NEAR_PRICES, buyItem, getShop, subscribeShop, type BuyResult, type ItemId, type ShopItem } from "../../lib/shop";
 import { refill } from "../../lib/wallet";
@@ -98,6 +99,7 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
         time: clock(timeLeft),
       });
       setMessage(text);
+      if (result === "cancelled" || result === "failed") toast(text, "error");
       onBought(next, result, id);
       setItems(await getShop());
     } finally {

@@ -3184,3 +3184,79 @@ main > section[class] { background: transparent; }
 .energy-pack .snack-svg { color: var(--accent, currentColor); }
 .chat-shop-link { background: none; border: 0; padding: 0; font: inherit; color: var(--text); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .chat-shop-link:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+/* ---------- Games as a modal (task 064): a round (running, paused or its result) opens big over the page ---------- */
+/* .game-card is a size container (layout containment) and would trap position: fixed inside the card. */
+.game-card:has(.simon.is-modal) { container-type: normal; }
+.simon.is-modal {
+  --ar: 1.3333;
+  position: fixed;
+  inset: 5svh 5vw;
+  z-index: 90;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  justify-items: center;
+  gap: round(calc(16px * var(--ui-scale)), 1px);
+  margin: 0;
+  padding: round(calc(24px * var(--ui-scale)), 1px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--page);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.72), round(calc(6px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px) 0 var(--shadow);
+}
+.simon.fetch.is-modal,
+.simon.hide.is-modal { --ar: 1.6667; }
+.simon.is-modal .simon-device { width: min(100%, max(round(calc(280px * var(--ui-scale)), 1px), calc((100svh - 300px) * var(--ar) + 90px))); max-width: 100%; }
+.simon.is-modal .game-rules,
+.simon.is-modal .games-cost { display: none; }
+.simon.is-modal .catch-side { justify-items: center; align-content: center; }
+.simon.is-modal .catch-side .simon-controls { justify-content: center; }
+.game-modal-close {
+  position: absolute;
+  top: round(calc(10px * var(--ui-scale)), 1px);
+  right: round(calc(10px * var(--ui-scale)), 1px);
+  z-index: 2;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+@media (max-width: 640px) {
+  /* phones: the game takes the whole screen */
+  .simon.is-modal { inset: 0; padding: round(calc(14px * var(--ui-scale)), 1px); border: 0; box-shadow: none; }
+  .simon.is-modal .simon-device { width: min(100%, max(240px, calc((100svh - 260px) * var(--ar) + 90px))); }
+}
+
+/* ---------- /pet loading screen (task 064) ---------- */
+.pet-loader { display: grid; justify-items: center; align-content: center; gap: round(calc(18px * var(--ui-scale)), 1px); min-height: round(calc(480px * var(--ui-scale)), 1px); }
+.pet-loader-egg { width: round(calc(96px * var(--ui-scale)), 1px); height: auto; image-rendering: pixelated; animation: pet-loader-hop 0.9s steps(2, jump-none) infinite; }
+.pet-loader-text { margin: 0; font-family: var(--font-pixel), monospace; font-size: 0.75rem; line-height: 1.6; color: var(--text); text-align: center; }
+.pet-loader-dots i { font-style: normal; animation: pet-loader-dot 1.2s steps(1, end) infinite; opacity: 0; }
+.pet-loader-dots i:nth-child(2) { animation-delay: 0.3s; }
+.pet-loader-dots i:nth-child(3) { animation-delay: 0.6s; }
+@keyframes pet-loader-dot { 0% { opacity: 0; } 25%, 100% { opacity: 1; } }
+@keyframes pet-loader-hop { 0% { transform: translateY(0); } 100% { transform: translateY(round(calc(-6px * var(--ui-scale)), 1px)); } }
+@media (prefers-reduced-motion: reduce) {
+  .pet-loader-egg { animation: none; }
+  .pet-loader-dots i { animation: none; opacity: 1; }
+}
+
+/* ---------- Toasts (task 064): bottom right, pixel border like the cards ---------- */
+.toaster { position: fixed; right: round(calc(16px * var(--ui-scale)), 1px); bottom: round(calc(16px * var(--ui-scale)), 1px); z-index: 120; display: grid; gap: round(calc(10px * var(--ui-scale)), 1px); justify-items: end; max-width: min(calc(100vw - 32px), round(calc(360px * var(--ui-scale)), 1px)); pointer-events: none; }
+.toast {
+  margin: 0;
+  padding: round(calc(12px * var(--ui-scale)), 1px) round(calc(16px * var(--ui-scale)), 1px);
+  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: round(calc(4px * var(--ui-scale)), 1px) round(calc(4px * var(--ui-scale)), 1px) 0 var(--shadow);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  animation: toast-in 0.18s steps(3, end);
+}
+.toast.is-error { background: var(--pink, var(--surface)); color: var(--ink); }
+@keyframes toast-in { from { transform: translateY(round(calc(12px * var(--ui-scale)), 1px)); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

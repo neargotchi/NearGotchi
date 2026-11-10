@@ -322,12 +322,18 @@ await test("mintPet saves the drawn token; rename; update keeps it; release keep
   await assert.rejects(mocks.renamePet("scout"), (e) => e.code === "no_pet");
 });
 
-await test("hunger tempo (task 049): +3/min, 20 → 50 in 10 min; energy does not move (task 059)", async () => {
+await test("hunger tempo (task 064): +0.9/min, 0 → 100 in ~111 min, hungry (70) after ~78 min; energy does not move (task 059)", async () => {
   const start = Date.parse("2026-11-02T10:00:00.000Z");
   const pet = { ...basePet(4), hunger: 20, energy: 100, lastUpdated: new Date(start).toISOString() };
-  assert.equal(mocks.PET_RULES.hungerPerMin, 3);
+  assert.equal(mocks.PET_RULES.hungerPerMin, 0.9);
   const later = mocks.simulatePet(pet, start + 10 * 60000);
-  assert.equal(later.hunger, 50);
+  assert.equal(later.hunger, 29);
+  const fresh = { ...pet, hunger: 0 };
+  const at = (min) => mocks.simulatePet(fresh, start + min * 60000);
+  assert.equal(at(77).mood, "normal");
+  assert.equal(at(79).mood, "hungry", "hungry after ~78 min");
+  assert.ok(at(100).hunger < 100 && at(100).hunger >= 89, "starving (≥ 90, no games) only after ~100 min");
+  assert.equal(at(112).hunger, 100, "0 → 100 in ~111 min");
   assert.equal(later.energy, 100, "energy is constant over time");
   assert.equal(later.mood, "normal");
 });
@@ -393,9 +399,9 @@ await test("energy (task 059): constant over any time, no sleep from low energy;
       assert.notEqual(later.mood, "sleep");
     }
   }
-  const hour = mocks.simulatePet({ ...base, hunger: 20, energy: 100, mood: "normal" }, start + 60 * 60000);
-  assert.equal(hour.hunger, 100);
-  assert.equal(hour.mood, "hungry");
+  const hours = mocks.simulatePet({ ...base, hunger: 20, energy: 100, mood: "normal" }, start + 3 * 60 * 60000);
+  assert.equal(hours.hunger, 100);
+  assert.equal(hours.mood, "hungry");
   assert.equal(mocks.baseMood({ hunger: 0, energy: 0, mood: "sleep" }), "normal", "a stored sleep mood is ignored");
 });
 

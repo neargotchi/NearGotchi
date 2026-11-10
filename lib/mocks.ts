@@ -605,8 +605,11 @@ export function subscribePet(callback: (pet: DemoPet | null) => void): () => voi
 // ---------- /pet simulation (docs/DEVLOG.md §2; hunger tempo from PLANNER REVIEW 037) ----------
 
 export const PET_RULES = {
-  /** 20 → 70 (hungry) in ~17 min; never above 100 (task 049: 5 → 3, games were almost always blocked). */
-  hungerPerMin: 3,
+  /**
+   * Hunger rises 0.9 per minute (task 064: was 3): 0 → 100 in ~111 min, "hungry" (70) after ~78 min, starving (90,
+   * no games) after ~100 min. Never above 100. The ONLY place this rate lives.
+   */
+  hungerPerMin: 0.9,
   hungryAt: 70,
   /**
    * Economy (task 059, owner decisions 2026-11-09): energy never changes with time or games. It is spent ONLY

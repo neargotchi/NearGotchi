@@ -147,7 +147,7 @@ export const header = {
     chipLabel: isTestnet ? "wallet {account}, testnet. open menu" : "wallet {account}, demo. open menu",
     note: isTestnet ? "near testnet wallet" : "demo wallet · nothing is signed",
     connected: isTestnet ? "connected as {account}." : "connected as {account}. demo wallet, nothing is signed.",
-    disconnected: "disconnected. your gotchis wait in this browser.",
+    disconnected: isTestnet ? "wallet disconnected." : "wallet disconnected. your gotchis wait in this browser.",
     myPets: "my gotchis",
     disconnect: "disconnect",
   },
@@ -268,6 +268,8 @@ export const mintPage = {
 export const dropProgress = {
   label: isTestnet ? "{minted} / {total} hatched · {left} left · testnet" : "{minted} / {total} hatched · {left} left · demo",
   pending: "…",
+  /** the contract could not be read */
+  unavailable: "—",
 };
 
 /** Shown on /pet and /mint without a connected demo wallet (app/wallet-gate.tsx). */
@@ -328,6 +330,7 @@ export const petPage = {
     blocked: {
       hungry: "{name} is too hungry to play.",
     },
+    close: "close game",
     feedFirst: "feed it first",
     /** Cards under catch the snack (games in tasks 050–051). */
     /** Hide & seek (app/pet/games/hide-seek.tsx, lib/hideseek-game.ts). */
@@ -416,6 +419,7 @@ export const petPage = {
     hungry: "{name} is hungry.",
     normal: "{name} is chilling.",
   },
+  loading: "loading your gotchi",
   meters: { hunger: "hunger", energy: "energy", valueText: "{n} of 100" },
   balance: "{n} demo $NEARGotchi",
   /** Feed tab = shop (app/pet/tab-feed.tsx, lib/shop.ts): snacks fill hunger, the energy pack fills energy. */
