@@ -549,12 +549,12 @@
 @media (max-width: 1023px) {
   /* The mascot sits under the title here, so no bubble room above it. */
   :root { --section-space: 46px; --section-bubble: 0px; --content-gap: 32px; }
-  .hero-shell :is(.pets-heading, .section-head) > h2 { justify-self: center; font-size: clamp(20px, 5.6vw, 36px); }
+  .hero-shell :is(.pets-heading, .section-head) > h2 { justify-self: center; font-size: calc(clamp(22px, 6.4vw, 40px) * var(--ds)); }
   .hero-shell :is(.pets-heading, .section-head) > h2::before { display: none; }
   .hero-shell .section-head { align-items: center; }
   .hero-shell :is(.pets-heading, .section-head) > .mascot { justify-content: center; }
-  .hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) { font-size: clamp(8px, 2.25vw, 12px); }
-  .hero-shell .pet-mood { min-height: 40px; }
+  .hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) { font-size: max(8px, calc(clamp(9px, 2.5vw, 13px) * var(--ds))); }
+  .hero-shell .pet-mood { min-height: max(40px, calc(44px * var(--ds))); }
   .hero-shell .cta-marks { gap: 10px; }
   .cta-marks::before, .cta-marks::after { width: 12px; }
   /* Long labels ("try it: hatch your gotchi") fit one line at 390px and wrap below that. */
@@ -563,14 +563,14 @@
     width: auto;
     max-width: 420px;
     padding-inline: 16px;
-    font-size: clamp(10px, 2.5vw, 14px);
+    font-size: max(8px, calc(clamp(10px, 2.8vw, 16px) * var(--ds)));
     line-height: 1.4;
     white-space: normal;
     text-align: center;
   }
   .hero-shell .drop-actions { align-items: stretch; }
   .hero-shell .drop-actions .button { max-width: none; }
-  .hero-shell .faq-item summary { font-size: 12px; }
+  .hero-shell .faq-item summary { font-size: max(9px, calc(13px * var(--ds))); }
   .hero-shell .faq-item p { font-size: 1.0625rem; }
   .hero-shell .drop-items { --cols: 3; }
   /* globals.css sizes the values for this padding ("33% stakers /" on one line). */
@@ -612,11 +612,11 @@ body > .notfound-shell > .notfound { min-height: 0; }
 @media (max-width: 380px) { .site-footer-inner { width: calc(100% - 16px); } }
 /* Phones (task 075): mascots and section sprites ~12 % smaller, as the rest of the phone UI. */
 @media (max-width: 768px) {
-  .mascot-sprite, .hero-shell .mascot-sprite { height: 64px; }
-  .mascot-bubble { font-size: 14px; }
+  .mascot-sprite, .hero-shell .mascot-sprite { height: calc(72px * var(--ds)); }
+  .mascot-bubble { font-size: max(12px, calc(16px * var(--ds))); }
   .hero-shell .faq-item p { font-size: .9375rem; }
-  .mobile-menu nav a { min-height: 44px; padding: 12px 16px; font-size: 11px; }
-  .mobile-menu-actions .button { min-height: 46px; padding: 10px; font-size: 10px; }
+  .mobile-menu nav a { min-height: max(40px, calc(48px * var(--ds))); padding: calc(14px * var(--ds)) 16px; font-size: max(9px, calc(12px * var(--ds))); }
+  .mobile-menu-actions .button { min-height: max(40px, calc(52px * var(--ds))); padding: calc(12px * var(--ds)); font-size: max(8px, calc(11px * var(--ds))); }
 }
 
 /* ---------- $NEARGotchi (app/coin-section.tsx, task 076): one card under the numbers ---------- */

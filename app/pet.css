@@ -10,8 +10,7 @@
   --frame-line: var(--scene-accent);
   --frame-fill: var(--card-fill);
   --frame-width: 3px;
-  --corner: 14px;
-  --pixel-step: 4px;
+  --s: 3px;           /* corner stair (radius 9px) */
   position: relative;
   isolation: isolate;
   border: 0;
@@ -19,7 +18,7 @@
   background: transparent;
   box-shadow: none;
 }
-.pet-shell :is(.pet-stats, .snack-card, .simon-device) { --frame-width: 2px; --corner: 10px; --pixel-step: 3px; }
+.pet-shell :is(.pet-stats, .snack-card, .simon-device) { --frame-width: 2px; --s: 2px; }
 /* A running game opens as a fixed modal (.simon.is-modal, z-index 90) inside its card: the card
    must not trap it in its own stacking context while it is open. */
 .pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body):has(.is-modal) { isolation: auto; }
@@ -31,22 +30,26 @@
   z-index: -2;
   pointer-events: none;
   background: var(--frame-line);
-  clip-path: polygon(var(--corner) 0,calc(100% - var(--corner)) 0,
-    calc(100% - var(--corner)) var(--pixel-step),
-    calc(100% - var(--pixel-step)) var(--pixel-step),
-    calc(100% - var(--pixel-step)) var(--corner),100% var(--corner),
-    100% calc(100% - var(--corner)),
-    calc(100% - var(--pixel-step)) calc(100% - var(--corner)),
-    calc(100% - var(--pixel-step)) calc(100% - var(--pixel-step)),
-    calc(100% - var(--corner)) calc(100% - var(--pixel-step)),
-    calc(100% - var(--corner)) 100%,var(--corner) 100%,
-    var(--corner) calc(100% - var(--pixel-step)),
-    var(--pixel-step) calc(100% - var(--pixel-step)),
-    var(--pixel-step) calc(100% - var(--corner)),0 calc(100% - var(--corner)),
-    0 var(--corner),var(--pixel-step) var(--corner),
-    var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
+  /* Pixel-rounded corners (task 077): three stairs of --s px (radius 3 × --s), the rhythm of the
+     speech bubbles and buttons, instead of the two big notches that read as cut corners. */
+  clip-path: polygon(
+    calc(3 * var(--s)) 0, calc(100% - 3 * var(--s)) 0,
+    calc(100% - 3 * var(--s)) var(--s), calc(100% - 2 * var(--s)) var(--s),
+    calc(100% - 2 * var(--s)) calc(2 * var(--s)), calc(100% - var(--s)) calc(2 * var(--s)),
+    calc(100% - var(--s)) calc(3 * var(--s)), 100% calc(3 * var(--s)),
+    100% calc(100% - 3 * var(--s)), calc(100% - var(--s)) calc(100% - 3 * var(--s)),
+    calc(100% - var(--s)) calc(100% - 2 * var(--s)), calc(100% - 2 * var(--s)) calc(100% - 2 * var(--s)),
+    calc(100% - 2 * var(--s)) calc(100% - var(--s)), calc(100% - 3 * var(--s)) calc(100% - var(--s)),
+    calc(100% - 3 * var(--s)) 100%, calc(3 * var(--s)) 100%,
+    calc(3 * var(--s)) calc(100% - var(--s)), calc(2 * var(--s)) calc(100% - var(--s)),
+    calc(2 * var(--s)) calc(100% - 2 * var(--s)), var(--s) calc(100% - 2 * var(--s)),
+    var(--s) calc(100% - 3 * var(--s)), 0 calc(100% - 3 * var(--s)),
+    0 calc(3 * var(--s)), var(--s) calc(3 * var(--s)),
+    var(--s) calc(2 * var(--s)), calc(2 * var(--s)) calc(2 * var(--s)),
+    calc(2 * var(--s)) var(--s), calc(3 * var(--s)) var(--s));
 }
 .pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body)::after {
+  --s: calc(var(--frame-width) * .66);
   inset: var(--frame-width);
   z-index: -1;
   background: var(--frame-fill);
@@ -123,16 +126,59 @@
 /* Muted copy inside cards follows the scene ink (globals.css uses the old --text-muted). */
 .pet-shell :is(.snack-stock, .snack-effects, .pet-meta, .stat-note) { color: color-mix(in srgb, var(--scene-ink) 70%, transparent); }
 
-/* Game modal panel: card colours and an accent frame; the dimmed backdrop stays. */
+/* Game modal (task 077): one window sized to its content (board + pads + pause/stop), centred
+   in the area under the sticky header (z-index 20, above the whole /pet section); the board
+   width comes from the height that is left, so nothing is cut at 1920×1080, 1280×720 or on
+   phones; ✕ sits in the window corner; the page behind is dimmed almost opaque. */
+/* The /pet section is its own stacking context (isolation): while a game is open it sits above
+   the footer (later in the page) but stays under the sticky header (z-index 20). */
+.pet-shell .mint-section:has(.is-modal) { z-index: 15; }
 .pet-shell .simon.is-modal {
-  /* Starts under the sticky header (z-index 20, above the whole /pet section): before, its close
-     button (top 5svh + 10px) sat under the 67px bar and could not be clicked. */
-  inset: calc(var(--header-height) + 2svh) 5vw 3svh;
+  --reserve: 300px; /* modal padding + pads row + pause/stop row + device padding and gaps */
+  inset: auto 0;
+  top: calc(var(--header-height) + (100svh - var(--header-height)) / 2);
+  translate: 0 -50%;
+  width: fit-content;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100svh - var(--header-height) - 24px);
+  margin: 0 auto;
+  padding: calc(16px * var(--ds)) calc(20px * var(--ds)) calc(18px * var(--ds));
+  align-content: start;
   border: 0;
   color: var(--scene-ink);
   background: var(--card-fill);
-  box-shadow: 0 0 0 100vmax rgb(0 0 0 / .72), inset 0 0 0 3px var(--scene-accent);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / .86), inset 0 0 0 3px var(--scene-accent);
 }
+.pet-shell .simon.is-modal .simon-device {
+  width: min(calc(100vw - 72px), max(260px, calc((100svh - var(--header-height) - var(--reserve)) * var(--ar) + 40px)));
+}
+.pet-shell .simon.hide.is-modal { --reserve: 230px; }
+/* ✕: in the window corner, clear of the board frame (the window has its own padding). */
+.pet-shell .simon.is-modal .game-modal-close { top: 6px; right: 6px; min-width: 40px; min-height: 40px; z-index: 3; }
+.pet-shell .simon.is-modal { padding-top: calc(52px * var(--ds)); }
 @media (max-width: 640px) {
-  .pet-shell .simon.is-modal { inset: var(--header-height) 0 0; box-shadow: 0 0 0 100vmax rgb(0 0 0 / .72); }
+  .pet-shell .simon.is-modal {
+    --reserve: 250px;
+    top: calc(var(--header-height) + (100svh - var(--header-height)) / 2);
+    width: calc(100vw - 16px);
+    max-width: none;
+    padding: 48px 10px 12px;
+    box-shadow: 0 0 0 100vmax rgb(0 0 0 / .86), inset 0 0 0 2px var(--scene-accent);
+  }
+  .pet-shell .simon.is-modal .simon-device { width: min(100%, max(240px, calc((100svh - var(--header-height) - var(--reserve)) * var(--ar) + 40px))); }
 }
+
+/* Tabs: no second frame around the active tab (task 077). The square focus ring of the shared
+   buttons is dropped here; keyboard focus shows as the tab's own pixel line turning ink (plus a
+   thicker line), mouse clicks show nothing extra. */
+.pixel-ui .pet-tab:focus { outline: none; }
+.pixel-ui .pet-tab:focus-visible { outline: none; --frame-line: var(--scene-ink); }
+.pixel-ui .pet-tab:focus-visible::after { inset: 3px; }
+.pixel-ui .pet-tab[aria-selected="true"]:focus-visible::after { inset: 4px 3px 2px 4px; }
+
+/* Energy pack (its own section under the snack grid): a full-width card, not half a row. */
+.pet-shell .energy-pack { max-width: none; }
+.pet-shell .energy-pack .snack-card { width: 100%; }
+
+/* Pet device: no old black drop shadow under the framed body (task 077). */
+.pet-shell .pet-device { filter: none; }

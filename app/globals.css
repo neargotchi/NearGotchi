@@ -79,9 +79,11 @@ body { overscroll-behavior: none; }
 html { overflow-x: hidden; overflow-x: clip; }
 body { min-height: 100vh; overflow-x: clip; }
 
-/* Mobile menu open (app/mobile-menu.tsx): page behind the panel can't scroll. */
-html.menu-open,
-html.menu-open body { overflow: hidden; }
+/* Mobile menu open (app/mobile-menu.tsx): page behind the panel can't scroll. Only the root
+   (viewport) scroller is locked: overflow on <body> as well made body its own scroll container,
+   so the sticky header (and the burger panel inside it) jumped back to the top of the page
+   when the menu was opened after scrolling (task 077). */
+html.menu-open { overflow: hidden; }
 
 /* Page scrollbar hidden visually; scrolling (wheel, touch, keys, anchors) still works.
    Only the root scroller is affected, inner scroll areas keep their bars. */

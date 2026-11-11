@@ -299,28 +299,6 @@ body { background: var(--page); }
   color: var(--scene-ink);
 }
 :root[data-theme='dark'] .hero-shell > .hero { background-image: url('/hero/dark.png'); }
-/* Task 075: the scene's neon perspective floor (below the horizon of public/hero/*.png) read as
-   the old GUI right above "meet the pets". It is covered by the flat grid of the sections
-   below (same line colour, cell and opacity as .pets-grid); the art itself is unchanged and
-   the hills still end on the horizon line. */
-.hero-shell > .hero::after {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: max(var(--grid-zone), 0px);
-  pointer-events: none;
-  border-top: 2px solid var(--scene-border);
-  --flat-line: color-mix(in srgb, var(--grid-line) calc(var(--grid-opacity) * 100%), transparent);
-  background-color: var(--scene-color);
-  background-image: linear-gradient(to right, var(--flat-line) round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px)),
-    linear-gradient(to bottom, var(--flat-line) round(calc(1px * var(--ui-scale)), 1px), transparent round(calc(1px * var(--ui-scale)), 1px));
-  background-size: round(calc(96px * var(--ui-scale)), 1px) round(calc(96px * var(--ui-scale)), 1px);
-  background-position: 0 100%;
-}
-.hero-shell > .hero > .hero-content { z-index: 1; }
 .hero-content {
   box-sizing: border-box;
   width: min(1100px, calc(100% - 40px));
@@ -520,9 +498,12 @@ body { background: var(--page); }
 
 /* ---------- Phones + portrait tablets (≤768px) ---------- */
 @media (max-width: 768px) {
-  /* Task 075: phones ~12 % smaller than before (--ds 1 → .88 scales every ds-based size;
-     the fixed phone sizes below were cut by the same factor, tap targets stay ≥ 40px). */
-  :root { --ds: .88; --header-height: 56px; }
+  /* Phones: ONE multiplier (task 077). --ds scales every ds-based size of the site and the phone
+     sizes below are written as "base × --ds" (base = the 073 phone size); 1 → .88 (075) → .78
+     (077). Floors: tap targets 40px, body copy 13px. */
+  /* --ui-scale (globals.css: html font-size and its px lengths) .9 shrinks the rem/px sizes of
+     the routes still styled there (/mint, /pet internals); body copy stays ≥ 14px. */
+  :root { --ds: .78; --ui-scale: .9; --header-height: max(52px, calc(64px * var(--ds))); }
   /* The copy spans the whole width here: only the stars around the egg stay. */
   .hero-sky { display: none; }
   .hero-shell > .hero {
@@ -533,13 +514,13 @@ body { background: var(--page); }
     background-image: url('/hero/lightmobile.png');
   }
   :root[data-theme='dark'] .hero-shell > .hero { background-image: url('/hero/darkmobile.png'); }
-  .site-header-inner { width: calc(100% - 24px); gap: 6px; grid-template-columns: minmax(0, 1fr) 40px 40px 40px; }
-  .header-theme-toggle, .header-social-x, .menu-button { width: 40px; min-width: 40px; height: 40px; }
-  .header-theme-toggle .theme-icon { width: 19px; height: 19px; }
-  .header-social-x svg { width: 17px; height: 17px; }
-  .site-brand { font-size: clamp(10px, 3vw, 17px); gap: 4px; }
-  .site-brand img { width: 32px; height: 38px; }
-  .menu-icon, .menu-icon::before, .menu-icon::after { width: 20px; height: 3px; }
+  .site-header-inner { --tap: max(40px, calc(44px * var(--ds))); width: calc(100% - 24px); gap: 6px; grid-template-columns: minmax(0, 1fr) var(--tap) var(--tap) var(--tap); }
+  .header-theme-toggle, .header-social-x, .menu-button { width: var(--tap); min-width: var(--tap); height: var(--tap); min-height: var(--tap); }
+  .header-theme-toggle .theme-icon { width: calc(22px * var(--ds)); height: calc(22px * var(--ds)); }
+  .header-social-x svg { width: calc(20px * var(--ds)); height: calc(20px * var(--ds)); }
+  .site-brand { font-size: max(9px, calc(clamp(10px, 3.4vw, 19px) * var(--ds))); gap: 4px; }
+  .site-brand img { width: calc(36px * var(--ds)); height: calc(44px * var(--ds)); }
+  .menu-icon, .menu-icon::before, .menu-icon::after { width: calc(22px * var(--ds)); height: 3px; }
   /* Proportions measured from newheadermobile.png at 390 px. Title and subtitle
      sit just under the top clouds (they end at 18.6 % of the artwork); on short
      screens that gap gives way before anything else. Spare height opens above
@@ -551,14 +532,14 @@ body { background: var(--page); }
     min-height: 16px;
   }
   .hero-content::after { flex: 0 0 8px; }
-  .hero #hero-title { font-size: clamp(22px, 7.2vw, 50px); line-height: 1.2; }
-  .hero-subtitle { font-size: clamp(8px, 2.5vw, 14px); letter-spacing: .2em; margin: 9px 0; }
-  .hero .device-wrap { width: clamp(115px, min(42vw, 20dvh), 264px); max-width: 100%; margin: auto 0 -8px; }
-  .hero .hero-lede { font-size: clamp(13px, 3.4vw, 18px); max-width: 32ch; margin-top: 8px; }
-  .hero .hero-actions, .hero .hero-progress { width: clamp(200px, 60vw, 300px); }
-  .hero .hero-actions { flex-direction: column; gap: 10px; margin: 16px 0 auto; }
+  .hero #hero-title { font-size: calc(clamp(24px, 8.2vw, 56px) * var(--ds)); line-height: 1.2; }
+  .hero-subtitle { font-size: max(8px, calc(clamp(9px, 2.8vw, 16px) * var(--ds))); letter-spacing: .2em; margin: calc(10px * var(--ds)) 0; }
+  .hero .device-wrap { width: calc(clamp(130px, min(48vw, 22.5dvh), 300px) * var(--ds)); max-width: 100%; margin: auto 0 -8px; }
+  .hero .hero-lede { font-size: max(13px, calc(clamp(14px, 3.7vw, 20px) * var(--ds))); max-width: 32ch; margin-top: calc(10px * var(--ds)); }
+  .hero .hero-actions, .hero .hero-progress { width: calc(clamp(220px, 66vw, 340px) * var(--ds)); }
+  .hero .hero-actions { flex-direction: column; gap: calc(12px * var(--ds)); margin: calc(18px * var(--ds)) 0 auto; }
   .hero .hero-progress { margin-top: 12px; }
-  .hero .button { width: 100%; flex: none; min-height: 40px; padding: 9px 12px; font-size: clamp(10px, 2.75vw, 14px); }
+  .hero .button { width: 100%; flex: none; min-height: max(40px, calc(44px * var(--ds))); padding: calc(10px * var(--ds)) 12px; font-size: max(9px, calc(clamp(11px, 3.1vw, 16px) * var(--ds))); }
 }
 @media (max-width: 380px) {
   .site-header-inner { width: calc(100% - 16px); }
