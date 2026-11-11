@@ -2,6 +2,14 @@
   "name": "neargotchi",
   "version": "0.1.0",
   "private": true,
+  "description": "NEARGOTCHI: an AI pet on NEAR. Drop 1: 300 pixel gotchi NFTs.",
+  "homepage": "https://neargochi.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neargotchi/NearGochi.git"
+  },
+  "author": "neargotchi",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
