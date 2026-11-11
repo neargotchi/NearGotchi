@@ -119,6 +119,13 @@ Without the key the chat falls back to scripted answers and says "demo mode (moc
 - No audit. The money paths were reviewed by us (findings and what was not checked: `docs/REPORT.md`, DONE: 067), which is not an audit.
   Mainnet means real NEAR; only spend what you can afford to lose.
 
+## Deploy
+
+The site is deployed with the Vercel CLI from a local checkout (no Git integration): `npx vercel@latest login`, `npx vercel@latest link`
+(existing project), then `npx vercel@latest deploy --prod` after each change. `.vercelignore` keeps local env files and large
+local-only folders out of the upload; environment variables live in the Vercel project, and `NEXT_PUBLIC_*` changes need a
+redeploy. Details and troubleshooting: `docs/DEPLOY.md`.
+
 ## Stack
 
 Next.js 16, React 19, Tailwind 4, `@near-wallet-selector` 10, Rust + near-sdk 5, near-workspaces.

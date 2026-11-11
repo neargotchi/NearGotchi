@@ -1,0 +1,24 @@
+# Vercel CLI deploys upload the local folder (no Git integration, docs/DEPLOY.md). Only what `next build` needs goes up.
+# Local env files would override the project's Production variables at build time (and leak NEAR_AI_API_KEY into the
+# uploaded source): never upload them. Vercel injects its own environment variables.
+.env
+.env*.local
+.env.development
+.env.production
+# large local-only folders (148 MB PNGs, 155 MB IPFS copy, 57 MB sources, Rust build output)
+images/
+ipfs/
+assets-raw/
+contracts/
+# not needed by the build
+docs/
+scripts/
+.github/
+.claude/
+.gstack/
+AGENTS.md
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+*.log
+.DS_Store

@@ -22,3 +22,5 @@ AGENTS.md
 
 # IPFS upload folder for drop 1 (scripts/ipfs_drop1.py prepare): 148 MB of PNG, uploaded by hand to Pinata
 ipfs/
+.env*
+!.env.example
