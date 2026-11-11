@@ -1,7 +1,7 @@
 // Single mocks module (PLAN.md §4): the only place for demo pets, items, balances,
 // chat replies and simulation rules. All values here are demonstration data.
 
-import { isOnChain } from "./chain";
+import { STORAGE_NS, isOnChain } from "./chain";
 import type { AiAnswer, AiRequest } from "./chat-client";
 import { claimRandomToken, ensureMinted, findToken, getOwnedTokens, type Drop1Token } from "./drop1";
 import { DEMO_ACCOUNT_ID, absorbBalance, connectedAccountId, subscribeAccount } from "./wallet";
@@ -156,7 +156,9 @@ function checkToken(value: unknown, petId: string): { ok: true; token: PetToken 
   return same ? { ok: true, token: toPetToken(known) } : { ok: false };
 }
 
-export const PETS_STORAGE_KEY = "neargotchi-pets";
+export const PETS_STORAGE_KEY = `neargotchi-pets${STORAGE_NS}`;
+/** On chain: per account, the token ids nft_tokens_for_owner returned last (only those pets are shown). */
+export const OWNED_STORAGE_KEY = `neargotchi-owned${STORAGE_NS}`;
 /** v1–v3: one pet, no owner. Migrated into the collection on read, then removed. */
 export const LEGACY_PET_STORAGE_KEY = "neargotchi-pet";
 
@@ -349,8 +351,9 @@ const emptyStore = (): PetStore => ({ v: 4, pets: [], active: {} });
 
 /** Adds a pet unless its id or token is already in the collection. */
 function addPet(store: PetStore, pet: DemoPet): boolean {
+  // one pet per token per account: a token that moved to another account in this browser gets its own pet
   const clash = store.pets.some(
-    (other) => other.id === pet.id || (pet.token && other.token?.tokenId === pet.token.tokenId),
+    (other) => other.id === pet.id || (pet.token && other.token?.tokenId === pet.token.tokenId && other.owner === pet.owner),
   );
   if (!clash) store.pets.push(pet);
   return !clash;
@@ -398,7 +401,8 @@ function loadStore(): PetStore {
   loading = true;
   try {
     const store = parseStore(raw);
-    const legacyRaw = readKey(LEGACY_PET_STORAGE_KEY);
+    // the pre-v4 single pet is a demo pet: never migrated into an on-chain namespace
+    const legacyRaw = isOnChain ? null : readKey(LEGACY_PET_STORAGE_KEY);
     const legacy = legacyRaw ? parseLegacy(legacyRaw) : null;
     if (legacy) addPet(store, fromLegacy(legacy));
     for (const pet of store.pets) if (pet.token) ensureMinted(pet.token.tokenId);
@@ -420,7 +424,46 @@ function commit(store: PetStore) {
   notify();
 }
 
-const ownedBy = (store: PetStore, owner: string) => store.pets.filter((pet) => pet.owner === owner);
+/** Every stored pet of an account (on chain: also tokens it no longer holds). */
+const storedBy = (store: PetStore, owner: string) => store.pets.filter((pet) => pet.owner === owner);
+
+// ---------- on chain: which tokens the account holds on the current contract ----------
+
+let memoryOwned: Record<string, number[]> = {};
+
+function readOwned(): Record<string, number[]> {
+  const raw = readKey(OWNED_STORAGE_KEY);
+  if (raw === undefined || raw === null) return memoryOwned;
+  try {
+    const data = JSON.parse(raw) as unknown;
+    if (!isObject(data)) return memoryOwned;
+    const out: Record<string, number[]> = {};
+    for (const [owner, ids] of Object.entries(data)) {
+      if (Array.isArray(ids) && ids.every((id) => Number.isInteger(id))) out[owner] = ids as number[];
+    }
+    memoryOwned = out;
+    return out;
+  } catch {
+    return memoryOwned;
+  }
+}
+
+function writeOwned(owner: string, ids: number[]) {
+  const next = { ...readOwned(), [owner]: [...new Set(ids)] };
+  memoryOwned = next;
+  writeKey(OWNED_STORAGE_KEY, JSON.stringify(next));
+}
+
+/**
+ * The pets /pet may show. Demo: every pet of the account. On chain: only pets whose token the account holds on the
+ * current contract according to the last successful nft_tokens_for_owner (nothing before the first one).
+ */
+function ownedBy(store: PetStore, owner: string): DemoPet[] {
+  const mine = storedBy(store, owner);
+  if (!isOnChain) return mine;
+  const held = new Set(readOwned()[owner] ?? []);
+  return mine.filter((pet) => pet.token && held.has(pet.token.tokenId));
+}
 
 /** The account's chosen pet, else its newest one. */
 function activeOf(store: PetStore, owner: string): DemoPet | null {
@@ -443,7 +486,10 @@ export function isPersistent(): boolean {
 
 let ownedSync: { owner: string; at: number; run: Promise<void> } | null = null;
 
-/** Testnet: every token the account owns on the contract gets a (local game-state) pet. Cached 15 s per account. */
+/**
+ * On chain: every token the account owns on the contract gets a (local game-state) pet, and the list of held tokens
+ * is remembered (pets of tokens not on the list are hidden). Cached 15 s per account.
+ */
 async function syncOwned(owner: string) {
   if (!isOnChain) return;
   if (!ownedSync || ownedSync.owner !== owner || Date.now() - ownedSync.at > 15000) {
@@ -453,13 +499,14 @@ async function syncOwned(owner: string) {
       run: (async () => {
         try {
           const tokens = await getOwnedTokens(owner);
+          writeOwned(owner, tokens.map((token) => token.tokenId));
           for (const token of tokens) {
             const store = loadStore();
-            if (ownedBy(store, owner).some((pet) => pet.token?.tokenId === token.tokenId)) continue;
+            if (storedBy(store, owner).some((pet) => pet.token?.tokenId === token.tokenId)) continue;
             await mintPet({ token }).catch(() => {});
           }
         } catch {
-          // RPC down: show what is stored
+          // RPC down (after every endpoint): keep the last known list of held tokens
         }
       })(),
     };
@@ -532,6 +579,8 @@ export async function mintPet(input: { token: Pick<Drop1Token, "tokenId">; name?
   };
   const store = loadStore();
   if (!addPet(store, pet)) throw new MintError("no_pet");
+  // on chain the token was just drawn for this account (or listed by the contract): it is held now
+  if (isOnChain) writeOwned(owner, [...(readOwned()[owner] ?? []), token.tokenId]);
   commit({ ...store, active: { ...store.active, [owner]: pet.id } });
   return pet;
 }
@@ -675,7 +724,7 @@ export type ChatMessage = {
 
 export type ChatKind = "reply" | "hungry" | "no_energy" | "ai_error";
 
-export const CHAT_STORAGE_KEY = "neargotchi-chat";
+export const CHAT_STORAGE_KEY = `neargotchi-chat${STORAGE_NS}`;
 
 /** v2: one log per pet (pet id → last 30 messages). A v1 log (one pet) becomes that pet's entry. */
 type ChatStore = { v: 2; logs: Record<string, ChatMessage[]> };

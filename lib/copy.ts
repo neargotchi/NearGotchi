@@ -433,13 +433,19 @@ export const petPage = {
   /** On-chain only (app/pet/holder-rewards.tsx): the 50% holder share of later hatches, claimed from the contract. */
   rewards: {
     title: "holder rewards",
-    pending: "unclaimed: {n} near, for all your gotchis.",
-    note: "half of every later hatch is split between the gotchis hatched before it. rewards follow the token: claim before you transfer one.",
+    /** {n} = formatted amount, e.g. "0.995 NEAR". */
+    pending: "this gotchi has {n} to claim.",
+    note: "half of every later hatch is split between the gotchis hatched before it. rewards follow the token: claim before you transfer it.",
+    empty: "no rewards yet — rewards from future hatches.",
+    loading: "loading rewards…",
+    error: "couldn't load rewards right now.",
+    retry: "try again",
     claim: "claim",
     claiming: "confirm in your wallet…",
-    claimed: "claimed {n} near.",
+    claimed: "claimed {n}.",
     failed: "the claim didn't go through. nothing was paid; try again.",
   },
+
   shop: {
     title: "snack shop",
     note: "snacks fill hunger. energy is for talking.",

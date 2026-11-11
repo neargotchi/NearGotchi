@@ -3267,3 +3267,10 @@ main > section[class] { background: transparent; }
 .toast.is-error { background: var(--pink, var(--surface)); color: var(--ink); }
 @keyframes toast-in { from { transform: translateY(round(calc(12px * var(--ui-scale)), 1px)); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* Holder rewards panel (/pet → stats, on chain only, task 068). */
+.pet-rewards { display: grid; justify-items: start; gap: 10px; }
+.pet-rewards .mint-hint { margin: 0; }
+.pet-rewards-amount { margin: 0; font-size: 1.125rem; font-weight: 700; }
+.pet-rewards .button:disabled { border-style: dashed; color: var(--text-muted); background: var(--surface); box-shadow: none; cursor: not-allowed; }
+.button-link { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }

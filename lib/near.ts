@@ -3,7 +3,7 @@
 import type { WalletSelector } from "@near-wallet-selector/core";
 import type { WalletSelectorModal } from "@near-wallet-selector/modal-ui";
 
-import { CONFIG_ERROR, CHAIN, DROP1_CONTRACT } from "./chain";
+import { CONFIG_ERROR, CHAIN, DROP1_CONTRACT, RPC_URLS } from "./chain";
 
 type Near = { selector: WalletSelector; modal: WalletSelectorModal };
 let near: Promise<Near> | null = null;
@@ -17,7 +17,12 @@ export function getNear(): Promise<Near> {
       import("@near-wallet-selector/my-near-wallet"),
       import("@near-wallet-selector/meteor-wallet"),
     ]);
-    const selector = await setupWalletSelector({ network: CHAIN === "mainnet" ? "mainnet" : "testnet", modules: [setupMyNearWallet(), setupMeteorWallet()] });
+    const selector = await setupWalletSelector({
+      network: CHAIN === "mainnet" ? "mainnet" : "testnet",
+      // the same failover list as lib/chain.ts (the selector's own default is only FastNear)
+      fallbackRpcUrls: RPC_URLS,
+      modules: [setupMyNearWallet(), setupMeteorWallet()],
+    });
     const modal = setupModal(selector, { contractId: DROP1_CONTRACT });
     return { selector, modal };
   })().catch((error) => {

@@ -80,6 +80,13 @@ Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mo
   `docs/CONTRACT-SETUP.md`, money-path review in `docs/REPORT.md` (DONE: 067).
 - **Mainnet mode:** `NEXT_PUBLIC_CHAIN=mainnet` + `NEXT_PUBLIC_DROP1_CONTRACT` + `NEXT_PUBLIC_TREASURY` (no defaults). The mint page
   shows an "unaudited contract, real funds" warning and the hatch button stays disabled until the visitor ticks the checkbox.
+- **RPC:** all chain reads (counter, owned tokens, rewards, tx status after a wallet redirect) go through a fallback list of
+  free public endpoints without API keys (FastNear, dRPC, ZAN, Intear; `rpc.*.near.org` is deprecated and answers 429): each
+  request tries the endpoints in turn (starting with the last one that worked), then backs off and repeats; the counter keeps
+  the last value it read. `NEXT_PUBLIC_RPC_URL` (comma-separated) is tried first. No proxy and no key are needed.
+- **Game state on chain builds** is stored per chain + contract + account + token: /pet shows only pets whose token the
+  connected account holds on the current contract (`nft_tokens_for_owner`); state from another contract or account stays in the
+  browser under its own key but is never shown.
 - **Front** (Next.js, React, Tailwind): `lib/chain.ts` (config + RPC), `lib/near.ts` (wallet-selector), `lib/wallet.ts`, `lib/drop1.ts`.
   Redirect wallets come back to `/mint?transactionHashes=…` and the mint finishes from the transaction result.
 - **Images:** on mainnet `base_uri` is an IPFS gateway URL of a folder with the 300 original PNGs, and every `media_hash` matches

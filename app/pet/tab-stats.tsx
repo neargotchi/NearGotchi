@@ -144,7 +144,7 @@ export default function TabStats({ pet, shown, balance, now, onReleased }: TabSt
         </dl>
       </section>
 
-      {isOnChain ? <HolderRewards /> : null}
+      {isOnChain && pet.token ? <HolderRewards key={pet.token.tokenId} tokenId={pet.token.tokenId} /> : null}
 
       <form className="pet-rename" noValidate onSubmit={rename}>
         <label className="mint-legend" htmlFor="pet-rename">

@@ -3,7 +3,7 @@
 // (getDropStatus → nft_total_supply, hatchRandom → nft_mint + nft_token, getToken → nft_token).
 // Nothing here is a real mint. Copy rule: rarity only, never value.
 
-import { DROP1_CONTRACT, MINT_DEPOSIT, MINT_GAS, isOnChain, outcomeValue, txStatus, viewCall, type TxOutcome } from "./chain";
+import { CHAIN, DROP1_CONTRACT, MINT_DEPOSIT, MINT_GAS, isOnChain, outcomeValue, txStatus, viewCall, type TxOutcome } from "./chain";
 import list from "./drop1-tokens.json";
 
 export const tiers = ["common", "rare", "epic", "legendary"] as const;
@@ -258,22 +258,49 @@ export const dropErrorFromUrl = (message: string) => toDropError(new Error(messa
 
 // ---------- async API (what the UI calls) ----------
 
-export type DropStatus = { minted: number; total: number; soldOut: boolean; paused?: boolean };
+/** `stale`: the RPC failed and this is the last value read before. */
+export type DropStatus = { minted: number; total: number; soldOut: boolean; paused?: boolean; stale?: boolean };
+
+/** Last counter read from the contract, per chain + contract (shown when a later read fails, task 068). */
+export const STATUS_CACHE_KEY = `neargotchi-drop-status:${CHAIN}:${DROP1_CONTRACT}`;
+let memoryStatus: DropStatus | null = null;
+
+function rememberStatus(next: DropStatus) {
+  memoryStatus = next;
+  if (!inBrowser()) return;
+  try {
+    window.localStorage.setItem(STATUS_CACHE_KEY, JSON.stringify({ minted: next.minted, total: next.total, soldOut: next.soldOut, paused: next.paused }));
+  } catch {
+    // storage blocked: memory only
+  }
+}
+
+function cachedStatus(): DropStatus | null {
+  if (memoryStatus) return memoryStatus;
+  if (!inBrowser()) return null;
+  try {
+    const data = JSON.parse(window.localStorage.getItem(STATUS_CACHE_KEY) ?? "null") as DropStatus | null;
+    const ok = !!data && Number.isInteger(data.minted) && Number.isInteger(data.total) && data.minted >= 0 && data.minted <= data.total;
+    return ok ? { ...data, stale: true } : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
- * The drop counter. Testnet: read from the contract (one retry); null when the RPC failed, so the UI can show
- * "—" instead of a made-up 0 (task 064). Demo: this browser's list, never null.
+ * The drop counter. On chain: read from the contract (lib/chain.ts tries every RPC endpoint with backoff); if that
+ * still fails, the last value read before (this page or an earlier visit, flagged `stale`); null only when nothing
+ * was ever read, so the UI shows "—" instead of a made-up 0 (tasks 064, 068). Demo: this browser's list, never null.
  */
 export async function getDropStatus(): Promise<DropStatus | null> {
   if (isOnChain) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        return await chainStatus();
-      } catch {
-        if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 800));
-      }
+    try {
+      const next = await chainStatus();
+      rememberStatus(next);
+      return next;
+    } catch {
+      return cachedStatus();
     }
-    return null;
   }
   return status(readMinted());
 }
@@ -301,7 +328,10 @@ export async function resetDrop(): Promise<void> {
 export function subscribeDrop(callback: (next: DropStatus) => void): () => void {
   if (isOnChain) {
     const timer = setInterval(() => {
-      chainStatus().then(callback, () => {});
+      chainStatus().then((next) => {
+        rememberStatus(next);
+        callback(next);
+      }, () => {});
     }, 10000);
     return () => clearInterval(timer);
   }
@@ -318,40 +348,46 @@ export function subscribeDrop(callback: (next: DropStatus) => void): () => void 
   };
 }
 
-// ---------- holder rewards (contracts/drop1: pending_rewards_for_owner, claim_rewards) ----------
+// ---------- holder rewards (contracts/drop1: pending_rewards, claim_rewards) ----------
 
-/** yoctoNEAR → "0.1234" (4 decimals, floor). */
-export const yoctoToNear = (yocto: string) => {
+const YOCTO = BigInt(10) ** BigInt(24);
+
+/** yoctoNEAR → "0 NEAR", "0.995 NEAR", "1.2345 NEAR" (floor to 4 decimals, no trailing zeros), "< 0.0001 NEAR". */
+export function formatNear(yocto: string | bigint): string {
   const value = BigInt(yocto);
-  const whole = value / BigInt(10) ** BigInt(24);
-  const frac = (value % BigInt(10) ** BigInt(24)).toString().padStart(24, "0").slice(0, 4);
-  return `${whole}.${frac}`;
-};
+  if (value === BigInt(0)) return "0 NEAR";
+  const whole = value / YOCTO;
+  const frac = (value % YOCTO).toString().padStart(24, "0").slice(0, 4).replace(/0+$/, "");
+  if (whole === BigInt(0) && !frac) return "< 0.0001 NEAR";
+  return `${whole}${frac ? `.${frac}` : ""} NEAR`;
+}
+
+export type RewardsRead = { kind: "ok"; yocto: string } | { kind: "unsupported" } | { kind: "error" };
 
 /**
- * Unclaimed holder rewards of an account in yoctoNEAR, or null when the contract has no rewards
- * (the older ng57 testnet contract) or the RPC failed. Demo mode: always null.
+ * Unclaimed reward of one token. "unsupported" = the contract has no rewards (the older ng57 testnet contract:
+ * the call panics with MethodNotFound), "error" = every RPC endpoint failed. Demo: always unsupported.
  */
-export async function getPendingRewards(accountId: string): Promise<string | null> {
-  if (!isOnChain) return null;
+export async function getTokenRewards(tokenId: number): Promise<RewardsRead> {
+  if (!isOnChain) return { kind: "unsupported" };
   try {
-    return await viewCall<string>("pending_rewards_for_owner", { account_id: accountId });
-  } catch {
-    return null;
+    const yocto = await viewCall<string>("pending_rewards", { token_id: String(tokenId) });
+    return /^\d+$/.test(yocto) ? { kind: "ok", yocto } : { kind: "error" };
+  } catch (error) {
+    const final = (error as { final?: boolean } | null)?.final === true;
+    return final ? { kind: "unsupported" } : { kind: "error" };
   }
 }
 
-/** Claims the rewards of every token the account owns (one transaction, no deposit). Returns the paid yoctoNEAR. */
-export async function claimAllRewards(accountId: string): Promise<string> {
+/** Claims one token's reward (the wallet's account must own it). Returns the paid yoctoNEAR. */
+export async function claimTokenRewards(tokenId: number): Promise<string> {
   const { getNear } = await import("./near");
   const { selector } = await getNear();
-  const ids = (await ownedIds(accountId)).map(String);
-  if (!ids.length) return "0";
   const { actionCreators } = await import("@near-wallet-selector/core");
   const wallet = await selector.wallet();
   const outcome = await wallet.signAndSendTransaction({
     receiverId: DROP1_CONTRACT,
-    actions: [actionCreators.functionCall("claim_rewards", { token_ids: ids }, BigInt("50000000000000"), BigInt(0))],
+    actions: [actionCreators.functionCall("claim_rewards", { token_ids: [String(tokenId)] }, BigInt("30000000000000"), BigInt(0))],
   });
   const failure = failureText(outcome as TxOutcome | void);
   if (failure) throw new Error(failure);

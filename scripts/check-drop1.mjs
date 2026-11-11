@@ -797,15 +797,103 @@ await test("demo by default; unknown values never fall through to mainnet", asyn
 });
 await test("testnet unchanged: ng57 contract, testnet rpc + explorer, no config error", async () => {
   const t = chainIn({ NEXT_PUBLIC_CHAIN: "testnet" });
-  assert.deepEqual([t.onChain, t.mainnet, t.net, t.contract, t.rpc, t.explorer, t.error], [true, false, "testnet", "neargotchi-drop1-ng57.testnet", "https://rpc.testnet.near.org", "https://testnet.nearblocks.io", null]);
+  assert.deepEqual([t.onChain, t.mainnet, t.net, t.contract, t.rpc, t.explorer, t.error], [true, false, "testnet", "neargotchi-drop1-ng57.testnet", "https://test.rpc.fastnear.com", "https://testnet.nearblocks.io", null]);
 });
 await test("mainnet: contract + treasury only from env, mainnet rpc; missing env = config error", async () => {
   const m = chainIn({ NEXT_PUBLIC_CHAIN: "mainnet", NEXT_PUBLIC_DROP1_CONTRACT: "drop.near", NEXT_PUBLIC_TREASURY: "team.near" });
-  assert.deepEqual([m.onChain, m.mainnet, m.net, m.contract, m.treasury, m.rpc, m.explorer, m.error], [true, true, "mainnet", "drop.near", "team.near", "https://rpc.mainnet.near.org", "https://nearblocks.io", null]);
+  assert.deepEqual([m.onChain, m.mainnet, m.net, m.contract, m.treasury, m.rpc, m.explorer, m.error], [true, true, "mainnet", "drop.near", "team.near", "https://free.rpc.fastnear.com", "https://nearblocks.io", null]);
   const bare = chainIn({ NEXT_PUBLIC_CHAIN: "mainnet" });
   assert.equal(bare.contract, "");
   assert.equal(bare.treasury, "");
   assert.match(bare.error, /NEXT_PUBLIC_DROP1_CONTRACT/);
+});
+
+console.log("rpc failover");
+const chain = await import("../lib/chain.ts");
+const okBody = (result) => ({ ok: true, status: 200, json: async () => ({ jsonrpc: "2.0", id: "ng", result }) });
+const viewResult = (value) => ({ result: Array.from(new TextEncoder().encode(JSON.stringify(value))) });
+const withFetch = async (impl, run) => {
+  const saved = { ...chain.rpcRuntime };
+  const calls = [];
+  chain.rpcRuntime.fetch = async (url, init) => { calls.push(url); return impl(url, JSON.parse(init.body), calls.length); };
+  chain.rpcRuntime.sleep = async () => {};
+  try { return await run(calls); } finally { Object.assign(chain.rpcRuntime, saved); }
+};
+await test("no deprecated near.org endpoint in the lists; 4 free endpoints per network", async () => {
+  assert.ok(chain.RPC_URLS.length >= 4);
+  assert.ok(chain.RPC_URLS.every((url) => url.startsWith("https://") && !/rpc\.(testnet|mainnet)\.near\.org/.test(url)));
+});
+await test("first endpoint fails (429 / network error) → the next one answers; the good one is used first next time", async () => {
+  await withFetch(
+    (url) => {
+      if (url === chain.RPC_URLS[0]) return { ok: false, status: 429, json: async () => ({}) };
+      if (url === chain.RPC_URLS[1]) throw new TypeError("fetch failed");
+      return okBody(viewResult({ minted: 7, total: 300, sold_out: false, paused: false }));
+    },
+    async (calls) => {
+      assert.deepEqual(await chain.viewCall("drop_status"), { minted: 7, total: 300, sold_out: false, paused: false });
+      assert.deepEqual(calls, chain.RPC_URLS.slice(0, 3));
+      calls.length = 0;
+      await chain.viewCall("drop_status");
+      assert.deepEqual(calls, [chain.RPC_URLS[2]], "starts with the endpoint that worked");
+    },
+  );
+});
+await test("rpc-level error (TIMEOUT_ERROR) fails over; a contract error does not", async () => {
+  await withFetch(
+    (url, body, n) => n === 1
+      ? { ok: true, status: 200, json: async () => ({ error: { code: -32000, cause: { name: "TIMEOUT_ERROR" } } }) }
+      : okBody(viewResult("995")),
+    async (calls) => {
+      assert.equal(await chain.viewCall("pending_rewards", { token_id: "1" }), "995");
+      assert.equal(calls.length, 2);
+    },
+  );
+  await withFetch(
+    () => ({ ok: true, status: 200, json: async () => ({ error: { code: -32000, cause: { name: "CONTRACT_EXECUTION_ERROR" } } }) }),
+    async (calls) => {
+      await assert.rejects(chain.viewCall("pending_rewards", { token_id: "1" }), (e) => e.final === true);
+      assert.equal(calls.length, 1, "deterministic: no other endpoint, no retry");
+    },
+  );
+  // old contract without the method: the RPC answers 200 with result.error (MethodNotFound) → final, panel hidden
+  await withFetch(
+    () => okBody({ block_hash: "x", error: "wasm execution failed with error: MethodResolveError(MethodNotFound)", logs: [] }),
+    async (calls) => {
+      await assert.rejects(chain.viewCall("pending_rewards", { token_id: "10" }), (e) => e.final === true && /MethodNotFound/.test(e.message));
+      assert.equal(calls.length, 1);
+    },
+  );
+});
+await test("all endpoints down: 3 rounds with backoff, then an error", async () => {
+  const sleeps = [];
+  await withFetch(
+    () => { throw new TypeError("offline"); },
+    async (calls) => {
+      chain.rpcRuntime.sleep = async (ms) => { sleeps.push(ms); };
+      await assert.rejects(chain.viewCall("drop_status"), /offline/);
+      assert.equal(calls.length, chain.RPC_URLS.length * 3);
+      assert.deepEqual(sleeps, [400, 1200]);
+    },
+  );
+});
+await test("formatNear: readable amounts, never 0000", async () => {
+  assert.equal(drop.formatNear("0"), "0 NEAR");
+  assert.equal(drop.formatNear("995000000000000000000000"), "0.995 NEAR");
+  assert.equal(drop.formatNear("1990000000000000000000000"), "1.99 NEAR");
+  assert.equal(drop.formatNear("2000000000000000000000000"), "2 NEAR");
+  assert.equal(drop.formatNear("12345678900000000000000000"), "12.3456 NEAR");
+  assert.equal(drop.formatNear("10"), "< 0.0001 NEAR");
+});
+
+console.log("on chain (testnet build, separate process)");
+await test("pets / chat / shop per chain + contract + account + token; counter cache (scripts/check-onchain.mjs)", async () => {
+  const out = execFileSync(process.execPath, ["--experimental-transform-types", "--no-warnings", "scripts/check-onchain.mjs"], {
+    env: { PATH: process.env.PATH, NEXT_PUBLIC_CHAIN: "testnet", NEXT_PUBLIC_DROP1_CONTRACT: "neargotchi-drop1-ng67.testnet" },
+    cwd: new URL("..", import.meta.url),
+  }).toString();
+  for (const line of out.trim().split("\n")) console.log(`      ${line}`);
+  assert.match(out, /onchain ok/);
 });
 
 console.log(`\n${passed} checks passed`);

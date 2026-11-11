@@ -4,7 +4,7 @@
 // team treasury, and the effect is applied only after the transaction is confirmed (popup wallets: right away;
 // redirect wallets: resumePurchase() on return). Async on purpose: the UI only calls the functions below.
 
-import { TREASURY_ACCOUNT, isOnChain, nearToYocto, txStatus, type TxOutcome } from "./chain";
+import { STORAGE_NS, TREASURY_ACCOUNT, isOnChain, nearToYocto, txStatus, type TxOutcome } from "./chain";
 import { baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
 import { WalletError, connectedAccountId, spend } from "./wallet";
 
@@ -47,7 +47,7 @@ export const snacks: Snack[] = [
 
 export const findSnack = (id: unknown) => snacks.find((snack) => snack.id === id) ?? null;
 
-export const SHOP_STORAGE_KEY = "neargotchi-shop";
+export const SHOP_STORAGE_KEY = `neargotchi-shop${STORAGE_NS}`;
 
 /** One limited snack's stock; nextAt = when the next unit arrives (ms), null while full. */
 type Slot = { stock: number; nextAt: number | null };
@@ -152,8 +152,8 @@ export async function getShop(): Promise<ShopItem[]> {
   return owner ? itemsFor(readStore(), owner, Date.now()) : [];
 }
 
-const PENDING_KEY = "neargotchi-pending-buy";
-const USED_KEY = "neargotchi-used-tx";
+const PENDING_KEY = `neargotchi-pending-buy${STORAGE_NS}`;
+const USED_KEY = `neargotchi-used-tx${STORAGE_NS}`;
 
 type Pending = { item: ItemId; petId: string; owner: string };
 

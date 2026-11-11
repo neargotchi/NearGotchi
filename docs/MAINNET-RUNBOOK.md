@@ -167,11 +167,19 @@ NEXT_PUBLIC_CHAIN=mainnet
 NEXT_PUBLIC_DROP1_CONTRACT=drop1.YOU.near
 NEXT_PUBLIC_TREASURY=TEAM.near           # snack / energy-pack payments go here (real NEAR)
 NEAR_AI_API_KEY=...                       # server-only, as on testnet
-# optional: NEXT_PUBLIC_RPC_URL=https://rpc.mainnet.near.org (the default)
+# optional: NEXT_PUBLIC_RPC_URL=https://your-rpc,https://another  (tried first; the built-in fallback list follows)
 ```
 Without the two account variables a mainnet build refuses to open the wallet (no defaults for mainnet). Check on a
 preview deployment first (Vercel → the same variables on Preview), then on production: header shows "mainnet", /mint shows the counter `1 / 300` and the red "unaudited contract. real funds."
 box; the hatch button stays disabled until the checkbox is ticked; /pet → stats tab shows "holder rewards".
+
+RPC (task 068): the site reads the chain through a fallback list of free, key-less endpoints (lib/chain.ts `PUBLIC_RPCS`,
+mainnet: FastNear `free.rpc.fastnear.com`, dRPC `near.drpc.org`, ZAN `api.zan.top/near-mainnet`, Intear `rpc.intea.rs`;
+`rpc.mainnet.near.org` answers 429 "deprecated" and is not used). No API key is needed, so there is no proxy. If you later
+buy a keyed plan (e.g. FastNear with an API key), do NOT put the key in a `NEXT_PUBLIC_` variable: add a server route that
+forwards JSON-RPC with the key from a server-only env variable, and put that route's URL first in `NEXT_PUBLIC_RPC_URL`.
+The near-cli-rs commands below use near-cli-rs's own RPC; if it is the deprecated one, add `--rpc-url`-style config
+(`near config add-connection` with `https://free.rpc.fastnear.com`) or use the interactive `near` to pick a connection.
 
 ## 13. Go live
 
