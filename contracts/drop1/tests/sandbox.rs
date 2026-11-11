@@ -52,8 +52,6 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
     let root = worker.root_account()?;
     let owner = account(&root, "owner", 50).await?;
     let team = account(&root, "team", 10).await?;
-    let stakers = account(&root, "stakers", 10).await?;
-    let buyback = account(&root, "buyback", 10).await?;
     let stranger = account(&root, "stranger", 10).await?;
     let mut buyers = Vec::new();
     for i in 0..8 {
@@ -66,9 +64,10 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
         .call("new")
         .args_json(json!({
             "owner_id": owner.id(),
-            "treasuries": { "team": team.id(), "stakers": stakers.id(), "buyback": buyback.id() },
+            "team_id": team.id(),
             "base_uri": "https://neargochi.vercel.app/drop1-full/",
             "provenance": provenance(),
+            "max_per_account": null,
         }))
         .max_gas()
         .transact()
@@ -197,23 +196,54 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
     let spent = before - balance(&buyers[2]).await?;
     assert!(spent < NearToken::from_millinear(10).as_yoctonear(), "spent {spent} yocto");
 
-    // 5. distribute pays exactly 300 × 33 / 33 / 34 % of (2 − 0.01) NEAR
-    let d = NearToken::from_millinear(1990).as_yoctonear();
-    let (t, s) = (d * 33 / 100, d * 33 / 100);
-    let b = d - t - s;
-    let tb = (balance(&team).await?, balance(&stakers).await?, balance(&buyback).await?);
+    // 5. money: team half + holders' half (÷ earlier tokens) account for every yocto paid in; distribute pays the team
+    let net = NearToken::from_millinear(1990).as_yoctonear() * 300;
+    let accrued: Value = contract.view("accrued").await?.json()?;
+    let team_due: u128 = accrued["team"].as_str().unwrap().parse()?;
+    let credited: u128 = accrued["holders_credited"].as_str().unwrap().parse()?;
+    assert_eq!(team_due + credited, net);
+    assert!(credited <= net / 2);
+    let tb = balance(&team).await?;
     let out = stranger.call(contract.id(), "distribute").max_gas().transact().await?;
     assert!(out.is_success(), "{:?}", out.failures());
-    let ta = (balance(&team).await?, balance(&stakers).await?, balance(&buyback).await?);
-    assert_eq!(ta.0 - tb.0, t * 300);
-    assert_eq!(ta.1 - tb.1, s * 300);
-    assert_eq!(ta.2 - tb.2, b * 300);
+    assert_eq!(balance(&team).await? - tb, team_due);
     let accrued: Value = contract.view("accrued").await?.json()?;
-    assert_eq!(accrued, json!({ "team": "0", "stakers": "0", "buyback": "0" }));
+    assert_eq!(accrued["team"], json!("0"));
+    // every holder claims all their tokens: payouts == credited, a second claim pays 0, a stranger can't claim
+    let mut claimed_total = 0u128;
+    for buyer in &buyers {
+        let mine: Vec<String> = tokens.iter().filter(|t| t["owner_id"] == json!(buyer.id())).map(|t| t["token_id"].as_str().unwrap().to_string()).collect();
+        if mine.is_empty() { continue; }
+        let out = stranger.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": mine })).max_gas().transact().await?;
+        assert!(!out.is_success(), "a stranger can't claim for someone else");
+        let pending: String = contract.view("pending_rewards_for_owner").args_json(json!({ "account_id": buyer.id() })).await?.json()?;
+        let before = balance(buyer).await?;
+        let out = buyer.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": mine })).max_gas().transact().await?;
+        assert!(out.is_success(), "{:?}", out.failures());
+        let paid: String = out.json()?;
+        assert_eq!(paid, pending);
+        let gained = balance(buyer).await? + 20_000_000_000_000_000_000_000 - before; // + gas allowance
+        assert!(gained >= paid.parse::<u128>()?, "claim paid out");
+        claimed_total += paid.parse::<u128>()?;
+        let again: String = buyer.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": mine })).max_gas().transact().await?.json()?;
+        assert_eq!(again, "0", "no double claim");
+    }
+    assert_eq!(claimed_total, credited);
+    let accrued: Value = contract.view("accrued").await?.json()?;
+    assert_eq!(accrued["holders_claimed"], accrued["holders_credited"]);
 
     // 6. surplus: the owner can't take storage money, can take what's above it
     let out = owner.call(contract.id(), "withdraw_surplus").args_json(json!({ "amount": NearToken::from_near(1000).as_yoctonear().to_string() })).transact().await?;
     assert!(!out.is_success());
+    let locked: String = contract.view("locked_balance").await?.json()?;
+    let free = contract.view_account().await?.balance.as_yoctonear() - locked.parse::<u128>()?;
+    let ob = balance(&owner).await?;
+    let out = owner.call(contract.id(), "withdraw_surplus").args_json(json!({ "amount": free.to_string() })).transact().await?;
+    assert!(out.is_success(), "{:?}", out.failures());
+    assert!(balance(&owner).await? > ob);
+    // after the withdrawal the contract still covers its storage
+    let acc = contract.view_account().await?;
+    assert!(acc.balance.as_yoctonear() >= acc.storage_usage as u128 * 10_000_000_000_000_000_000);
 
     gas.sort_unstable();
     let tg = |g: u64| g as f64 / 1e12;
@@ -231,5 +261,102 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
         tg(gas[gas.len() / 2]),
         tg(gas[gas.len() - 1]),
     );
+    Ok(())
+}
+
+#[tokio::test]
+#[cfg_attr(
+    all(target_os = "macos", target_arch = "x86_64"),
+    ignore = "near-sandbox has no Intel macOS binary; runs in CI (.github/workflows/contract-drop1.yml)"
+)]
+async fn holder_rewards_limit_and_transfer() -> anyhow::Result<()> {
+    let wasm = std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("res/neargotchi_drop1.wasm"))?;
+    let worker = near_workspaces::sandbox().await?;
+    let root = worker.root_account()?;
+    let owner = account(&root, "owner", 50).await?;
+    let team = account(&root, "team", 10).await?;
+    let a = account(&root, "alice", 100).await?;
+    let b = account(&root, "bob", 100).await?;
+    let c = account(&root, "carol", 100).await?;
+    let contract: Contract = account(&root, "drop1", 30).await?.deploy(&wasm).await?.into_result()?;
+    // mainnet configuration: limit 5 per account set in init
+    contract
+        .call("new")
+        .args_json(json!({ "owner_id": owner.id(), "team_id": team.id(), "base_uri": "ipfs://x/", "provenance": provenance(), "max_per_account": 5 }))
+        .max_gas()
+        .transact()
+        .await?
+        .into_result()?;
+    for start in (1..=TOTAL).step_by(50) {
+        let entries: Vec<Value> = (start..start + 50).map(|id| json!({ "token_id": id, "metadata": token_metadata(id) })).collect();
+        owner.call(contract.id(), "load_catalog").args_json(json!({ "entries": entries })).max_gas().transact().await?.into_result()?;
+    }
+    owner.call(contract.id(), "unpause").transact().await?.into_result()?;
+    let status: Value = contract.view("drop_status").await?.json()?;
+    assert_eq!(status["max_per_account"], json!(5));
+
+    let mint = |who: &Account| {
+        let who = who.clone();
+        let id = contract.id().clone();
+        async move {
+            let out = who.call(&id, "nft_mint").deposit(PRICE).gas(Gas::from_tgas(100)).transact().await?;
+            anyhow::ensure!(out.is_success(), "{:?}", out.failures());
+            Ok::<Value, anyhow::Error>(out.json()?)
+        }
+    };
+    let pending = |id: String| {
+        let c = contract.clone();
+        async move { c.view("pending_rewards").args_json(json!({ "token_id": id })).await.unwrap().json::<String>().unwrap().parse::<u128>().unwrap() }
+    };
+    let net = NearToken::from_millinear(1990).as_yoctonear();
+
+    let t1 = mint(&a).await?; // nobody holds a token: the holders' half goes to the team
+    let id1 = t1["token_id"].as_str().unwrap().to_string();
+    assert_eq!(pending(id1.clone()).await, 0);
+    let t2 = mint(&b).await?; // paid for by token 1 alone
+    let id2 = t2["token_id"].as_str().unwrap().to_string();
+    assert_eq!(pending(id1.clone()).await, net / 2);
+    assert_eq!(pending(id2.clone()).await, 0, "a new token doesn't collect older payments");
+    let t3 = mint(&c).await?; // paid for by tokens 1 and 2
+    let id3 = t3["token_id"].as_str().unwrap().to_string();
+    assert_eq!(pending(id1.clone()).await, net / 2 + net / 4);
+    assert_eq!(pending(id2.clone()).await, net / 4);
+    assert_eq!(pending(id3.clone()).await, 0);
+
+    // transfer token 1 (with its pending reward) to carol: she claims it, alice no longer can
+    let out = a.call(contract.id(), "nft_transfer").args_json(json!({ "receiver_id": c.id(), "token_id": id1 })).deposit(NearToken::from_yoctonear(1)).transact().await?;
+    assert!(out.is_success(), "{:?}", out.failures());
+    let out = a.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": [id1] })).max_gas().transact().await?;
+    assert!(!out.is_success(), "the previous owner can't claim");
+    let before = balance(&c).await?;
+    let out = c.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": [id1] })).max_gas().transact().await?;
+    assert!(out.is_success(), "{:?}", out.failures());
+    assert_eq!(out.json::<String>()?, (net / 2 + net / 4).to_string());
+    let gained = balance(&c).await? + NearToken::from_millinear(20).as_yoctonear() - before;
+    assert!(gained >= net / 2 + net / 4);
+    assert_eq!(pending(id1.clone()).await, 0);
+    let out = c.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": [id1] })).max_gas().transact().await?;
+    assert_eq!(out.json::<String>()?, "0");
+
+    // limit 5: alice minted 1, mints 4 more, the 6th is refused and the 2 NEAR come back
+    for _ in 0..4 {
+        mint(&a).await?;
+    }
+    let before = balance(&a).await?;
+    let out = a.call(contract.id(), "nft_mint").deposit(PRICE).gas(Gas::from_tgas(100)).transact().await?;
+    assert!(!out.is_success());
+    assert!(format!("{:?}", out.failures()).contains("mint limit reached"), "{:?}", out.failures());
+    assert!(before - balance(&a).await? < NearToken::from_millinear(10).as_yoctonear(), "deposit refunded");
+    // another account is unaffected
+    mint(&b).await?;
+
+    // the owner can't pull funds the holders are owed
+    let accrued: Value = contract.view("accrued").await?.json()?;
+    let credited: u128 = accrued["holders_credited"].as_str().unwrap().parse()?;
+    let claimed: u128 = accrued["holders_claimed"].as_str().unwrap().parse()?;
+    let locked: String = contract.view("locked_balance").await?.json()?;
+    assert!(locked.parse::<u128>()? >= credited - claimed);
+    let out = owner.call(contract.id(), "withdraw_surplus").args_json(json!({ "amount": contract.view_account().await?.balance.as_yoctonear().to_string() })).transact().await?;
+    assert!(!out.is_success(), "can't withdraw rewards, team share, storage or the reserve of unminted tokens");
     Ok(())
 }

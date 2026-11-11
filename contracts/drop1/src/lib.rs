@@ -3,9 +3,15 @@
 //! 300 tokens, catalog of NEP-177 metadata loaded by the owner (metadata/drop1). `nft_mint` (2 NEAR) takes the payment
 //! and stores a *ticket*; a self-callback `on_reveal` draws the token from the remaining pool with the random seed of a
 //! **later block** (unknown when the buyer signed), mints it and emits the NEP-297 `nft_mint` event. If the callback
-//! fails, anyone can finish it with `reveal(ticket_id)`. Proceeds accrue 33 % team / 33 % stakers / rest buyback and are
-//! paid out by `distribute()` (pull payment: the mint path never transfers). NEP-171/177/178/181/297 come from
-//! near-contract-standards; NEP-199 royalty (5 %) is implemented here.
+//! fails, anyone can finish it with `reveal(ticket_id)`.
+//!
+//! Proceeds (price − storage reserve): 50 % team, 50 % holder rewards. The team part accrues and is paid by
+//! `distribute()` (pull payment: the mint path never transfers to the team). The holder part is split *equally between
+//! the tokens minted before this payment* (reward per token: `reward_per_token` only grows, every token has a
+//! checkpoint, `claim_rewards` pays the current owner `reward_per_token − checkpoint`). Rounding dust and the share of
+//! a payment made while no token exists yet go to the team. NEP-171/177/178/181/297 come from near-contract-standards;
+//! NEP-199 royalty (5 %) is implemented here. The contract has no upgrade method: whoever holds a full-access key
+//! of the contract account can still replace the code, so the runbook deletes those keys (docs/MAINNET-RUNBOOK.md).
 
 use std::collections::HashMap;
 
@@ -48,6 +54,7 @@ enum StorageKey {
     Pool,
     Tickets,
     MintedBy,
+    Checkpoints,
 }
 
 /// A paid mint waiting for its draw.
@@ -58,21 +65,15 @@ pub struct Ticket {
     pub block_height: u64,
 }
 
-#[near(serializers = [borsh, json])]
-#[derive(Clone, Debug, PartialEq)]
-pub struct Treasuries {
-    pub team: AccountId,
-    pub stakers: AccountId,
-    pub buyback: AccountId,
-}
-
-/// Proceeds waiting for `distribute()`, in yoctoNEAR.
+/// Proceeds accounting, in yoctoNEAR. `team` waits for `distribute()`.
 #[near(serializers = [borsh, json])]
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Accrued {
     pub team: U128,
-    pub stakers: U128,
-    pub buyback: U128,
+    /// Sum of all holder shares credited so far (÷ tokens at the time) = what `claim_rewards` can ever pay out.
+    pub holders_credited: U128,
+    /// Of `holders_credited`, already paid by `claim_rewards`.
+    pub holders_claimed: U128,
 }
 
 /// NEP-199 payout.
@@ -104,12 +105,20 @@ pub struct CatalogEntry {
     pub metadata: TokenMetadata,
 }
 
-/// 33 / 33 / rest split of `amount` (yoctoNEAR). The buyback share takes every rounding remainder, so the three
-/// parts always sum to `amount` exactly.
-pub fn split(amount: u128) -> (u128, u128, u128) {
-    let team = amount * 33 / 100;
-    let stakers = amount * 33 / 100;
-    (team, stakers, amount - team - stakers)
+/// 50 / 50 split of `amount` (yoctoNEAR) → (team, holders). Holders get the floor of half, the team the rest.
+pub fn split(amount: u128) -> (u128, u128) {
+    let holders = amount / 2;
+    (amount - holders, holders)
+}
+
+/// Divides the holder share between `tokens` tokens → (per token, remainder). Zero tokens: nothing is divided and
+/// the whole share is the remainder (it goes to the team).
+pub fn per_token(holders_share: u128, tokens: u128) -> (u128, u128) {
+    if tokens == 0 {
+        (0, holders_share)
+    } else {
+        (holders_share / tokens, holders_share % tokens)
+    }
 }
 
 /// Index into a pool of `len` from a 32-byte seed mixed with the ticket id (two tickets in one block differ).
@@ -138,9 +147,14 @@ pub struct Contract {
     next_ticket: u64,
     pending: u16,
     minted: u16,
-    treasuries: Treasuries,
+    team_id: AccountId,
     royalty_account: AccountId,
     accrued: Accrued,
+    /// yoctoNEAR per token ever credited to every token minted before the credit (only grows).
+    reward_per_token: u128,
+    /// `reward_per_token` at the moment the token was minted or last claimed.
+    checkpoints: LookupMap<u16, u128>,
+    proposed_owner: Option<AccountId>,
     paused: bool,
     metadata_frozen: bool,
     max_per_account: Option<u32>,
@@ -152,10 +166,11 @@ impl Contract {
     #[init]
     pub fn new(
         owner_id: AccountId,
-        treasuries: Treasuries,
+        team_id: AccountId,
         royalty_account: Option<AccountId>,
         base_uri: Option<String>,
         provenance: String,
+        max_per_account: Option<u32>,
     ) -> Self {
         let metadata = NFTContractMetadata {
             spec: NFT_METADATA_SPEC.to_string(),
@@ -172,7 +187,7 @@ impl Contract {
             pool.push(id);
         }
         Self {
-            royalty_account: royalty_account.unwrap_or_else(|| treasuries.team.clone()),
+            royalty_account: royalty_account.unwrap_or_else(|| team_id.clone()),
             tokens: NonFungibleToken::new(
                 StorageKey::OwnerById,
                 owner_id.clone(),
@@ -190,11 +205,14 @@ impl Contract {
             next_ticket: 0,
             pending: 0,
             minted: 0,
-            treasuries,
+            team_id,
             accrued: Accrued::default(),
+            reward_per_token: 0,
+            checkpoints: LookupMap::new(StorageKey::Checkpoints),
+            proposed_owner: None,
             paused: true,
             metadata_frozen: false,
-            max_per_account: None,
+            max_per_account,
             minted_by: LookupMap::new(StorageKey::MintedBy),
         }
     }
@@ -216,11 +234,12 @@ impl Contract {
             require!(count < limit, "mint limit reached for this account");
             self.minted_by.insert(buyer.clone(), count + 1);
         }
-        // proceeds (minus the storage reserve) accrue for distribute()
-        let (team, stakers, buyback) = split(PRICE.saturating_sub(STORAGE_RESERVE).as_yoctonear());
-        self.accrued.team = U128(self.accrued.team.0 + team);
-        self.accrued.stakers = U128(self.accrued.stakers.0 + stakers);
-        self.accrued.buyback = U128(self.accrued.buyback.0 + buyback);
+        // proceeds (minus the storage reserve): half to the team, half to the tokens minted so far
+        let (team, holders) = split(PRICE.saturating_sub(STORAGE_RESERVE).as_yoctonear());
+        let (each, dust) = per_token(holders, self.minted as u128);
+        self.reward_per_token += each;
+        self.accrued.holders_credited = U128(self.accrued.holders_credited.0 + each * self.minted as u128);
+        self.accrued.team = U128(self.accrued.team.0 + team + dust);
         let ticket_id = self.next_ticket;
         self.next_ticket += 1;
         self.pending += 1;
@@ -253,6 +272,8 @@ impl Contract {
         let id = self.pool.swap_remove(index);
         let metadata = self.catalog.remove(&id).unwrap_or_else(|| env::panic_str("catalog entry missing"));
         let token = self.tokens.internal_mint_with_refund(id.to_string(), ticket.buyer, Some(metadata), None);
+        // a new token starts at the current counter: it never collects shares paid before it existed
+        self.checkpoints.insert(id, self.reward_per_token);
         NftMint { owner_id: &token.owner_id, token_ids: &[&token.token_id], memo: None }.emit();
         self.pending -= 1;
         self.minted += 1;
@@ -283,8 +304,27 @@ impl Contract {
         self.accrued.clone()
     }
 
-    pub fn treasuries(&self) -> Treasuries {
-        self.treasuries.clone()
+    pub fn team(&self) -> AccountId {
+        self.team_id.clone()
+    }
+
+    /// Unclaimed reward of one token (0 for a token that doesn't exist yet).
+    pub fn pending_rewards(&self, token_id: TokenId) -> U128 {
+        U128(self.pending_of(&token_id))
+    }
+
+    /// Unclaimed rewards of all tokens an account holds (the same tokens `claim_rewards` would pay).
+    pub fn pending_rewards_for_owner(&self, account_id: AccountId) -> U128 {
+        let ids = self.tokens.nft_tokens_for_owner(account_id, None, None);
+        U128(ids.iter().map(|t| self.pending_of(&t.token_id)).sum())
+    }
+
+    pub fn reward_per_token(&self) -> U128 {
+        U128(self.reward_per_token)
+    }
+
+    pub fn proposed_owner(&self) -> Option<AccountId> {
+        self.proposed_owner.clone()
     }
 
     pub fn provenance(&self) -> String {
@@ -297,18 +337,38 @@ impl Contract {
 
     // ---------- payouts ----------
 
-    /// Pays the accrued shares to the 3 treasuries. Anyone may call it.
+    /// Pays the accrued team share to the team account. Anyone may call it (it can only pay the team).
     pub fn distribute(&mut self) {
-        let Accrued { team, stakers, buyback } = std::mem::take(&mut self.accrued);
-        for (account, amount) in [
-            (self.treasuries.team.clone(), team.0),
-            (self.treasuries.stakers.clone(), stakers.0),
-            (self.treasuries.buyback.clone(), buyback.0),
-        ] {
-            if amount > 0 {
-                Promise::new(account).transfer(NearToken::from_yoctonear(amount)).detach();
-            }
+        let team = std::mem::take(&mut self.accrued.team).0;
+        if team > 0 {
+            Promise::new(self.team_id.clone()).transfer(NearToken::from_yoctonear(team)).detach();
         }
+    }
+
+    fn pending_of(&self, token_id: &str) -> u128 {
+        let Ok(id) = token_id.parse::<u16>() else { return 0 };
+        self.checkpoints.get(&id).map_or(0, |checkpoint| self.reward_per_token - checkpoint)
+    }
+
+    /// Pays the caller the rewards of the listed tokens **they own right now** (pull payment). State is updated
+    /// before the transfer; a token that was already claimed pays 0. Returns the amount paid.
+    pub fn claim_rewards(&mut self, token_ids: Vec<TokenId>) -> U128 {
+        require!(!token_ids.is_empty() && token_ids.len() <= TOTAL as usize, "list 1..=300 token ids");
+        let caller = env::predecessor_account_id();
+        let mut total = 0u128;
+        for token_id in token_ids {
+            let owner = self.tokens.owner_by_id.get(&token_id).unwrap_or_else(|| env::panic_str("token not found"));
+            require!(owner == caller, "not the owner of this token");
+            let amount = self.pending_of(&token_id);
+            // pending_of parsed the id: it exists in `checkpoints` because the token is minted
+            self.checkpoints.insert(token_id.parse().unwrap(), self.reward_per_token);
+            total += amount;
+        }
+        if total > 0 {
+            self.accrued.holders_claimed = U128(self.accrued.holders_claimed.0 + total);
+            Promise::new(caller).transfer(NearToken::from_yoctonear(total)).detach();
+        }
+        U128(total)
     }
 
     // ---------- owner ----------
@@ -336,16 +396,17 @@ impl Contract {
         self.metadata.base_uri = Some(base_uri);
     }
 
-    /// One way: base_uri, catalog and treasuries can't change any more.
+    /// One way: base_uri and the catalog can't change any more.
     pub fn freeze_metadata(&mut self) {
         self.assert_owner();
         self.metadata_frozen = true;
     }
 
-    pub fn set_treasuries(&mut self, treasuries: Treasuries) {
+    /// The team account (receives `distribute()`); the owner may change it at any time, also after the freeze:
+    /// it only redirects the team's own share, never the holders'.
+    pub fn set_team(&mut self, team_id: AccountId) {
         self.assert_owner();
-        require!(!self.metadata_frozen, "metadata is frozen");
-        self.treasuries = treasuries;
+        self.team_id = team_id;
     }
 
     pub fn pause(&mut self) {
@@ -364,19 +425,32 @@ impl Contract {
         self.max_per_account = max_per_account;
     }
 
-    pub fn set_owner(&mut self, owner_id: AccountId) {
+    /// Two steps, so a typo can't lock the admin functions: the owner proposes, the new account accepts.
+    pub fn propose_owner(&mut self, owner_id: AccountId) {
         self.assert_owner();
-        self.owner_id = owner_id;
+        self.proposed_owner = Some(owner_id);
     }
 
-    /// Withdraw what is above storage + accrued proceeds (e.g. faucet top-ups, unused reserves).
+    pub fn accept_owner(&mut self) {
+        let proposed = self.proposed_owner.clone().unwrap_or_else(|| env::panic_str("no owner proposed"));
+        require!(env::predecessor_account_id() == proposed, "only the proposed owner can accept");
+        self.owner_id = proposed;
+        self.proposed_owner = None;
+    }
+
+    /// What `withdraw_surplus` can't touch: storage staking, the team share, unclaimed holder rewards, and the
+    /// storage reserve of every token not minted yet (so the owner can't make later reveals fail).
+    pub fn locked_balance(&self) -> U128 {
+        let storage = env::storage_byte_cost().saturating_mul(env::storage_usage() as u128).as_yoctonear();
+        let unclaimed = self.accrued.holders_credited.0 - self.accrued.holders_claimed.0;
+        let reserve = STORAGE_RESERVE.as_yoctonear() * (TOTAL - self.minted) as u128;
+        U128(storage + self.accrued.team.0 + unclaimed + reserve)
+    }
+
+    /// Withdraw what is above `locked_balance` (e.g. faucet top-ups, unused reserves, a failed refund).
     pub fn withdraw_surplus(&mut self, amount: U128, receiver_id: Option<AccountId>) -> Promise {
         self.assert_owner();
-        let locked = env::storage_byte_cost().saturating_mul(env::storage_usage() as u128).as_yoctonear()
-            + self.accrued.team.0
-            + self.accrued.stakers.0
-            + self.accrued.buyback.0;
-        let free = env::account_balance().as_yoctonear().saturating_sub(locked);
+        let free = env::account_balance().as_yoctonear().saturating_sub(self.locked_balance().0);
         require!(amount.0 <= free, format!("only {} yoctoNEAR is free", free));
         Promise::new(receiver_id.unwrap_or_else(|| self.owner_id.clone())).transfer(NearToken::from_yoctonear(amount.0))
     }

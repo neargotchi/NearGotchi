@@ -59,7 +59,7 @@ fn tx(hash: impl std::fmt::Display) -> String {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let suffix = std::env::var("SUFFIX").unwrap_or_else(|_| "ng57".into());
+    let suffix = std::env::var("SUFFIX").unwrap_or_else(|_| "ng67".into());
     let name = |role: &str| format!("neargotchi-{role}-{suffix}.testnet");
     let worker = near_workspaces::testnet().await?;
 
@@ -67,9 +67,7 @@ async fn main() -> anyhow::Result<()> {
     let cid = contract_acc.id().clone();
     let admin = ensure_account(&worker, &name("admin")).await?;
     let team = ensure_account(&worker, &name("team")).await?;
-    let stakers = ensure_account(&worker, &name("stakers")).await?;
-    let buyback = ensure_account(&worker, &name("buyback")).await?;
-    
+
     // deploy when there is no contract yet (or REDEPLOY=1)
     let wasm = std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("res/neargotchi_drop1.wasm"))?;
     let has_contract = contract_acc.view(&cid, "drop_status").await.is_ok();
@@ -88,9 +86,11 @@ async fn main() -> anyhow::Result<()> {
             .call(&cid, "new")
             .args_json(json!({
                 "owner_id": admin.id(),
-                "treasuries": { "team": team.id(), "stakers": stakers.id(), "buyback": buyback.id() },
+                "team_id": team.id(),
                 "base_uri": BASE_URI,
                 "provenance": provenance,
+                // testnet: no limit unless LIMIT=5 is set (mainnet uses 5, docs/MAINNET-RUNBOOK.md)
+                "max_per_account": std::env::var("LIMIT").ok().and_then(|l| l.parse::<u32>().ok()),
             }))
             .max_gas()
             .transact()
@@ -153,6 +153,6 @@ async fn main() -> anyhow::Result<()> {
         contract_acc.view_account().await?.balance.as_yoctonear() / 10u128.pow(24)
     );
     println!("contract: https://testnet.nearblocks.io/address/{cid}");
-    println!("accounts: {} | admin {} | team {} | stakers {} | buyback {}", cid, admin.id(), team.id(), stakers.id(), buyback.id());
+    println!("accounts: {} | admin {} | team {}", cid, admin.id(), team.id());
     Ok(())
 }
