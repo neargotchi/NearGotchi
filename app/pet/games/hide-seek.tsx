@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { fill, petPage } from "../../../lib/copy";
+import GameClose from "./game-close";
 import { useGameModal } from "./use-game-modal";
 import { HIDESEEK, finalSlots, isFound, makeRound, marks, steps4, viewAt, type Round, type SpotView } from "../../../lib/hideseek-game";
 import SpotSprite, { SPOT_TOP } from "./hide-spots";
@@ -357,9 +358,7 @@ export default function HideSeek({
   return (
     <div className={modal ? "simon catch hide is-modal" : "simon catch hide"} role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-label={modal ? copy.title : undefined}>
       {modal ? (
-        <button type="button" className="game-modal-close button button-secondary" aria-label={petPage.games.close} onClick={close}>
-          <span aria-hidden="true">×</span>
-        </button>
+        <GameClose onClick={close} />
       ) : null}
       <div ref={deviceRef} className="simon-device" tabIndex={-1}>
         <div className="catch-screen hide-screen">
@@ -380,7 +379,7 @@ export default function HideSeek({
                     } as CSSProperties
                   }
                 >
-                  <Image src={pet.sprite === "happy" ? sprites.happy : sprites.normal} alt="" width={sprites.width} height={sprites.height} sizes="96px" />
+                  <Image src={pet.sprite === "happy" ? sprites.happy : sprites.normal} alt="" width={sprites.width} height={sprites.height} sizes="(max-width: 640px) 45vw, 360px" />
                   {pet.tongue ? <i className="hide-tongue" /> : null}
                 </span>
               ) : null}

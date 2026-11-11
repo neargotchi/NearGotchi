@@ -356,7 +356,7 @@ export const petPage = {
     blocked: {
       hungry: "{name} is too hungry to play.",
     },
-    close: "close game",
+    close: "close",
     feedFirst: "feed it first",
     /** Cards under catch the snack (games in tasks 050–051). */
     /** Hide & seek (app/pet/games/hide-seek.tsx, lib/hideseek-game.ts). */

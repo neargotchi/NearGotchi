@@ -95,7 +95,8 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
           sprites={{
             normal: petSpriteSrc(profile, "normal"),
             happy: petSpriteSrc(profile, "happy"),
-            sad: petSpriteSrc(profile, "hungry"),
+            // not "hungry": that sprite has the empty food bowl drawn in (task 078)
+            sad: petSpriteSrc(profile, "normal"),
             width: profile.spriteWidth,
             height: profile.spriteHeight,
           }}

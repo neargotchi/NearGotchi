@@ -10,8 +10,11 @@ export function useGameModal(open: boolean, onEscape: () => void) {
   const escape = useEffectEvent(onEscape);
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // Lock the root scroller, not <body>: overflow on body made it its own scroll container and the
+    // sticky site header jumped off screen while a game was open (task 078, same fix as the burger).
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
@@ -20,7 +23,7 @@ export function useGameModal(open: boolean, onEscape: () => void) {
     };
     window.addEventListener("keydown", onKey, true);
     return () => {
-      document.body.style.overflow = previous;
+      root.style.overflow = previous;
       window.removeEventListener("keydown", onKey, true);
     };
   }, [open]);

@@ -182,3 +182,86 @@
 
 /* Pet device: no old black drop shadow under the framed body (task 077). */
 .pet-shell .pet-device { filter: none; }
+
+/* ---------- Games (task 078): board, HUD, start/end screens, pads ---------- */
+/* Board: the card frame (accent line, stepped corners); type follows the board width (cqi). */
+.pet-shell .catch-screen {
+  container-type: inline-size;
+  border: 3px solid var(--scene-accent);
+  outline: 0;
+  box-shadow: inset 0 0 0 2px var(--lcd-line);
+  clip-path: polygon(9px 0,calc(100% - 9px) 0,calc(100% - 9px) 3px,calc(100% - 6px) 3px,calc(100% - 6px) 6px,
+    calc(100% - 3px) 6px,calc(100% - 3px) 9px,100% 9px,100% calc(100% - 9px),calc(100% - 3px) calc(100% - 9px),
+    calc(100% - 3px) calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 9px) calc(100% - 3px),calc(100% - 9px) 100%,9px 100%,9px calc(100% - 3px),6px calc(100% - 3px),
+    6px calc(100% - 6px),3px calc(100% - 6px),3px calc(100% - 9px),0 calc(100% - 9px),0 9px,3px 9px,3px 6px,
+    6px 6px,6px 3px,9px 3px);
+}
+.pet-shell .catch-hud {
+  top: max(6px, 1.6cqi);
+  right: max(8px, 2cqi);
+  left: max(8px, 2cqi);
+  color: #141414;
+  font-size: max(9px, 2.4cqi);
+  letter-spacing: .04em;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+.pet-shell .catch-banner { padding: max(6px, 1.4cqi) max(10px, 2.4cqi); font-size: max(10px, 3cqi); text-transform: uppercase; letter-spacing: .06em; }
+/* End screen: label, the happy pet (smooth downscale, no jagged nearest-neighbour edges), big score. */
+.pet-shell .catch-over { flex-direction: column; gap: max(6px, 1.6cqi); }
+.pet-shell .catch-over .simon-lcd-top { position: static; font-size: max(9px, 2.6cqi); text-transform: uppercase; letter-spacing: .08em; }
+.pet-shell .catch-over .simon-happy { height: 42%; width: auto; image-rendering: auto; }
+.pet-shell .catch-over .simon-lcd-main { font-size: max(20px, 8cqi); line-height: 1; }
+.pet-shell .hide-pet img { image-rendering: auto; }
+
+/* Pads (◀ ▶, throw): the reference button — mint face, light line, stepped corners, same hover /
+   press motion; disabled = flat card colours. Tap targets stay ≥ 54px on phones. */
+.pet-shell .simon-pad {
+  --ink: #001b13;
+  background: #a2ffe0;
+  clip-path: polygon(9px 0,calc(100% - 9px) 0,calc(100% - 9px) 3px,calc(100% - 6px) 3px,calc(100% - 6px) 6px,
+    calc(100% - 3px) 6px,calc(100% - 3px) 9px,100% 9px,100% calc(100% - 9px),calc(100% - 3px) calc(100% - 9px),
+    calc(100% - 3px) calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) calc(100% - 3px),
+    calc(100% - 9px) calc(100% - 3px),calc(100% - 9px) 100%,9px 100%,9px calc(100% - 3px),6px calc(100% - 3px),
+    6px calc(100% - 6px),3px calc(100% - 6px),3px calc(100% - 9px),0 calc(100% - 9px),0 9px,3px 9px,3px 6px,
+    6px 6px,6px 3px,9px 3px);
+  transition: transform 140ms;
+}
+.pet-shell .simon-pad > span { width: calc(100% - 4px); height: calc(100% - 4px); background: #00ecb1; box-shadow: inset -2px -2px 0 #00c494; }
+.pet-shell .simon-pad:active > span,
+.pet-shell .simon-pad.is-lit > span { background: #17f8be; box-shadow: none; }
+.pet-shell .simon-pad[aria-disabled="true"] { --ink: color-mix(in srgb, var(--scene-ink) 55%, transparent); background: color-mix(in srgb, var(--scene-accent) 45%, transparent); }
+.pet-shell .simon-pad[aria-disabled="true"] > span { background: var(--card-fill); box-shadow: none; }
+.pet-shell .simon-pad:focus-visible { background: var(--scene-ink); }
+@media (prefers-reduced-motion: no-preference) {
+  @media (min-width: 1024px) and (hover: hover) {
+    .pet-shell .simon-pad:not([aria-disabled="true"]):hover { transform: translate(2px, 2px); }
+  }
+  .pet-shell .simon-pad:not([aria-disabled="true"]):active { transform: translateY(1px); }
+}
+/* In the big modal board the pads grow with it (desktop). */
+@media (min-width: 641px) {
+  .pet-shell .is-modal .catch-pad:not(.fetch-pad) { width: 96px; height: 72px; }
+  .pet-shell .is-modal .catch-arrow { transform: scale(1.4); }
+  .pet-shell .is-modal .catch-arrow.is-left { transform: scale(-1.4, 1.4); }
+  .pet-shell .is-modal .fetch-pad { width: 180px; height: 64px; font-size: .8125rem; }
+}
+@media (max-width: 640px) {
+  .pet-shell .catch-pad:not(.fetch-pad) { width: 72px; height: 56px; }
+  .pet-shell .fetch-pad { height: 56px; }
+}
+
+/* ✕ of the game modal: a square 40px pixel button with a centred pixel cross (app/pet/games/game-close.tsx). */
+.pet-shell .simon.is-modal .game-modal-close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  --corner: 8px;
+  --pixel-step: 3px;
+}
+.pet-shell .game-modal-close svg { display: block; width: 16px; height: 16px; }

@@ -4,7 +4,9 @@ import Image from "next/image";
 import { useEffect, useEffectEvent, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 
 import { fill, petPage } from "../../../lib/copy";
+import GameClose from "./game-close";
 import { useGameModal } from "./use-game-modal";
+import { drawSprite, useCrispCanvas } from "./use-crisp-canvas";
 import {
   BALL_GROUND_Y,
   FETCH,
@@ -47,7 +49,9 @@ type FetchGameProps = {
   blockedReason: string | null;
   active: boolean;
   petName: string;
-  /** normal: idle / running; happy: after a hit and after the round; sad: after a miss (its hungry sprite). */
+  /** normal: idle and walking home after a miss; happy: running out to the ball, after a hit, after the
+   * round. `sad` is kept for the prop shape but must not be the hungry sprite: that one has the empty
+   * food bowl drawn in (task 078: near kat ran back with the ball next to a bowl). */
   sprites: { normal: string; happy: string; sad: string; width: number; height: number };
   onStart: () => void;
   onEnd: (score: number) => void;
@@ -193,7 +197,10 @@ export default function FetchGame({
   };
 
   const drawPet = (ctx: CanvasRenderingContext2D, g: ReturnType<typeof fresh>) => {
-    const img = images.current?.[g.look];
+    // Sprite (task 078): running out to the ball = happy (active), coming back = happy after a hit,
+    // normal otherwise; the "sad" look is drawn with the normal sprite (no bowl-free sad sprite exists).
+    const look: PetLook = g.stage === "fetch" ? "happy" : g.look === "sad" ? "normal" : g.look;
+    const img = images.current?.[look];
     const running = g.stage === "fetch" || g.stage === "back";
     const bob = running && !g.slow ? Math.floor(g.elapsed / 110) % 2 : 0;
     const petW = Math.round((PET_H * sprites.width) / sprites.height);
@@ -203,13 +210,12 @@ export default function FetchGame({
     const facingRight = g.stage === "fetch";
     if (img && img.complete && img.naturalWidth) {
       ctx.save();
-      ctx.imageSmoothingEnabled = true;
       if (facingRight) {
         ctx.translate(left + petW, top);
         ctx.scale(-1, 1);
-        ctx.drawImage(img, 0, 0, petW, PET_H);
+        drawSprite(ctx, img, 0, 0, petW, PET_H);
       } else {
-        ctx.drawImage(img, left, top, petW, PET_H);
+        drawSprite(ctx, img, left, top, petW, PET_H);
       }
       ctx.restore();
     } else {
@@ -225,6 +231,7 @@ export default function FetchGame({
     if (!ctx) return;
     const g = game.current;
     ctx.clearRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = LCD_SHADOW;
     for (let x = 0; x < W; x += 2) px(ctx, x, GROUND + 1);
     drawFlag(ctx, g);
@@ -259,6 +266,7 @@ export default function FetchGame({
     images.current = { normal: load(sprites.normal), happy: load(sprites.happy), sad: load(sprites.sad) };
     draw();
   });
+  useCrispCanvas(canvasRef, W, H, () => draw());
   useEffect(() => {
     init();
     const pending = frame;
@@ -527,9 +535,7 @@ export default function FetchGame({
   return (
     <div className={modal ? "simon catch fetch is-modal" : "simon catch fetch"} role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-label={modal ? copy.title : undefined}>
       {modal ? (
-        <button type="button" className="game-modal-close button button-secondary" aria-label={petPage.games.close} onClick={close}>
-          <span aria-hidden="true">×</span>
-        </button>
+        <GameClose onClick={close} />
       ) : null}
       <div ref={deviceRef} className="simon-device" tabIndex={-1}>
         <div className="catch-screen fetch-screen">
