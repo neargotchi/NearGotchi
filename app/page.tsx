@@ -3,7 +3,7 @@ import DropProgress from "../components/DropProgress";
 import Sparkles from "../components/Sparkles";
 import PetCta from "./pet-cta";
 import type { Metadata } from "next";
-import { SITE_DESCRIPTION, pageMeta } from "../lib/site";
+import { SITE_DESCRIPTION, SITE_NAME, pageMeta } from "../lib/site";
 import { hero } from "../lib/copy";
 import Faq from "./faq";
 import HowItWorks from "./how-it-works";
@@ -11,6 +11,7 @@ import PetGallery from "./pet-gallery";
 import Tokenomics from "./tokenomics";
 import DropSection from "./drop-section";
 import MeetYourGotchi from "./meet-your-gotchi";
+import Wordmark from "./wordmark";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
@@ -21,59 +22,67 @@ export const metadata: Metadata = pageMeta({
 export default function Home() {
   return (
     <main className="hero-shell">
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-grid" aria-hidden="true" />
-
+      {/* Pixel scene (public/hero/*.png) behind a centred column: app/hero-header.css. */}
+      <section id="home" className="hero" aria-labelledby="hero-title">
+        {/* Twinkling pixel stars in the sky on both sides of the title and the egg. */}
+        <Sparkles
+          count={8}
+          colors={["var(--green)", "var(--sparkle-alt)"]}
+          area={[
+            { x: [6, 13], y: [36, 44] },
+            { x: [20, 27], y: [14, 22] },
+            { x: [29, 35], y: [50, 58] },
+            { x: [13, 19], y: [60, 66] },
+            { x: [86, 93], y: [34, 44] },
+            { x: [72, 79], y: [12, 20] },
+            { x: [65, 71], y: [50, 58] },
+            { x: [81, 87], y: [60, 66] },
+          ]}
+          seed="hero-sky"
+          size={15}
+          duration={[2.2, 3.6]}
+          className="hero-sky"
+        />
+        {/* Phones: the sky set above would sit on the full-width copy; smaller stars in the side strips. */}
+        <Sparkles
+          count={6}
+          colors={["var(--green)", "var(--sparkle-alt)"]}
+          area={[
+            { x: [3, 10], y: [30, 36] },
+            { x: [90, 97], y: [30, 36] },
+            { x: [4, 12], y: [44, 52] },
+            { x: [88, 96], y: [44, 52] },
+            { x: [40, 60], y: [12, 16] },
+            { x: [3, 9], y: [62, 68] },
+          ]}
+          seed="hero-sky-mobile"
+          size={10}
+          duration={[2.2, 3.6]}
+          className="hero-sky-mobile"
+        />
         <div className="hero-content">
-          <div className="hero-copy">
-            <h1 id="hero-title">
-              your pet
-              <br />
-              lives
-              <br />
-              on{" "}
-              <span className="hero-near">
-                near.
-                <Sparkles
-                  count={7}
-                  colors={["var(--green)", "var(--sparkle-alt)"]}
-                  area={[
-                    { x: [-4, 8], y: [-30, -14] },
-                    { x: [34, 46], y: [-36, -20] },
-                    { x: [74, 86], y: [-28, -12] },
-                    { x: [102, 110], y: [0, 20] },
-                    { x: [104, 112], y: [56, 76] },
-                    { x: [14, 26], y: [98, 110] },
-                    { x: [60, 72], y: [100, 112] },
-                  ]}
-                  seed="hero-near"
-                  size={25}
-                />
-              </span>
-            </h1>
-            <p className="hero-lede">{hero.lede}</p>
-            <div className="hero-actions">
-              <PetCta variant="hero">
-                <Sparkles
-                  count={5}
-                  colors={["var(--green)", "var(--sparkle-alt)"]}
-                  area={[
-                    { x: [-8, 20], y: [-40, -10] },
-                    { x: [80, 104], y: [-40, -10] },
-                    { x: [100, 112], y: [20, 90] },
-                  ]}
-                  seed="hero-mint"
-                  size={12}
-                  mode="burst"
-                />
-              </PetCta>
-              <a className="button button-secondary" href="#how-it-works">
-                how it works <span aria-hidden="true">↓</span>
-              </a>
-            </div>
-            {/* "how many are left": this browser's demo count, so it always says "demo" (docs/DEVLOG.md §3). */}
-            <DropProgress className="hero-progress" />
-          </div>
+          <h1 id="hero-title">
+            {/* Title sparkles: the 7 of main's "near." title, around the wordmark (none below it: subtitle). */}
+            <span className="hero-title-host">
+              <Wordmark text={SITE_NAME} />
+              <Sparkles
+                count={7}
+                colors={["var(--green)", "var(--sparkle-alt)"]}
+                area={[
+                  { x: [-7, -3], y: [-20, 20] },
+                  { x: [6, 16], y: [-75, -45] },
+                  { x: [30, 40], y: [-90, -60] },
+                  { x: [56, 66], y: [-85, -55] },
+                  { x: [82, 92], y: [-75, -45] },
+                  { x: [102, 106], y: [-20, 20] },
+                  { x: [96, 101], y: [-70, -45] },
+                ]}
+                seed="hero-near"
+                size={25}
+              />
+            </span>
+          </h1>
+          <p className="hero-subtitle">{hero.subtitle}</p>
 
           <div className="device-wrap">
             <Image
@@ -82,9 +91,10 @@ export default function Home() {
               alt="NEARGOTCHI pixel pet device"
               width={1024}
               height={1024}
-              sizes="(max-width: 1023px) 70vw, 520px"
+              sizes="(max-width: 768px) 48vw, 465px"
               priority
             />
+            {/* Light sweep over the N strokes (globals.css .n-sweep; off with reduced motion). */}
             <span className="n-sweep" aria-hidden="true">
               <span className="n-sweep-box">
                 <span />
@@ -94,10 +104,10 @@ export default function Home() {
               count={5}
               colors={["var(--green)", "var(--sparkle-alt)"]}
               area={[
-                { x: [0, 10], y: [10, 40] },
-                { x: [88, 98], y: [20, 60] },
-                { x: [6, 14], y: [70, 90] },
-                { x: [84, 94], y: [72, 92] },
+                { x: [8, 16], y: [0, 10] },
+                { x: [80, 88], y: [2, 12] },
+                { x: [0, 8], y: [64, 78] },
+                { x: [90, 98], y: [66, 80] },
                 { x: [70, 80], y: [0, 6] },
               ]}
               seed="hero-egg"
@@ -105,6 +115,33 @@ export default function Home() {
               duration={[2.2, 3.4]}
             />
           </div>
+
+          <p className="hero-lede">{hero.lede}</p>
+          <div className="hero-actions">
+            <PetCta variant="hero">
+              <Sparkles
+                count={5}
+                colors={["var(--green)", "var(--sparkle-alt)"]}
+                area={[
+                  { x: [-8, 20], y: [-40, -10] },
+                  { x: [80, 104], y: [-40, -10] },
+                  { x: [100, 112], y: [20, 90] },
+                ]}
+                seed="hero-mint"
+                size={12}
+                mode="burst"
+              />
+            </PetCta>
+            <a className="button button-secondary" href="#how-it-works">
+              {hero.learnMore}
+            </a>
+          </div>
+          {/* "x / 300 hatched": live from the contract on testnet, this browser's count in the demo. */}
+          <DropProgress className="hero-progress" />
+
+          <a className="hero-scroll" href="#pets" aria-label={hero.scroll}>
+            <span aria-hidden="true" />
+          </a>
         </div>
       </section>
 

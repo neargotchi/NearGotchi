@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  /* Wide-screen UI scale: 1 up to 2199px (approved sizes), 1.2 from 2200px, 1.35 from 3000px.
+  /* Wide-screen UI scale: 1 up to 2999px (approved sizes), 1.1 from 3000px (was 1.2 / 1.35 from
+     2200 / 3000px; lowered to the look approved at 80% browser zoom on a 2560px screen).
      Every px length below is multiplied by it (integers rounded to whole pixels); rem text
      scales through the root font size. */
   --ui-scale: 1;
@@ -88,8 +89,7 @@ html { scrollbar-width: none; }
 html::-webkit-scrollbar,
 body::-webkit-scrollbar { display: none; }
 
-@media (min-width: 2200px) { :root { --ui-scale: 1.2; } }
-@media (min-width: 3000px) { :root { --ui-scale: 1.35; } }
+@media (min-width: 3000px) { :root { --ui-scale: 1.1; } }
 
 body {
   margin: 0;

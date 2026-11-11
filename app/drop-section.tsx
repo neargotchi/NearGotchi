@@ -32,9 +32,10 @@ export default function DropSection() {
           <Mascot {...mascots.drop} />
         </div>
         <p className="section-sub">{dropSection.sub}</p>
-        <div className="drop-actions">
+        <div className="drop-actions pixel-ui">
           <Link className="button button-primary" href="/mint">
             {dropSection.cta}
+            <span className="launch-arrow" aria-hidden="true" />
           </Link>
           <DropProgress />
         </div>

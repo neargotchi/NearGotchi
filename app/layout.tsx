@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Press_Start_2P, Space_Grotesk } from "next/font/google";
 import "@near-wallet-selector/modal-ui/styles.css";
 import "./globals.css";
+import "./hero-header.css";
+import "./sections.css";
 import BackgroundSparkles from "../components/BackgroundSparkles";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
 import { THEME_COLORS, themeInitScript } from "../lib/theme";
@@ -45,7 +47,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     // data-theme is set by the inline script before hydration, hence suppressHydrationWarning.
-    <html lang="en" className={`${pressStart.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
+    // data-scroll-behavior: smooth anchor scrolling (hero-header.css) but instant jumps between routes.
+    <html
+      lang="en"
+      className={`${pressStart.variable} ${spaceGrotesk.variable}`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <meta name="theme-color" content={THEME_COLORS.light} suppressHydrationWarning />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

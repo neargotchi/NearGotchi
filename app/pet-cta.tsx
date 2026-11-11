@@ -51,6 +51,7 @@ export default function PetCta({ variant, children }: { variant: Variant; childr
         <span className={hasPet ? "cta-label is-off" : "cta-label"}>{header.cta.label}</span>
         <span className={hasPet ? "cta-label" : "cta-label is-off"}>{header.petCta.label}</span>
       </span>
+      <span className="launch-arrow" aria-hidden="true" />
       {children}
       {burn ? (
         <Sparkles

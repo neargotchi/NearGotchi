@@ -1,7 +1,8 @@
 export type Theme = "light" | "dark";
 
 export const THEME_KEY = "neargotchi-theme";
-export const THEME_COLORS: Record<Theme, string> = { light: "#fff6e5", dark: "#0b0c0a" };
+/** Browser chrome colour: the scene colours of app/hero-header.css (--scene-color). */
+export const THEME_COLORS: Record<Theme, string> = { light: "#fffaf0", dark: "#001311" };
 
 /**
  * Runs in <head> before paint (app/layout.tsx): saved choice wins, else the system preference.

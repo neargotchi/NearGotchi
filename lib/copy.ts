@@ -13,7 +13,11 @@ export type HowItWorksStep = {
 
 /** Hero (app/page.tsx). Demo now, near next: no live near ai promise, no dressing up. */
 export const hero = {
+  subtitle: "your ai companion on near",
   lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "demo now, near next."),
+  learnMore: "learn more",
+  /** Chevron under the buttons → #pets (label for screen readers only). */
+  scroll: "explore the pets",
 };
 
 export const howItWorks = {
@@ -133,6 +137,7 @@ export const notFound = {
 export const header = {
   brand: "neargotchi",
   nav: [
+    { label: "home", href: "#home" },
     { label: "pets", href: "#pets" },
     { label: "how it works", href: "#how-it-works" },
     { label: "your gotchi", href: "#your-gotchi" },
@@ -156,6 +161,8 @@ export const header = {
   cta: { label: "hatch a gotchi", href: "/mint" },
   // … demo pet exists → /pet.
   petCta: { label: "my gotchi", href: "/pet" },
+  /** Square X button next to the theme toggle (app/social-x.tsx). */
+  x: { label: "NEARGOTCHI on X", url: "https://x.com/neargotchiAI" },
 };
 
 /** Section anchors ("#pets") live on the home page; route hrefs ("/pet") are used as-is. */

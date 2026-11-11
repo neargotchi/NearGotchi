@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { header, navHref } from "../lib/copy";
 import PetCta from "./pet-cta";
+import SectionNav from "./section-nav";
 import WalletMenu from "./wallet-menu";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -102,15 +102,7 @@ export default function MobileMenu() {
           if ((event.target as HTMLElement).closest("a")) close(false);
         }}
       >
-        <nav aria-label="sections">
-          <ul>
-            {header.nav.map((link) => (
-              <li key={link.href}>
-                <a href={navHref(link.href)}>{link.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <SectionNav />
         <div className="mobile-menu-actions">
           <WalletMenu variant="burger" />
           <PetCta variant="burger" />

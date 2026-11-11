@@ -1,12 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { header, navHref } from "../lib/copy";
+import { header } from "../lib/copy";
 import Sparkles from "../components/Sparkles";
 import MobileMenu from "./mobile-menu";
 import PetCta from "./pet-cta";
+import SectionNav from "./section-nav";
+import SocialX from "./social-x";
 import ThemeToggle from "./theme-toggle";
 import WalletMenu from "./wallet-menu";
+import Wordmark from "./wordmark";
 
 export default function SiteHeader() {
   return (
@@ -14,20 +17,15 @@ export default function SiteHeader() {
       <div className="site-header-inner">
         <Link className="site-brand" href="/">
           <Image src="/logo-transparent.png" alt="" width={40} height={40} />
-          <span className="site-brand-name">{header.brand}</span>
+          <span className="site-brand-name">
+            <Wordmark text={header.brand} />
+          </span>
         </Link>
-        <nav className="site-nav" aria-label="sections">
-          <ul>
-            {header.nav.map((link) => (
-              <li key={link.href}>
-                <a href={navHref(link.href)}>{link.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <SectionNav className="site-nav" />
         <div className="site-actions">
-          <WalletMenu />
           <ThemeToggle />
+          <SocialX />
+          <WalletMenu />
           <PetCta variant="header">
             <Sparkles
               count={4}
@@ -43,6 +41,7 @@ export default function SiteHeader() {
           </PetCta>
         </div>
         <ThemeToggle className="header-theme-toggle" />
+        <SocialX className="header-social-x" />
         <MobileMenu />
       </div>
     </header>

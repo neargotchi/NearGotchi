@@ -156,9 +156,10 @@ export default function MeetYourGotchi() {
             </li>
           ))}
         </ul>
-        <div className="section-cta">
+        <div className="section-cta cta-marks pixel-ui">
           <Link className="button button-primary" href="/mint">
             {yourGotchi.cta}
+            <span className="launch-arrow" aria-hidden="true" />
           </Link>
         </div>
       </div>
