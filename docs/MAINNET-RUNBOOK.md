@@ -88,7 +88,7 @@ in every version (no file is uploaded anywhere, the shell inserts the JSON).
 | decision | recommendation | why now |
 |---|---|---|
 | media: PNG or WebP | **PNG** (1024 px, `images/drop1`, 154.5 MB) | `media` = `{id}.png` and `media_hash` = sha256 of the PNG go into the contract with `load_catalog` (step 6) and can't be changed afterwards, not even before the freeze. WebP = regenerate metadata + hashes before step 5. |
-| gateway in `base_uri` | `https://ipfs.io/ipfs/<CID>` (no trailing slash) | NEP-177 `base_uri` is an https gateway; wallets build `base_uri + "/" + media`. Changeable until step 9. |
+| gateway in `base_uri` | `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm` (no trailing slash) | NEP-177 `base_uri` is an https gateway; wallets build `base_uri + "/" + media`. Changeable until step 9. |
 | TEAM | see "Accounts" | `init.json` contains it. |
 
 ## 1. Costs (measured: sandbox CI run 43052461862, testnet ng67)
@@ -113,17 +113,55 @@ cd contracts/drop1 && ./build.sh && shasum -a 256 res/neargotchi_drop1.wasm && c
 34 unit tests must pass; the sandbox suite runs in GitHub Actions (`contract-drop1`): the last run on the commit you
 deploy must be green. Write the sha256 down (step 5 compares it on chain; the preflight does it for you).
 
-## 3. Images to IPFS (Pinata, by hand)
+## 3. Images on IPFS — done (task 071)
 
+The folder `ipfs/drop1` (300 × `{id}.png` + 300 × `{id}.json`) is pinned on Pinata (Public IPFS):
+
+**CID `bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm`**
+
+`base_uri` = `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm` (default of `scripts/mainnet_args.py`, no trailing slash). Wallets build the
+image URL as `base_uri + "/" + media`, e.g. token #10: `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/10.png` (its JSON:
+`…/10.json`). Verification (all 300 PNG sha256 == `media_hash`, all 300 JSON == `metadata/drop1`): `docs/REPORT.md` → DONE: 071.
+How it was verified: the folder's CID computed locally from the files (`cid`, UnixFS with kubo's CIDv1 defaults) equals
+the CID Pinata reports, so the pinned bytes are exactly the local folder; locally every PNG matches its `media_hash` and
+every JSON equals `metadata/drop1`. A one-byte change in any file gives a different CID (tested). Re-check before step 9
+(the freeze makes `base_uri` permanent):
 ```sh
-python3 scripts/ipfs_drop1.py prepare        # → ipfs/drop1/: 300 × {id}.png + {id}.json, every PNG checked against media_hash
+python3 scripts/ipfs_drop1.py verify-dir                                              # 300 PNG == media_hash
+python3 scripts/ipfs_drop1.py cid ipfs/drop1 bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm                                    # local bytes == pinned CID (no network)
+python3 scripts/ipfs_drop1.py verify-url https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm 12                 # sample through the gateway in base_uri
+# full download of all 600 files (slow; gateways rate-limit): IPFS_WORKERS=1 IPFS_DELAY=2 python3 scripts/ipfs_drop1.py verify-url <gateway>/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm all
 ```
-Upload the **folder** `ipfs/drop1` to Pinata (Upload → Folder) so the CID is the folder and `<CID>/1.png` works. Then:
-```sh
-python3 scripts/ipfs_drop1.py verify-url https://ipfs.io/ipfs/<CID>
-python3 scripts/ipfs_drop1.py verify-url https://gateway.pinata.cloud/ipfs/<CID> 30
-```
-Both must print `ok`. Keep the pin (unpinning later breaks the images).
+Public gateways rate-limit per IP: on 2026-11-11 ipfs.io / dweb.link / w3s.link answered `429, retry-after: 900` after a
+handful of requests, and gateway.pinata.cloud `429, retry-after: 2804` during the first full 600-file download. If you see 429, wait; don't hammer it.
+Keep the pin.
+
+**Which gateway in `base_uri`** (it can't change after step 9):
+
+| option | verdict |
+|---|---|
+| `https://ipfs.io/ipfs/<CID>` | **recommended.** NEP-177 defines `base_uri` as a "centralized gateway"; ipfs.io is the public gateway run for the IPFS project, not tied to our Pinata account, so it outlives a cancelled plan; CORS `*`. MyNearWallet builds `${base_uri}/${media}` (source verified) → works. Risk: per-IP rate limits (seen during verification). |
+| `https://dweb.link/ipfs/<CID>` | answered the same `429, retry-after: 900` at the same moment as ipfs.io; no advantage seen. |
+| `https://gateway.pinata.cloud/ipfs/<CID>` | answered 200 with correct bytes, but it is Pinata's shared public gateway; a free-plan gateway's long-term terms for third-party traffic are not verified. Second choice. |
+| `https://<name>.mypinata.cloud/ipfs/<CID>` (dedicated) | bound to the Pinata account and plan: if the account goes, every token image breaks. Not for a frozen `base_uri`. |
+| `ipfs://<CID>` | **no.** NEP-177 asks for a gateway; MyNearWallet passes `ipfs://…/10.png` through unchanged, which a browser `<img>` can't load (source verified). |
+
+Not verified: how Meteor (source not found), Mintbase and Paras resolve `base_uri` + `media`. Check after step 8 by
+opening the test token in Meteor (and on a marketplace if you list it).
+
+## Redundancy (after the hackathon)
+
+One pin = one point of failure. The CID is content-addressed: any provider that pins **the same CID** serves the same
+files, and the on-chain `base_uri` (ipfs.io) finds them wherever they are pinned. Pin **by CID** (don't re-upload the
+folder: a different uploader's chunking can produce a different CID):
+- Another pinning service with "pin by CID" (e.g. Filebase, 4EVERLAND, Storacha): in its dashboard choose "pin by CID" /
+  "import CID" and paste `bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm`. Or with a local IPFS node (kubo) and the IPFS Pinning Service API:
+  `ipfs pin remote service add <name> <endpoint> <token>` then `ipfs pin remote add --service=<name> --name=neargotchi-drop1 bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm`
+  (the token goes into kubo's config, never into the repo).
+- Your own node: `ipfs pin add bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm` (kubo fetches it from the network and keeps it while the node runs).
+- Then: `python3 scripts/ipfs_drop1.py verify-url https://<that provider's gateway>/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm all`.
+- Keep the originals offline too: `images/drop1` (PNG, outside git) and `ipfs/drop1` (rebuild with `prepare`).
+Exact menu names / endpoints of each provider: not verified here — follow the provider's "pin by CID" docs.
 
 ## 4. Create the contract account (OWNER pays 8 NEAR)
 
@@ -138,7 +176,7 @@ near account view-account-summary $CONTRACT network-config $NET now     # 8 NEAR
 ## 5. Deploy + init (one transaction)
 
 ```sh
-python3 scripts/mainnet_args.py --owner $CONTRACT --team $TEAM --base-uri https://ipfs.io/ipfs/<CID>
+python3 scripts/mainnet_args.py --owner $CONTRACT --team $TEAM        # base_uri = https://ipfs.io/ipfs/<drop 1 CID> by default
 #  → contracts/drop1/res/mainnet/init.json (owner = the contract during setup, limit 5, provenance) + catalog-1..6.json
 python3 scripts/mainnet_preflight.py --network $NET --owner $OWNER --contract $CONTRACT --team $TEAM      # local files all OK
 
@@ -170,7 +208,7 @@ fails with "token id already loaded" and changes nothing.
 
 Set in step 5 if you passed `--base-uri`. To set / change it (only until step 9):
 ```sh
-near contract call-function as-transaction $CONTRACT set_base_uri json-args '{"base_uri":"https://ipfs.io/ipfs/<CID>"}' \
+near contract call-function as-transaction $CONTRACT set_base_uri json-args '{"base_uri":"https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm"}' \
   prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' sign-as $CONTRACT network-config $NET sign-with-keychain send
 near contract call-function as-read-only $CONTRACT nft_metadata json-args '{}' network-config $NET now
 ```
@@ -186,7 +224,7 @@ near contract call-function as-transaction $CONTRACT pause json-args '{}' prepai
   sign-as $CONTRACT network-config $NET sign-with-keychain send
 ```
 Check: the mint result shows a token; `drop_status` → minted 1, pending 0, paused true; `accrued` → team 1.99 NEAR;
-`nft_token {"token_id":"<id>"}` → `media` `<id>.png`; `https://ipfs.io/ipfs/<CID>/<id>.png` opens; the token shows in
+`nft_token {"token_id":"<id>"}` → `media` `<id>.png`; `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/<id>.png` opens; the token shows in
 your wallet's NFT tab with its image.
 
 ## 9. Freeze the metadata (irreversible)

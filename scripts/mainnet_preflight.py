@@ -25,6 +25,7 @@ RPCS = {  # same list as lib/chain.ts PUBLIC_RPCS
     "testnet": ["https://test.rpc.fastnear.com", "https://near-testnet.drpc.org", "https://api.zan.top/near-testnet", "https://testnet-rpc.intea.rs"],
 }
 NEAR = 10**24
+CID = "bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm"   # drop 1 folder on IPFS (scripts/mainnet_args.py)
 ACCOUNT = re.compile(r"^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$")
 B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
@@ -107,6 +108,8 @@ def local_checks(a):
             say("WARN", "init.base_uri is null — set it with set_base_uri before freeze (step 7)")
         elif not base.startswith("https://") or base.endswith("/") or "<CID>" in base or "TODO" in base:
             say("FAIL", f"init.base_uri {base!r}: must be https://<gateway>/ipfs/<CID> without a trailing slash")
+        elif not base.endswith("/ipfs/" + CID):
+            say("WARN", f"init.base_uri {base} does not point at the drop 1 CID {CID}")
         else:
             say("OK", f"init.base_uri {base}")
     seen = []
