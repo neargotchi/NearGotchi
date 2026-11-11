@@ -1,6 +1,6 @@
 """JSON argument files for the mainnet deploy (docs/MAINNET-RUNBOOK.md). Writes, never sends anything.
 
-  python3 scripts/mainnet_args.py --owner ADMIN.near --team TEAM.near --base-uri https://ipfs.io/ipfs/<CID>
+  python3 scripts/mainnet_args.py --owner drop1.OWNER.near --team TEAM.near --base-uri https://ipfs.io/ipfs/<CID>
 
 → contracts/drop1/res/mainnet/init.json      (args of `new`: limit 5 per account, provenance from metadata)
   contracts/drop1/res/mainnet/catalog-1.json … catalog-6.json   (args of `load_catalog`, 50 tokens each)
@@ -16,16 +16,17 @@ ACCOUNT = re.compile(r"^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$")
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--owner", required=True, help="admin account (Ledger), e.g. you.near")
+    ap.add_argument("--owner", required=True, help="owner during setup = the contract account itself (drop1.OWNER.near); step 10 hands it to OWNER.near")
     ap.add_argument("--team", required=True, help="team account: receives distribute() and the 5%% royalty")
     ap.add_argument("--base-uri", default=None, help="https gateway + /ipfs/<CID> (no trailing slash); can be set later")
     ap.add_argument("--limit", type=int, default=5, help="mints per account (mainnet: 5)")
+    ap.add_argument("--network", choices=["mainnet", "testnet"], default="mainnet", help="testnet only for a dry run")
     args = ap.parse_args()
     for acc in (args.owner, args.team):
         if not ACCOUNT.match(acc) or len(acc) < 2 or len(acc) > 64:
             raise SystemExit(f"not a NEAR account id: {acc}")
-        if acc.endswith(".testnet"):
-            raise SystemExit(f"{acc} is a testnet account")
+        if acc.endswith(".testnet") != (args.network == "testnet") and len(acc) != 64:
+            raise SystemExit(f"{acc} is not a {args.network} account")
     with open(os.path.join(META, "collection.json")) as fh:
         provenance = json.load(fh)["summary"]["manifest"]
     os.makedirs(OUT, exist_ok=True)
