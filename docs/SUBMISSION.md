@@ -18,22 +18,25 @@ Nothing here has been sent or published. The owner does every step after their o
 ## Links
 - Demo: https://neargochi.vercel.app
 - Repo: https://github.com/neargotchi/NearGochi (visibility = owner's decision)
-- Contract (NEAR testnet): `neargotchi-drop1-ng57.testnet` · https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet
+- Contract (NEAR mainnet): `[MAINNET CONTRACT]` · https://nearblocks.io/address/[MAINNET CONTRACT] (after `docs/MAINNET-RUNBOOK.md`)
+- Contract (NEAR testnet, same code as mainnet, 50/50 + holder rewards): `neargotchi-drop1-ng67.testnet` · https://testnet.nearblocks.io/address/neargotchi-drop1-ng67.testnet
+- Holder rewards on testnet: 2nd mint `7edZwRA1d5dSCQ6KFJNhFuLowScrzLgjPkaS8VfR16iF` → token #198's owner claims 0.995 NEAR `4T7Ck242PEM3rczLrY94fghnprTwNDegVgeiax7hNBDj`
+- Older testnet contract (33/33/34, no holder rewards): `neargotchi-drop1-ng57.testnet` · https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet
 - Test mint (admin account, token #83): `9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB` · https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB
 - Mint from the website (`nft_mint`, 2 NEAR, token #10, account `buyer1.testnet`): `D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7` · https://testnet.nearblocks.io/txns/D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7
 
-## Description (paste into the form, English, 1408 characters; the form allows 20–2000)
-NEARGOTCHI is an AI Tamagotchi on NEAR. You hatch a pixel pet, feed it, play mini-games with it and talk to it. It runs on NEAR testnet; the chain stays out of the way until you mint or buy.
+## Description (paste into the form, English, 1689 characters; the form allows 20–2000)
+NEARGOTCHI is an AI Tamagotchi on NEAR. You hatch a pixel pet, feed it, play mini-games with it and talk to it. It runs on NEAR mainnet (testnet and an offline demo mode for trying it locally); the chain stays out of the way until you mint or buy.
 
-GAMES: the loop is hunger, food, games, talk. A pet gets hungry over time (about 110 minutes from 0 to 100), snacks fix hunger, three mini-games (catch the snack, fetch, hide & seek) make it happy but a bit hungrier, and talking uses energy. Energy is the fuel of the chat, which runs on NEAR AI Cloud (Claude Haiku 5.5, GLM as fallback): every answered message costs 4 energy, and an energy pack in the shop refills it. Food and packs are paid in small testnet NEAR transfers. Players only see the chain when they mint and when they buy.
+GAMES: the loop is hunger, food, games, talk. A pet gets hungry over time (about 110 minutes from 0 to 100), snacks fix hunger, three mini-games (catch the snack, fetch, hide & seek) make it happy but a bit hungrier, and talking uses energy. Energy is the fuel of the chat, which runs on NEAR AI Cloud (Claude Haiku 5.5, GLM as fallback): every answered message costs 4 energy, and an energy pack in the shop refills it. Food and packs are paid in small NEAR transfers. Players only see the chain when they mint and when they buy.
 
-NFTS: a hatch costs 2 NEAR and the drop 1 contract (Rust, near-sdk 5, NEP-171/177/178/181/297) draws one random pet from a pool of 300 (commit, then reveal in a later block). The NFT is the pet: it has a character, a state and a tier (common, rare, epic, legendary). Hatch proceeds are split 33% team, 33% stakers, 34% buyback in the contract, with a 5% NEP-199 royalty. Ownership of the token decides who can open the pet and its chat.
+NFTS: a hatch costs 2 NEAR and the drop 1 contract (Rust, near-sdk 5, NEP-171/177/178/181/297) draws one random pet from a pool of 300 (commit, then reveal in a later block). The NFT is the pet: it has a character, a state and a tier (common, rare, epic, legendary). The NFT also earns: hatch proceeds are split in the contract 50% team / 50% holder rewards, where each hatch's holder half is divided equally between the pets hatched before it and owners claim it from their wallet (reward per token with per-token checkpoints; the first hatch's half goes to the team). 5% NEP-199 royalty. Ownership of the token decides who can open the pet, its chat and its rewards.
 
-On-chain: the NFT, ownership, the split and the shop payments. Off-chain: pet state, chat history, the mini-games and shop stock (in the browser). Status: testnet only, not audited. Staking and the $NEARGotchi token are planned, not live.
+On-chain: the NFT, ownership, the split, holder rewards and the shop payments. Off-chain: pet state, chat history, the mini-games and shop stock (in the browser). Status: not audited; real NEAR on mainnet, nothing is promised about value.
 
 ## X post draft (max 280 chars)
 ```
-we built NEARGOTCHI for the @NEARProtocol hackathon: hatch a pixel pet on NEAR testnet (2 NEAR, 1 of 300), feed it, play with it, and chat with it through NEAR AI. try it: https://neargochi.vercel.app #NEARHackathon
+we built NEARGOTCHI for the @NEARProtocol hackathon: hatch a pixel pet on NEAR (2 NEAR, 1 of 300, half of later hatches goes to holders), feed it, play with it, and chat with it through NEAR AI. try it: https://neargochi.vercel.app #NEARHackathon
 ```
 (Count it again after adding the project name or the repo link.)
 

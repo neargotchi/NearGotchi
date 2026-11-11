@@ -2,7 +2,21 @@
 
 Code: `contracts/drop1` (Rust, near-sdk 5.30.1 + near-contract-standards 5.30.1). Plan: docs/PLAN-CONTRACT-NFT.md.
 
-## Testnet (live)
+## Testnet ng67 (current code: 50 % team / 50 % holder rewards, task 067)
+| role | account |
+|---|---|
+| contract | `neargotchi-drop1-ng67.testnet` |
+| owner / admin | `neargotchi-admin-ng67.testnet` |
+| team (50 % + first-mint share + rounding, royalty 5 %) | `neargotchi-team-ng67.testnet` |
+
+- Deploy: https://testnet.nearblocks.io/txns/AZw5JdxN1hr5mGTniariWFkBMgadMdtH4yejkHaYKHyU · init: https://testnet.nearblocks.io/txns/5sp2uFWpzkH12V5ZAKD9nDtdawuvXQSMThssou82PV7
+- Test mint (admin → token #198): https://testnet.nearblocks.io/txns/CKbdbHCKJcadZSMApvG9nPDbdJ517JXh9QmboSHbv2on
+- Rewards check (`cargo run --example testnet_rewards`): team mints #94 (https://testnet.nearblocks.io/txns/7edZwRA1d5dSCQ6KFJNhFuLowScrzLgjPkaS8VfR16iF),
+  token #198 then has 0.995 NEAR pending, the team account's claim of #198 fails, the admin claims 0.995 NEAR
+  (https://testnet.nearblocks.io/txns/4T7Ck242PEM3rczLrY94fghnprTwNDegVgeiax7hNBDj), a second claim pays 0.
+- No per-account limit on testnet (`LIMIT=5 cargo run --example testnet` would set it). Mainnet: `docs/MAINNET-RUNBOOK.md`.
+
+## Testnet ng57 (old code: 33 / 33 / 34, no holder rewards; kept, the testnet build's default)
 | role | account |
 |---|---|
 | contract | `neargotchi-drop1-ng57.testnet` |
@@ -32,7 +46,7 @@ Code: `contracts/drop1` (Rust, near-sdk 5.30.1 + near-contract-standards 5.30.1)
 ```
 cd contracts/drop1
 ./build.sh                                   # wasm → res/
-cargo test --lib                             # 18 unit tests
+cargo test --lib                             # 34 unit tests
 cargo test --test sandbox -- --nocapture     # linux / Apple Silicon / CI only
 cargo run --example testnet                  # testnet setup (keys from ~/.near-credentials)
 ```
