@@ -222,8 +222,8 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
         assert!(out.is_success(), "{:?}", out.failures());
         let paid: String = out.json()?;
         assert_eq!(paid, pending);
-        let gained = balance(buyer).await? + 20_000_000_000_000_000_000_000 - before; // + gas allowance
-        assert!(gained >= paid.parse::<u128>()?, "claim paid out");
+        let gained = balance(buyer).await? as i128 + 20_000_000_000_000_000_000_000 - before as i128; // + gas allowance
+        assert!(gained >= paid.parse::<i128>()?, "claim paid out");
         claimed_total += paid.parse::<u128>()?;
         let again: String = buyer.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": mine })).max_gas().transact().await?.json()?;
         assert_eq!(again, "0", "no double claim");
@@ -332,8 +332,8 @@ async fn holder_rewards_limit_and_transfer() -> anyhow::Result<()> {
     let out = c.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": [id1] })).max_gas().transact().await?;
     assert!(out.is_success(), "{:?}", out.failures());
     assert_eq!(out.json::<String>()?, (net / 2 + net / 4).to_string());
-    let gained = balance(&c).await? + NearToken::from_millinear(20).as_yoctonear() - before;
-    assert!(gained >= net / 2 + net / 4);
+    let gained = balance(&c).await? as i128 + NearToken::from_millinear(20).as_yoctonear() as i128 - before as i128;
+    assert!(gained >= (net / 2 + net / 4) as i128);
     assert_eq!(pending(id1.clone()).await, 0);
     let out = c.call(contract.id(), "claim_rewards").args_json(json!({ "token_ids": [id1] })).max_gas().transact().await?;
     assert_eq!(out.json::<String>()?, "0");
@@ -346,7 +346,9 @@ async fn holder_rewards_limit_and_transfer() -> anyhow::Result<()> {
     let out = a.call(contract.id(), "nft_mint").deposit(PRICE).gas(Gas::from_tgas(100)).transact().await?;
     assert!(!out.is_success());
     assert!(format!("{:?}", out.failures()).contains("mint limit reached"), "{:?}", out.failures());
-    assert!(before - balance(&a).await? < NearToken::from_millinear(10).as_yoctonear(), "deposit refunded");
+    // signed: late gas refunds of the previous mints can even raise the balance
+    let spent = before as i128 - balance(&a).await? as i128;
+    assert!(spent < NearToken::from_millinear(10).as_yoctonear() as i128, "deposit refunded (spent {spent})");
     // another account is unaffected
     mint(&b).await?;
 
