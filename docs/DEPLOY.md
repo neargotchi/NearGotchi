@@ -14,27 +14,33 @@ npx vercel@latest link                  # pick your scope, then "Link to existin
 
 ## Every deploy
 
+Vercel refuses CLI deploys from this git checkout: the commit author (`neargotchi`) is not a member of the Vercel team.
+So the site is deployed from a clean export **without `.git`**, made by a script:
 ```sh
-git status                              # commit first: the deploy is whatever is in this folder right now
-npx vercel@latest deploy --prod         # uploads the folder (minus .vercelignore), builds on Vercel, promotes to neargochi.vercel.app
-curl -s -o /dev/null -w "%{http_code}\n" https://neargochi.vercel.app/         # 200
-curl -s -o /dev/null -w "%{http_code}\n" https://neargochi.vercel.app/mint     # 200
-curl -s https://neargochi.vercel.app/api/chat                                  # {"enabled":true}
+git status                              # commit first: the deploy is HEAD, the script refuses uncommitted changes
+scripts/deploy-vercel.sh --dry-run      # optional: export + list, nothing is sent
+scripts/deploy-vercel.sh                # export HEAD → temp folder, copy .vercel/project.json, `vercel deploy --prod`, checks
 ```
-`.vercelignore` keeps local env files (`.env.local` would override the production variables and leak the AI key into the
-uploaded source), the 148 MB PNGs, `ipfs/`, `contracts/`, `docs/` and `scripts/` out of the upload. Preview first:
-`npx vercel@latest deploy` (no `--prod`) gives a unique preview URL with the Preview variables.
+What it does: `git archive HEAD | tar -x` into a new temporary folder outside the repo (only committed files: no `.git`,
+no `.env.local`, no `images/` / `ipfs/`), copies **only** `.vercel/project.json` (project + org ids, no secrets), refuses
+if any real env file is in the export, runs `npx vercel@latest deploy --prod` there (the build runs on Vercel with the
+project's own variables), deletes the folder on exit (also after an error), then prints the checks:
+`/` → 200, `/mint` → 200, `/api/chat` → `{"enabled":true}`. The script holds no tokens or env values.
+`.vercelignore` additionally keeps `docs/`, `scripts/`, `contracts/`, `assets-raw/` and any env file out of the upload.
+Preview instead of production: run the same steps by hand with `npx vercel@latest deploy` (no `--prod`).
 
 ## Environment variables
 
 Set in Vercel → Project → Settings → Environment Variables (names only here): `NEXT_PUBLIC_CHAIN`,
 `NEXT_PUBLIC_DROP1_CONTRACT`, `NEXT_PUBLIC_TREASURY`, `NEAR_AI_API_KEY` (server only, never `NEXT_PUBLIC_`), optional
 `NEXT_PUBLIC_RPC_URL`, `NEAR_AI_MODEL`. `NEXT_PUBLIC_*` values are baked into the JavaScript at build time: **after
-changing any variable, deploy again** (`npx vercel@latest deploy --prod`, or Deployments → ⋯ → Redeploy). List them with
+changing any variable, deploy again** (`scripts/deploy-vercel.sh`, or Deployments → ⋯ → Redeploy). List them with
 `npx vercel@latest env ls`.
 
 ## When something fails
 
+- "Git author … must have access to the team": you ran `vercel deploy` inside the git checkout — use
+  `scripts/deploy-vercel.sh` (it deploys from an export without `.git`).
 - Build error: the CLI prints the Vercel build log URL; reproduce locally with `npm run build` (same env: set the
   variables in `.env.local`, which is never uploaded).
 - Wrong project / scope: `cat .vercel/project.json`, or delete `.vercel/` and run `link` again.

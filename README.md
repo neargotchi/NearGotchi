@@ -122,8 +122,8 @@ Without the key the chat falls back to scripted answers and says "demo mode (moc
 ## Deploy
 
 The site is deployed with the Vercel CLI from a local checkout (no Git integration): `npx vercel@latest login`, `npx vercel@latest link`
-(existing project), then `npx vercel@latest deploy --prod` after each change. `.vercelignore` keeps local env files and large
-local-only folders out of the upload; environment variables live in the Vercel project, and `NEXT_PUBLIC_*` changes need a
+(existing project), then `scripts/deploy-vercel.sh` after each commit (deploys a clean `git archive` export of HEAD without
+`.git`, then deletes it). `.vercelignore` keeps local env files and large local-only folders out of the upload; environment variables live in the Vercel project, and `NEXT_PUBLIC_*` changes need a
 redeploy. Details and troubleshooting: `docs/DEPLOY.md`.
 
 ## Stack
