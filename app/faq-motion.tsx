@@ -5,10 +5,25 @@ import { useEffect } from "react";
 const DURATION = 180;
 
 /**
- * Fallback FAQ expand/collapse for browsers without ::details-content.
+ * FAQ accordion behaviour, plus the fallback expand/collapse for browsers without ::details-content.
  * Modern browsers animate in CSS; reduced motion keeps the native instant toggle.
  */
 export default function FaqMotion() {
+  // Accordion: opening one answer closes the others (the native `name` group does the same in
+  // current browsers; this covers older ones and is a no-op where the group already did it).
+  useEffect(() => {
+    const items = Array.from(document.querySelectorAll<HTMLDetailsElement>(".faq-item"));
+    const onToggle = (event: Event) => {
+      const opened = event.currentTarget as HTMLDetailsElement;
+      if (!opened.open) return;
+      items.forEach((details) => {
+        if (details !== opened && details.open) details.open = false;
+      });
+    };
+    items.forEach((details) => details.addEventListener("toggle", onToggle));
+    return () => items.forEach((details) => details.removeEventListener("toggle", onToggle));
+  }, []);
+
   useEffect(() => {
     if (CSS.supports("selector(::details-content)")) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

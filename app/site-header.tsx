@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { header } from "../lib/copy";
-import Sparkles from "../components/Sparkles";
 import MobileMenu from "./mobile-menu";
 import PetCta from "./pet-cta";
 import SectionNav from "./section-nav";
@@ -26,19 +25,7 @@ export default function SiteHeader() {
           <ThemeToggle />
           <SocialX />
           <WalletMenu />
-          <PetCta variant="header">
-            <Sparkles
-              count={4}
-              colors={["var(--green)", "var(--sparkle-alt)"]}
-              area={[
-                { x: [-8, 20], y: [-45, -15] },
-                { x: [80, 100], y: [100, 125] },
-              ]}
-              seed="header-mint"
-              size={9}
-              mode="burst"
-            />
-          </PetCta>
+          <PetCta variant="header" />
         </div>
         <ThemeToggle className="header-theme-toggle" />
         <SocialX className="header-social-x" />

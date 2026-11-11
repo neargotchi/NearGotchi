@@ -11,6 +11,16 @@
   --marks-left: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 3 11 23' shape-rendering='crispEdges'><path d='M3 3.5h3v2.2H3zM5.2 5.2h3v2.2h-3zM7.4 6.9h3v2.2h-3zM0 12.4h8.5v2.2H0zM3 23.3h3v2.2H3zM5.2 21.6h3v2.2h-3zM7.4 19.9h3v2.2h-3z'/></svg>");
   --marks-right: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='97 3 11 23' shape-rendering='crispEdges'><path d='M102 3.5h3v2.2h-3zM99.8 5.2h3v2.2h-3zM97.6 6.9h3v2.2h-3zM99.5 12.4h8.5v2.2h-8.5zM102 23.3h3v2.2h-3zM99.8 21.6h3v2.2h-3zM97.6 19.9h3v2.2h-3z'/></svg>");
 }
+:root {
+  /* Spacing system (task 074), one set for every landing section:
+     --section-space   content ↔ section divider, the same on both sides of every divider
+     --section-bubble  extra room above each title for the mascot and its speech bubble
+     --content-gap     inside a section: subtitle → cards → CTA (and drop 1 sub-blocks) */
+  --section-space: calc(clamp(40px, 3.1vw, 80px) * var(--ds));
+  --section-bubble: calc(clamp(64px, 5.7vw, 140px) * var(--ds));
+  --content-gap: calc(clamp(40px, 3.75vw, 96px) * var(--ds));
+  --heading-gap: calc(var(--content-gap) * .4);
+}
 :root[data-theme='dark'] {
   --card-fill: #031c17;
   --tier-legendary-line: #ffd43b;
@@ -18,12 +28,10 @@
 
 /* ---------- Section shell: same spacing, divider and content width everywhere ---------- */
 .hero-shell > :is(.pets-section, .steps-section, .wardrobe-section, .tokenomics-section, .faq-section) {
-  /* Room for the mascot's speech bubble above the title row. */
-  padding: calc(clamp(120px, 6.1vw, 150px) * var(--ds)) 0 calc(clamp(64px, 6vw, 120px) * var(--ds));
+  padding: calc(var(--section-space) + var(--section-bubble)) 0 var(--section-space);
   border-top-color: var(--scene-border);
   color: var(--scene-ink);
 }
-.hero-shell > .pets-section { min-height: calc(100dvh - var(--header-height)); }
 /* Content spans 79 % of the screen, as the card row on the references (type inside cards
    follows the card width); 900px keeps four tier thumbnails per pet card. */
 @media (min-width: 1024px) {
@@ -69,7 +77,7 @@
   white-space: normal;
   text-wrap: balance;
 }
-.hero-shell .section-sub { margin: calc(clamp(14px, 1.3vw, 28px) * var(--ds)) 0 0; }
+.hero-shell .section-sub { margin: var(--heading-gap) 0 0; }
 .hero-shell .mascot-sprite { height: calc(clamp(72px, 5.6vw, 128px) * var(--ds)); }
 .hero-shell .mascot-bubble { border-color: var(--scene-ink); background: var(--card-fill); box-shadow: 0 3px 0 var(--scene-accent); }
 .hero-shell .mascot-bubble::before { background: var(--scene-ink); }
@@ -82,7 +90,7 @@
   /* Feet on the title's bottom line, overflowing upward only (never onto the subtitle). */
   .hero-shell .pets-heading > .mascot { grid-column: 3; justify-self: start; align-self: end; margin-block: -34px 0; }
   .hero-shell .section-head > .mascot { align-self: flex-end; margin-block: -34px 0; }
-  .hero-shell .pets-heading > p { grid-column: 1 / -1; margin-top: calc(clamp(14px, 1.3vw, 28px) * var(--ds)); }
+  .hero-shell .pets-heading > p { grid-column: 1 / -1; margin-top: var(--heading-gap); }
 }
 
 /* ---------- Pixel frames: stepped corners drawn by ::before (line) and ::after (fill) ---------- */
@@ -189,7 +197,7 @@
 .hero-shell .step-sprite[src*="logo-transparent"] { bottom: 3%; }
 
 /* ---------- Meet the pets: cards (type in cqi, the card is a size container) ---------- */
-.hero-shell .pets-list-drop { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: calc(clamp(28px, 2.6vw, 56px) * var(--ds)); }
+.hero-shell .pets-list-drop { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
 .hero-shell .pet-card.is-drop {
   padding: calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(18px, 1.5vw, 30px) * var(--ds));
 }
@@ -235,7 +243,7 @@
 }
 
 /* ---------- How gotchi works: four step cards ---------- */
-.hero-shell .steps-list { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: calc(clamp(28px, 2.6vw, 56px) * var(--ds)); }
+.hero-shell .steps-list { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
 .hero-shell .step-card {
   container-type: inline-size;
   padding: calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(20px, 1.8vw, 36px) * var(--ds));
@@ -257,7 +265,7 @@
 .hero-shell .step-card p { max-width: none; font-size: max(13px, 4.7cqi); line-height: 1.5; }
 
 /* ---------- Meet your gotchi: four tab tiles ---------- */
-.hero-shell .gotchi-tiles { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: calc(clamp(28px, 2.6vw, 56px) * var(--ds)); }
+.hero-shell .gotchi-tiles { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
 .hero-shell .gotchi-tile-tab {
   margin: 3cqi 0 0 3cqi;
   padding: 1.4cqi 3cqi;
@@ -271,10 +279,41 @@
 }
 .hero-shell .gotchi-preview { border-bottom: 2px dashed color-mix(in srgb, var(--scene-accent) 35%, transparent); }
 .hero-shell .gotchi-tile-body { padding: 3.6cqi 4.4cqi 4.4cqi; font-size: max(13px, 2.6cqi); }
+/* Previews (task 074): the /pet components they reuse still carry the old black frames and
+   shadows; inside the tiles they get the landing's look (scene colours, pixel corners, LCD
+   tags). Styling only: same components, same sample data. */
+.hero-shell .gotchi-preview { color: var(--scene-ink); }
+.hero-shell .gotchi-preview :is(.pet-stats, .simon-device, .snack-card, .pet-chat) {
+  border: 0;
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: inset 0 0 0 2px var(--scene-accent);
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
+    calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+.hero-shell .gotchi-preview :is(.pet-chat-log, .gotchi-input, .pet-msg.is-pet) {
+  border-color: color-mix(in srgb, var(--scene-accent) 60%, transparent);
+  color: var(--scene-ink);
+  background: var(--card-fill);
+}
+.hero-shell .gotchi-preview .pet-msg.is-you { border-color: #a2ffe0; color: #001b13; background: var(--scene-button); }
+.hero-shell .gotchi-preview :is(.pet-traits li, .snack-cost, .pet-chat-note) {
+  border: 0;
+  color: #17251c;
+  background: var(--lcd);
+  clip-path: polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),
+    calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px);
+}
+.hero-shell .gotchi-preview .tier-badge { border-color: var(--tier-line, var(--scene-ink)); background: var(--card-fill); box-shadow: none; }
+.hero-shell .gotchi-preview .token-art { border-color: var(--scene-ink); }
+.hero-shell .gotchi-preview .pet-stats span { border-color: color-mix(in srgb, var(--scene-accent) 70%, transparent); background-color: var(--card-fill); }
+.hero-shell .gotchi-preview .pet-stats span.is-on { border-color: var(--scene-accent); background-color: var(--scene-button); }
+.hero-shell .gotchi-preview .snack-art { border-color: var(--scene-accent); }
+.hero-shell .gotchi-preview .catch-screen { border-color: var(--scene-button); }
 
 /* ---------- Drop 1: tiers, items, backgrounds ---------- */
-.hero-shell .drop-actions { flex-direction: column; justify-content: center; margin-top: calc(clamp(24px, 2.2vw, 44px) * var(--ds)); }
-.hero-shell .drop-subtitle { margin: calc(clamp(40px, 3.6vw, 72px) * var(--ds)) 0 calc(clamp(16px, 1.4vw, 28px) * var(--ds)); }
+.hero-shell .drop-actions { flex-direction: column; justify-content: center; margin-top: var(--content-gap); }
+.hero-shell .drop-subtitle { margin: var(--content-gap) 0 var(--heading-gap); }
 .hero-shell .drop-tiers { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); }
 .hero-shell .drop-tier {
   container-type: inline-size;
@@ -303,7 +342,7 @@
 .hero-shell .drop-progress-bar > .is-on { background: var(--scene-accent); }
 
 /* ---------- The numbers ---------- */
-.hero-shell .stat-list { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: calc(clamp(28px, 2.6vw, 56px) * var(--ds)); }
+.hero-shell .stat-list { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
 .hero-shell .stat-card { padding: calc(clamp(18px, 1.6vw, 32px) * var(--ds)) calc(clamp(18px, 1.6vw, 32px) * var(--ds)) calc(clamp(22px, 1.9vw, 38px) * var(--ds)); }
 .hero-shell .stat-card dt {
   color: var(--scene-accent);
@@ -312,9 +351,9 @@
   letter-spacing: .13em;
   text-transform: uppercase;
 }
-.hero-shell .stat-note { color: color-mix(in srgb, var(--scene-ink) 65%, transparent); text-align: center; }
+.hero-shell .stat-note { margin-top: var(--heading-gap); color: color-mix(in srgb, var(--scene-ink) 65%, transparent); text-align: center; }
 .hero-shell .tokenomics-closing {
-  margin-top: calc(clamp(48px, 4.4vw, 96px) * var(--ds));
+  margin-top: var(--content-gap);
   font-size: clamp(24px, calc(2.6vw * var(--ds)), calc(64px * var(--ds)));
   letter-spacing: -.045em;
   text-align: center;
@@ -338,7 +377,7 @@
   width: min(100%, calc(1100px * var(--ds)));
   max-width: none;
   gap: calc(clamp(12px, 1.1vw, 22px) * var(--ds));
-  margin: calc(clamp(28px, 2.6vw, 56px) * var(--ds)) auto 0;
+  margin: var(--content-gap) auto 0;
 }
 .hero-shell .faq-item { --corner: 12px; }
 .hero-shell .faq-item[open] { --frame-line: #a2ffe0; }
@@ -369,7 +408,7 @@
   justify-content: center;
   align-items: center;
   gap: calc(clamp(16px, 1.6vw, 32px) * var(--ds));
-  margin-top: calc(clamp(32px, 3vw, 64px) * var(--ds));
+  margin-top: var(--content-gap);
 }
 .cta-marks::before, .cta-marks::after {
   content: '';
@@ -381,15 +420,16 @@
   mask: var(--marks-left) center / contain no-repeat;
 }
 .cta-marks::after { -webkit-mask-image: var(--marks-right); mask-image: var(--marks-right); }
-.hero-shell :is(.cta-marks, .drop-actions) .button {
+/* Large CTA size (the reference "hatch your gotchi"): section CTAs, drop 1, the 404 page. */
+:is(.hero-shell :is(.cta-marks, .drop-actions), .notfound-content) .button {
   --corner: 12px;
   --pixel-step: 4px;
   min-height: calc(clamp(52px, 3.8vw, 80px) * var(--ds));
   padding: 0 calc(clamp(28px, 2.2vw, 48px) * var(--ds));
   font-size: clamp(11px, calc(1.2vw * var(--ds)), calc(24px * var(--ds)));
 }
-.hero-shell :is(.cta-marks, .drop-actions) .button::after { inset: 3px; }
-.hero-shell :is(.cta-marks, .drop-actions) .button-primary::after { inset: 4px 3px 1px 4px; }
+.pixel-ui :is(.hero-shell :is(.cta-marks, .drop-actions), .notfound-content) .button::after { inset: 3px; }
+.pixel-ui :is(.hero-shell :is(.cta-marks, .drop-actions), .notfound-content) .button-primary::after { inset: 4px 3px 1px 4px; }
 
 /* Footer in the scene palette (was ink / black): card fill, mint divider, scene text. */
 .site-footer,
@@ -407,10 +447,8 @@
 
 /* ---------- Tablets + phones (globals.css stacks the grids) ---------- */
 @media (max-width: 1023px) {
-  .hero-shell > :is(.pets-section, .steps-section, .wardrobe-section, .tokenomics-section, .faq-section) {
-    min-height: 0;
-    padding: clamp(64px, 14vw, 120px) 0 56px;
-  }
+  /* The mascot sits under the title here, so no bubble room above it. */
+  :root { --section-space: 40px; --section-bubble: 0px; --content-gap: 32px; }
   .hero-shell :is(.pets-heading, .section-head) > h2 { justify-self: center; font-size: clamp(22px, 6.4vw, 40px); }
   .hero-shell :is(.pets-heading, .section-head) > h2::before { display: none; }
   .hero-shell .section-head { align-items: center; }
@@ -441,3 +479,19 @@
 @media (min-width: 600px) and (max-width: 1023px) {
   .hero-shell .drop-items { --cols: 5; }
 }
+
+/* ---------- Footer: about as tall as the header bar (task 074) ---------- */
+.site-footer { padding: calc(clamp(12px, .9vw, 24px) * var(--ds)) 0; }
+.site-footer p { font-size: clamp(12px, calc(.75vw * var(--ds)), calc(16px * var(--ds))); line-height: 1.45; }
+@media (max-width: 1023px) {
+  .site-footer { padding: 14px 0 8px; }
+  .site-footer-inner { gap: 2px; }
+  .site-footer p { font-size: 0.8125rem; line-height: 1.4; }
+  /* Links keep their 44px tap height; the copyright line beside them doesn't need it. */
+  .site-footer-meta { align-items: center; }
+}
+
+/* ---------- 404: the page fills the screen, the (shorter) footer sits on the bottom edge ---------- */
+body:has(> .notfound-shell) { display: flex; flex-direction: column; min-height: 100svh; }
+body > .notfound-shell { display: grid; flex: 1 0 auto; }
+body > .notfound-shell > .notfound { min-height: 0; }

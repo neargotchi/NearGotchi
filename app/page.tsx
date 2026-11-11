@@ -118,20 +118,7 @@ export default function Home() {
 
           <p className="hero-lede">{hero.lede}</p>
           <div className="hero-actions">
-            <PetCta variant="hero">
-              <Sparkles
-                count={5}
-                colors={["var(--green)", "var(--sparkle-alt)"]}
-                area={[
-                  { x: [-8, 20], y: [-40, -10] },
-                  { x: [80, 104], y: [-40, -10] },
-                  { x: [100, 112], y: [20, 90] },
-                ]}
-                seed="hero-mint"
-                size={12}
-                mode="burst"
-              />
-            </PetCta>
+            <PetCta variant="hero" />
             <a className="button button-secondary" href="#how-it-works">
               {hero.learnMore}
             </a>

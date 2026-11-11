@@ -1,0 +1,148 @@
+/* /mint in the landing's look (task 074): scene colours, pixel frames, section-title type and
+   the one pixel button (app/hero-header.css). Styling only: markup, copy and the mint flow are
+   untouched. Scoped to .mint-shell, so the shared head, wallet gate and hints of /pet and
+   /nft/[id] (same classes) follow. Loaded after app/sections.css (its spacing variables). */
+
+.mint-shell { color: var(--scene-ink); }
+.mint-shell > .mint-section { padding: calc(var(--section-space) + var(--section-bubble)) 0 calc(var(--section-space) * 2); }
+
+/* ---------- Head: title as the section titles, demo tag as a pixel pill, sub as section-sub ---------- */
+.mint-shell .mint-title {
+  position: relative;
+  color: var(--scene-ink);
+  font-size: clamp(24px, calc(2.6vw * var(--ds)), calc(64px * var(--ds)));
+  line-height: 1.2;
+  letter-spacing: -.045em;
+}
+@media (min-width: 1024px) {
+  .mint-shell .mint-head .mint-title { margin-left: calc(.55em + .45em); }
+  .mint-shell .mint-head .mint-title::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: calc(100% + .45em);
+    width: .55em;
+    height: 1.15em;
+    translate: 0 -50%;
+    background: var(--scene-accent);
+    -webkit-mask: var(--marks-left) center / contain no-repeat;
+    mask: var(--marks-left) center / contain no-repeat;
+  }
+}
+.mint-shell .mint-demo {
+  padding: calc(8px * var(--ds)) calc(12px * var(--ds));
+  border: 0;
+  color: #001b13;
+  background: var(--scene-button);
+  box-shadow: inset 0 0 0 2px #a2ffe0;
+  font-size: clamp(8px, calc(.56vw * var(--ds)), calc(12px * var(--ds)));
+  text-transform: uppercase;
+  clip-path: polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),
+    calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+}
+.mint-shell .mint-sub {
+  margin-top: var(--heading-gap);
+  color: var(--scene-accent);
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(8px, calc(.68vw * var(--ds)), calc(16px * var(--ds)));
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.mint-shell .mascot-bubble { border-color: var(--scene-ink); background: var(--card-fill); box-shadow: 0 3px 0 var(--scene-accent); }
+.mint-shell .mascot-bubble::before { background: var(--scene-ink); }
+.mint-shell .mascot-bubble::after { background: var(--card-fill); }
+
+/* ---------- Hatch stage: the LCD box of the landing cards (stepped corners, inner line) ---------- */
+.mint-shell .mint-hatch { margin-top: var(--content-gap); }
+.mint-shell .hatch-stage {
+  border: 0;
+  box-shadow: inset 0 0 0 3px var(--lcd-line);
+  clip-path: polygon(12px 0,calc(100% - 12px) 0,calc(100% - 12px) 4px,calc(100% - 4px) 4px,
+    calc(100% - 4px) 12px,100% 12px,100% calc(100% - 12px),calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 4px),calc(100% - 12px) calc(100% - 4px),calc(100% - 12px) 100%,
+    12px 100%,12px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 12px),0 calc(100% - 12px),
+    0 12px,4px 12px,4px 4px,12px 4px);
+}
+/* Signal marks either side of the egg and its ground shadow, as on the landing LCD boxes. */
+.mint-shell .hatch-stage::before,
+.mint-shell .hatch-stage::after { content: ''; position: absolute; z-index: -1; pointer-events: none; }
+.mint-shell .hatch-stage::before {
+  inset: 36% 18% 38%;
+  background: var(--lcd-mark);
+  -webkit-mask: var(--marks-left) left center / auto 100% no-repeat, var(--marks-right) right center / auto 100% no-repeat;
+  mask: var(--marks-left) left center / auto 100% no-repeat, var(--marks-right) right center / auto 100% no-repeat;
+}
+.mint-shell .hatch-stage::after {
+  left: 32%;
+  right: 32%;
+  bottom: 9%;
+  height: 7%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lcd-mark) 45%, transparent);
+}
+.mint-shell .hatch-pet.hatch-nft { border: 3px solid var(--scene-accent); }
+.mint-shell .hatch-line { color: var(--scene-ink); }
+
+/* ---------- Counter, hints, errors, warning, name input ---------- */
+.mint-shell .drop-progress {
+  border-color: var(--scene-border);
+  color: var(--scene-ink);
+  background: var(--scene-color);
+  box-shadow: none;
+}
+.mint-shell .drop-progress-bar > span { background: color-mix(in srgb, var(--scene-accent) 22%, transparent); }
+.mint-shell .drop-progress-bar > .is-on { background: var(--scene-accent); }
+.mint-shell :is(.mint-hint, .mint-note) { color: color-mix(in srgb, var(--scene-ink) 65%, transparent); }
+.mint-shell :is(.mint-card-text, .mint-error, .mint-confirm p) { color: var(--scene-ink); }
+.mint-shell :is(.mint-legend, .mint-subtitle) { color: var(--scene-accent); text-transform: uppercase; letter-spacing: .06em; }
+.mint-shell .mint-warning {
+  border: 0;
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: inset 0 0 0 2px var(--scene-accent), inset 8px 0 0 var(--pink);
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
+    calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+.mint-shell .mint-input {
+  border: 0;
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: inset 0 0 0 2px var(--scene-accent);
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
+    calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+.mint-shell .mint-input[aria-invalid="true"] { box-shadow: inset 0 0 0 2px var(--pink); }
+/* clip-path would cut an outside outline: the focus ring goes inside, thicker. */
+.mint-shell .mint-input:focus-visible { outline: none; box-shadow: inset 0 0 0 4px var(--scene-accent); }
+.mint-shell .mint-input::placeholder { color: color-mix(in srgb, var(--scene-ink) 55%, transparent); }
+
+/* Reveal card (name form after the hatch): the landing card frame instead of the black box. */
+.mint-shell .mint-reveal {
+  border: 0;
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: inset 0 0 0 3px var(--scene-accent), inset 0 0 0 6px var(--card-fill), inset 0 0 0 7px color-mix(in srgb, var(--scene-accent) 30%, transparent);
+  clip-path: polygon(14px 0,calc(100% - 14px) 0,calc(100% - 14px) 4px,calc(100% - 4px) 4px,
+    calc(100% - 4px) 14px,100% 14px,100% calc(100% - 14px),calc(100% - 4px) calc(100% - 14px),
+    calc(100% - 4px) calc(100% - 4px),calc(100% - 14px) calc(100% - 4px),calc(100% - 14px) 100%,
+    14px 100%,14px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 14px),0 calc(100% - 14px),
+    0 14px,4px 14px,4px 4px,14px 4px);
+}
+.mint-shell .tier-badge { border-color: var(--tier-line, var(--scene-ink)); background: var(--card-fill); box-shadow: none; }
+
+/* Phones and tablets: back to the one-line size of globals.css (17.5 characters across). */
+@media (max-width: 1023px) {
+  .mint-shell .mint-title { font-size: min(1.5rem, calc((100vw - 2 * var(--gutter)) / 17.5)); }
+}
+
+/* Demo / testnet tag inside the hatch button: the header wallet-tag look. */
+.pixel-ui .button .mint-tag {
+  margin-left: .8em;
+  padding: 3px 4px;
+  border: 0;
+  color: #a2ffe0;
+  background: #001b13;
+  line-height: 1;
+}

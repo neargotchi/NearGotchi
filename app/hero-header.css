@@ -172,10 +172,13 @@ body { background: var(--page); }
   box-shadow: none;
 }
 
-/* ---------- Pixel buttons (header, hero and any .pixel-ui block, e.g. section CTAs) ----------
+/* ---------- Pixel buttons: the one button style of the site ----------
+   <body class="pixel-ui"> (app/layout.tsx), so every .button (primary / secondary), the theme
+   toggle, X, burger and lightbox-close buttons on every route get it (mood chips share the motion); sizes vary per context, the look and the
+   motion don't. Reference: "hatch your gotchi" under meet the pets (task 074).
    Pixel frames with independent inner fills. No clipping of the actual interactive
    element, so keyboard focus remains visible. */
-:is(.site-header, .hero, .pixel-ui) :is(.button, .theme-toggle, .menu-button, .social-x) {
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close) {
   --frame-fill: var(--scene-color);
   --frame-line: var(--scene-accent);
   --corner: 8px;
@@ -191,13 +194,15 @@ body { background: var(--page); }
   text-transform: uppercase;
   transition: transform 140ms;
 }
-:is(.site-header, .hero, .pixel-ui) .button-primary {
+/* The lightbox close button keeps its corner placement (globals.css). */
+.pixel-ui .nft-lightbox-close { position: absolute; }
+.pixel-ui .button-primary {
   --frame-fill: #00ecb1;
   --frame-line: #a2ffe0;
   color: #001b13;
 }
-:is(.site-header, .hero, .pixel-ui) :is(.button, .theme-toggle, .menu-button, .social-x)::before,
-:is(.site-header, .hero, .pixel-ui) :is(.button, .theme-toggle, .menu-button, .social-x)::after {
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close)::before,
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -219,22 +224,37 @@ body { background: var(--page); }
     0 var(--corner),var(--pixel-step) var(--corner),
     var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
 }
-:is(.site-header, .hero, .pixel-ui) :is(.button, .theme-toggle, .menu-button, .social-x)::after {
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close)::after {
   inset: 2px;
   z-index: -1;
   background: var(--frame-fill);
 }
 /* Highlight along the upper and left edges, as on the reference device UI. */
-:is(.site-header, .hero, .pixel-ui) .button-primary::after {
+.pixel-ui .button-primary::after {
   inset: 3px 2px 1px 3px;
   box-shadow: inset -2px -2px 0 #00c494;
 }
-:is(.site-header, .hero, .pixel-ui) .button-primary:hover { --frame-fill: #17f8be; }
-:is(.site-header, .hero, .pixel-ui) .button-primary:active { transform: translateY(1px); }
+/* Motion of the reference: hover (real pointer, desktop) = 2px down-right + lighter fill;
+   press = 1px down. No shadows, no pulse, no sparkles on buttons. */
+.pixel-ui .button-primary:hover { --frame-fill: #17f8be; }
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close):is(:hover, :active) { box-shadow: none; }
+@media (prefers-reduced-motion: no-preference) {
+  @media (min-width: 1024px) and (hover: hover) {
+    .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-mood):hover { transform: translate(2px, 2px); }
+  }
+  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-mood):active { transform: translateY(1px); }
+}
+/* Disabled (aria-disabled links / disabled buttons): flat, dimmed, no motion. */
+.pixel-ui .button:is([aria-disabled="true"], :disabled) {
+  --frame-fill: var(--scene-color);
+  --frame-line: color-mix(in srgb, var(--scene-ink) 35%, transparent);
+  color: color-mix(in srgb, var(--scene-ink) 55%, transparent);
+  cursor: not-allowed;
+  transform: none;
+}
 .menu-button[aria-expanded="true"] { --frame-fill: var(--scene-button); color: #001b13; }
-:is(.site-header, .hero, .pixel-ui) .cta-labels { margin: 0; }
-:is(.site-header, .hero, .pixel-ui) .cta-label { margin: 0; font: inherit; }
-/* CTA sparkles (burst on hover + the "burns." loop of app/pet-cta.tsx) stay on, as on main. */
+.pixel-ui .cta-labels { margin: 0; }
+.pixel-ui .cta-label { margin: 0; font: inherit; }
 .button .launch-arrow {
   display: inline-block;
   width: .85em;
@@ -246,7 +266,7 @@ body { background: var(--page); }
   clip-path: polygon(20% 0,100% 0,100% 80%,75% 80%,75% 43%,
     18% 100%,0 82%,57% 25%,20% 25%);
 }
-:is(.site-header, .hero, .pixel-ui) :is(a, button):focus-visible {
+.pixel-ui :is(a, button):focus-visible {
   outline: 3px solid var(--scene-accent);
   outline-offset: 5px;
 }
@@ -396,7 +416,6 @@ body { background: var(--page); }
 }
 .hero .button::after { inset: 3px; }
 .hero .button-primary::after { inset: 4px 3px 1px 4px; }
-.hero .button:hover { transform: translateY(-2px); }
 /* Drop counter: the strip from globals.css redrawn in scene colours, as wide as the buttons. */
 .hero .hero-progress {
   width: min(100%, calc(35.34vw * var(--ds)), calc(725px * var(--ds)));
@@ -533,7 +552,7 @@ body { background: var(--page); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hero-scroll { animation: none; }
-  :is(.site-header, .hero, .pixel-ui) :is(.button, .theme-toggle, .menu-button, .social-x) { transition: none; }
+  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close) { transition: none; }
 }
 
 /* Restored from main (task 073): sparkles around the hero wordmark. */

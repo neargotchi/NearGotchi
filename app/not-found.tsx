@@ -40,6 +40,7 @@ export default function NotFound() {
           <p className="notfound-line">{notFound.line}</p>
           <Link className="button button-primary" href={notFound.cta.href}>
             {notFound.cta.label}
+            <span className="launch-arrow" aria-hidden="true" />
           </Link>
         </div>
       </section>

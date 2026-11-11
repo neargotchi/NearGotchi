@@ -94,6 +94,7 @@ export default function PetGallery() {
   const [enlarged, setEnlarged] = useState<Drop1Token | null>(null);
   return (
     <section id="pets" className="pets-section" aria-labelledby="pets-title">
+      <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <header className="pets-heading">
           <h2 id="pets-title" className="section-title-host">
@@ -110,7 +111,7 @@ export default function PetGallery() {
           {PETS_4_6_ENABLED ? upcomingPets.map((pet) => <PetCard key={pet.id} pet={pet} onEnlarge={setEnlarged} />) : null}
         </div>
         <NftLightbox token={enlarged} onClose={() => setEnlarged(null)} />
-        <div className="section-cta cta-marks pixel-ui">
+        <div className="section-cta cta-marks">
           <Link className="button button-primary" href="/mint">
             {petGallery.cta}
             <span className="launch-arrow" aria-hidden="true" />

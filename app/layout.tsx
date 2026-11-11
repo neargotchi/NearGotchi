@@ -4,6 +4,7 @@ import "@near-wallet-selector/modal-ui/styles.css";
 import "./globals.css";
 import "./hero-header.css";
 import "./sections.css";
+import "./mint.css";
 import BackgroundSparkles from "../components/BackgroundSparkles";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
 import { THEME_COLORS, themeInitScript } from "../lib/theme";
@@ -58,7 +59,7 @@ export default function RootLayout({
         <meta name="theme-color" content={THEME_COLORS.light} suppressHydrationWarning />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body>
+      <body className="pixel-ui">
         <BackgroundSparkles />
         <SiteHeader />
         {children}
