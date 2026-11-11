@@ -50,9 +50,6 @@
   letter-spacing: .13em;
   text-transform: uppercase;
 }
-.mint-shell .mascot-bubble { border-color: var(--scene-ink); background: var(--card-fill); box-shadow: 0 3px 0 var(--scene-accent); }
-.mint-shell .mascot-bubble::before { background: var(--scene-ink); }
-.mint-shell .mascot-bubble::after { background: var(--card-fill); }
 
 /* ---------- Hatch stage: the LCD box of the landing cards (stepped corners, inner line) ---------- */
 .mint-shell .mint-hatch { margin-top: var(--content-gap); }

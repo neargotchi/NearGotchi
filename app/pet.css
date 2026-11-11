@@ -1,0 +1,138 @@
+/* /pet in the landing's look (task 075): card frames, scene colours, pixel tabs, stat bars,
+   chat bubbles and the snack shop. Styling only: the components, energy / hunger / games / shop
+   / chat logic and the on-chain checks are untouched. Scoped to .pet-shell (app/pet/page.tsx),
+   loaded after app/mint.css (which already restyles the shared head, wallet gate and inputs). */
+
+.pet-shell { color: var(--scene-ink); }
+
+/* ---------- Cards: the landing frame (::before line, ::after fill, stepped corners) ---------- */
+.pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body) {
+  --frame-line: var(--scene-accent);
+  --frame-fill: var(--card-fill);
+  --frame-width: 3px;
+  --corner: 14px;
+  --pixel-step: 4px;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  color: var(--scene-ink);
+  background: transparent;
+  box-shadow: none;
+}
+.pet-shell :is(.pet-stats, .snack-card, .simon-device) { --frame-width: 2px; --corner: 10px; --pixel-step: 3px; }
+/* A running game opens as a fixed modal (.simon.is-modal, z-index 90) inside its card: the card
+   must not trap it in its own stacking context while it is open. */
+.pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body):has(.is-modal) { isolation: auto; }
+.pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body)::before,
+.pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--frame-line);
+  clip-path: polygon(var(--corner) 0,calc(100% - var(--corner)) 0,
+    calc(100% - var(--corner)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--corner),100% var(--corner),
+    100% calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) 100%,var(--corner) 100%,
+    var(--corner) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--corner)),0 calc(100% - var(--corner)),
+    0 var(--corner),var(--pixel-step) var(--corner),
+    var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
+}
+.pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body)::after {
+  inset: var(--frame-width);
+  z-index: -1;
+  background: var(--frame-fill);
+}
+/* Faint second line inside the large frames, as on the landing cards. */
+.pet-shell :is(.token-card, .pet-card-block, .pet-chat, .pet-device-body)::after {
+  box-shadow: inset 0 0 0 3px var(--frame-fill), inset 0 0 0 4px color-mix(in srgb, var(--frame-line) 30%, transparent);
+}
+
+/* ---------- Tabs: four pixel buttons of the shared style (app/hero-header.css) ---------- */
+.pet-shell .pet-tablist {
+  gap: calc(clamp(8px, .7vw, 16px) * var(--ds));
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.pet-shell .pet-tab { border: 0; font-size: clamp(10px, calc(.7vw * var(--ds)), calc(15px * var(--ds))); }
+.pixel-ui .pet-tab[aria-selected="true"] { --frame-fill: #00ecb1; --frame-line: #a2ffe0; color: #001b13; }
+.pixel-ui .pet-tab[aria-selected="true"]::after { inset: 3px 2px 1px 3px; box-shadow: inset -2px -2px 0 #00c494; }
+
+/* ---------- Pet switcher thumbnails ---------- */
+.pet-shell .pet-thumb {
+  border: 0;
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: inset 0 0 0 2px var(--scene-accent);
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
+    calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+.pet-shell .pet-thumb.is-active { color: #001b13; background: var(--scene-button); box-shadow: inset 0 0 0 2px #a2ffe0; }
+.pet-shell .pet-thumb-art { border-color: var(--scene-ink); }
+
+/* ---------- Stat bars: cells in scene colours ---------- */
+.pet-shell .pet-stats span { border-color: color-mix(in srgb, var(--scene-accent) 70%, transparent); }
+.pet-shell .pet-stats span:not(.is-on) { background-color: var(--card-fill); }
+.pet-shell .pet-stats span.is-on { border-color: var(--scene-accent); background-color: var(--scene-button); }
+
+/* ---------- Small LCD tags (prices, notes, best score, game banners, traits) ---------- */
+.pet-shell :is(.snack-cost, .pet-chat-note, .game-best, .catch-banner, .pet-traits li) {
+  border: 0;
+  color: #17251c;
+  background: var(--lcd);
+  clip-path: polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),
+    calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px);
+}
+.pet-shell .token-art { border-color: var(--scene-ink); }
+.pet-shell .snack-art { border-color: var(--scene-accent); box-shadow: none; }
+.pet-shell .catch-screen { border-color: var(--scene-button); }
+.pet-shell .pet-reset { border-color: color-mix(in srgb, var(--scene-accent) 40%, transparent); border-style: dashed; }
+
+/* ---------- Chat: log and bubbles with stepped corners ---------- */
+.pet-shell .pet-chat-log {
+  border: 0;
+  background: color-mix(in srgb, var(--scene-accent) 6%, var(--card-fill));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--scene-accent) 45%, transparent);
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
+    calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+.pet-shell .pet-msg {
+  border: 0;
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 6px,100% 6px,
+    100% calc(100% - 6px),calc(100% - 2px) calc(100% - 6px),calc(100% - 2px) calc(100% - 2px),calc(100% - 6px) calc(100% - 2px),
+    calc(100% - 6px) 100%,6px 100%,6px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 6px),0 calc(100% - 6px),
+    0 6px,2px 6px,2px 2px,6px 2px);
+}
+.pet-shell .pet-msg.is-you { color: #001b13; background: var(--scene-button); box-shadow: inset 0 0 0 2px #a2ffe0; }
+.pet-shell .pet-msg.is-pet { color: var(--scene-ink); background: var(--card-fill); box-shadow: inset 0 0 0 2px var(--scene-accent); }
+.pet-shell .pet-msg.is-note {
+  color: color-mix(in srgb, var(--scene-ink) 65%, transparent);
+  background: var(--card-fill);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--scene-accent) 35%, transparent);
+}
+
+/* Muted copy inside cards follows the scene ink (globals.css uses the old --text-muted). */
+.pet-shell :is(.snack-stock, .snack-effects, .pet-meta, .stat-note) { color: color-mix(in srgb, var(--scene-ink) 70%, transparent); }
+
+/* Game modal panel: card colours and an accent frame; the dimmed backdrop stays. */
+.pet-shell .simon.is-modal {
+  /* Starts under the sticky header (z-index 20, above the whole /pet section): before, its close
+     button (top 5svh + 10px) sat under the 67px bar and could not be clicked. */
+  inset: calc(var(--header-height) + 2svh) 5vw 3svh;
+  border: 0;
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / .72), inset 0 0 0 3px var(--scene-accent);
+}
+@media (max-width: 640px) {
+  .pet-shell .simon.is-modal { inset: var(--header-height) 0 0; box-shadow: 0 0 0 100vmax rgb(0 0 0 / .72); }
+}

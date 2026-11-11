@@ -5,6 +5,7 @@ import "./globals.css";
 import "./hero-header.css";
 import "./sections.css";
 import "./mint.css";
+import "./pet.css";
 import BackgroundSparkles from "../components/BackgroundSparkles";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
 import { THEME_COLORS, themeInitScript } from "../lib/theme";

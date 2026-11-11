@@ -16,8 +16,8 @@
      --section-space   content ↔ section divider, the same on both sides of every divider
      --section-bubble  extra room above each title for the mascot and its speech bubble
      --content-gap     inside a section: subtitle → cards → CTA (and drop 1 sub-blocks) */
-  --section-space: calc(clamp(40px, 3.1vw, 80px) * var(--ds));
-  --section-bubble: calc(clamp(64px, 5.7vw, 140px) * var(--ds));
+  --section-space: calc(clamp(52px, 4.15vw, 106px) * var(--ds));
+  --section-bubble: calc(clamp(90px, 5.7vw, 140px) * var(--ds));
   --content-gap: calc(clamp(40px, 3.75vw, 96px) * var(--ds));
   --heading-gap: calc(var(--content-gap) * .4);
 }
@@ -79,9 +79,6 @@
 }
 .hero-shell .section-sub { margin: var(--heading-gap) 0 0; }
 .hero-shell .mascot-sprite { height: calc(clamp(72px, 5.6vw, 128px) * var(--ds)); }
-.hero-shell .mascot-bubble { border-color: var(--scene-ink); background: var(--card-fill); box-shadow: 0 3px 0 var(--scene-accent); }
-.hero-shell .mascot-bubble::before { background: var(--scene-ink); }
-.hero-shell .mascot-bubble::after { background: var(--card-fill); }
 @media (min-width: 1024px) {
   .hero-shell .pets-heading { grid-template-columns: 1fr auto 1fr; column-gap: calc(clamp(20px, 2vw, 44px) * var(--ds)); }
   .hero-shell .section-head { gap: calc(clamp(20px, 2vw, 44px) * var(--ds)); }
@@ -91,6 +88,107 @@
   .hero-shell .pets-heading > .mascot { grid-column: 3; justify-self: start; align-self: end; margin-block: -34px 0; }
   .hero-shell .section-head > .mascot { align-self: flex-end; margin-block: -34px 0; }
   .hero-shell .pets-heading > p { grid-column: 1 / -1; margin-top: var(--heading-gap); }
+}
+
+/* ---------- Speech bubbles (components/Mascot.tsx), one style on every route (task 075) ----------
+   Card frame and colours, stepped pixel corners and a stepped pixel tail. The bubble box has no
+   border or background; ::before draws the line shape (box + tail) and ::after the fill shape
+   2px inside it, both as one clip-path polygon each, so tail and box are one outline.
+   Desktop: tail under the bottom-right edge, pointing down at the pet; ≤1023px: tail on the
+   left edge, pointing at the pet beside it. */
+.mascot-bubble {
+  --c: 6px;           /* corner */
+  --s: 2px;           /* corner step */
+  --tw: 24px;         /* tail width at its base */
+  --tx: 4px;          /* tail narrows by this per step (each side) */
+  --ty1: 4px;         /* tail step lengths: first, second; the third is the rest of --th */
+  --ty2: 4px;
+  --th: 12px;         /* tail length */
+  --tr: 14px;         /* tail offset from the right edge */
+  isolation: isolate;
+  border: 0;
+  color: var(--scene-ink);
+  background: none;
+  box-shadow: none;
+}
+.mascot-bubble::before,
+.mascot-bubble::after {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: 0 0 calc(-1 * var(--th)) 0;
+  right: 0;
+  bottom: calc(-1 * var(--th));
+  width: auto;
+  height: auto;
+  background: var(--scene-accent);
+  clip-path: polygon(
+    var(--c) 0, calc(100% - var(--c)) 0, calc(100% - var(--c)) var(--s), calc(100% - var(--s)) var(--s),
+    calc(100% - var(--s)) var(--c), 100% var(--c),
+    100% calc(100% - var(--th) - var(--c)), calc(100% - var(--s)) calc(100% - var(--th) - var(--c)),
+    calc(100% - var(--s)) calc(100% - var(--th) - var(--s)), calc(100% - var(--c)) calc(100% - var(--th) - var(--s)),
+    calc(100% - var(--c)) calc(100% - var(--th)),
+    calc(100% - var(--tr)) calc(100% - var(--th)),
+    calc(100% - var(--tr)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tx)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - 2 * var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - 2 * var(--tx)) 100%,
+    calc(100% - var(--tr) - var(--tw) + 2 * var(--tx)) 100%,
+    calc(100% - var(--tr) - var(--tw) + 2 * var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - var(--tw) + var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - var(--tw) + var(--tx)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tw)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tw)) calc(100% - var(--th)),
+    var(--c) calc(100% - var(--th)), var(--c) calc(100% - var(--th) - var(--s)),
+    var(--s) calc(100% - var(--th) - var(--s)), var(--s) calc(100% - var(--th) - var(--c)),
+    0 calc(100% - var(--th) - var(--c)), 0 var(--c), var(--s) var(--c), var(--s) var(--s), var(--c) var(--s));
+}
+/* Fill: 2px inside the line everywhere, so its first tail step is 2px longer and its tip
+   2px shorter (widths 20/12/4 inside the line's 24/16/8). */
+.mascot-bubble::after {
+  --c: 4px;
+  --tw: 20px;
+  --tr: 14px;
+  --ty1: 6px;
+  z-index: -1;
+  inset: 2px 2px calc(2px - var(--th)) 2px;
+  right: 2px;
+  bottom: calc(2px - var(--th));
+  background: var(--card-fill);
+}
+@media (max-width: 1023px) {
+  .mascot-bubble { --tw: 20px; --tx: 4px; --ty1: 4px; --ty2: 4px; --th: 12px; }
+  .mascot-bubble::before,
+  .mascot-bubble::after {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: calc(-1 * var(--th));
+    width: auto;
+    height: auto;
+    clip-path: polygon(
+      calc(var(--th) + var(--c)) 0, calc(100% - var(--c)) 0, calc(100% - var(--c)) var(--s), calc(100% - var(--s)) var(--s),
+      calc(100% - var(--s)) var(--c), 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--s)) calc(100% - var(--c)),
+      calc(100% - var(--s)) calc(100% - var(--s)), calc(100% - var(--c)) calc(100% - var(--s)), calc(100% - var(--c)) 100%,
+      calc(var(--th) + var(--c)) 100%, calc(var(--th) + var(--c)) calc(100% - var(--s)),
+      calc(var(--th) + var(--s)) calc(100% - var(--s)), calc(var(--th) + var(--s)) calc(100% - var(--c)),
+      var(--th) calc(100% - var(--c)),
+      var(--th) calc(50% + var(--tw) / 2),
+      calc(var(--th) - var(--ty1)) calc(50% + var(--tw) / 2),
+      calc(var(--th) - var(--ty1)) calc(50% + var(--tw) / 2 - var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% + var(--tw) / 2 - var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% + var(--tw) / 2 - 2 * var(--tx)),
+      0px calc(50% + var(--tw) / 2 - 2 * var(--tx)),
+      0px calc(50% - var(--tw) / 2 + 2 * var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% - var(--tw) / 2 + 2 * var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% - var(--tw) / 2 + var(--tx)),
+      calc(var(--th) - var(--ty1)) calc(50% - var(--tw) / 2 + var(--tx)),
+      calc(var(--th) - var(--ty1)) calc(50% - var(--tw) / 2),
+      var(--th) calc(50% - var(--tw) / 2),
+      var(--th) var(--c), calc(var(--th) + var(--s)) var(--c), calc(var(--th) + var(--s)) var(--s), calc(var(--th) + var(--c)) var(--s));
+  }
+  .mascot-bubble::after { --tw: 16px; --ty1: 6px; top: 2px; right: 2px; bottom: 2px; left: calc(2px - var(--th)); }
 }
 
 /* ---------- Pixel frames: stepped corners drawn by ::before (line) and ::after (fill) ---------- */
@@ -440,21 +538,23 @@
 }
 .site-footer-legal p { color: color-mix(in srgb, var(--scene-ink) 72%, transparent); }
 .site-footer a { color: var(--scene-accent); }
-/* Same content width as the sections above (keeps the edge sparkles clear of the text). */
+/* Footer row on the header's grid (task 075): same side margins as .site-header-inner, so the
+   disclaimer lines up under the logo and © under the CTA on every route. */
 @media (min-width: 1024px) {
-  .site-footer-inner { width: min(calc(100% - 48px), max(calc(79vw * var(--ds)), 900px)); }
+  .site-footer-inner { width: calc(100% - clamp(32px, 6vw, 280px)); align-items: center; }
+  .site-footer-meta { justify-content: flex-end; text-align: right; }
 }
 
 /* ---------- Tablets + phones (globals.css stacks the grids) ---------- */
 @media (max-width: 1023px) {
   /* The mascot sits under the title here, so no bubble room above it. */
-  :root { --section-space: 40px; --section-bubble: 0px; --content-gap: 32px; }
-  .hero-shell :is(.pets-heading, .section-head) > h2 { justify-self: center; font-size: clamp(22px, 6.4vw, 40px); }
+  :root { --section-space: 46px; --section-bubble: 0px; --content-gap: 32px; }
+  .hero-shell :is(.pets-heading, .section-head) > h2 { justify-self: center; font-size: clamp(20px, 5.6vw, 36px); }
   .hero-shell :is(.pets-heading, .section-head) > h2::before { display: none; }
   .hero-shell .section-head { align-items: center; }
   .hero-shell :is(.pets-heading, .section-head) > .mascot { justify-content: center; }
-  .hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) { font-size: clamp(9px, 2.5vw, 13px); }
-  .hero-shell .pet-mood { min-height: 44px; }
+  .hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) { font-size: clamp(8px, 2.25vw, 12px); }
+  .hero-shell .pet-mood { min-height: 40px; }
   .hero-shell .cta-marks { gap: 10px; }
   .cta-marks::before, .cta-marks::after { width: 12px; }
   /* Long labels ("try it: hatch your gotchi") fit one line at 390px and wrap below that. */
@@ -463,14 +563,14 @@
     width: auto;
     max-width: 420px;
     padding-inline: 16px;
-    font-size: clamp(10px, 2.8vw, 16px);
+    font-size: clamp(10px, 2.5vw, 14px);
     line-height: 1.4;
     white-space: normal;
     text-align: center;
   }
   .hero-shell .drop-actions { align-items: stretch; }
   .hero-shell .drop-actions .button { max-width: none; }
-  .hero-shell .faq-item summary { font-size: 13px; }
+  .hero-shell .faq-item summary { font-size: 12px; }
   .hero-shell .faq-item p { font-size: 1.0625rem; }
   .hero-shell .drop-items { --cols: 3; }
   /* globals.css sizes the values for this padding ("33% stakers /" on one line). */
@@ -480,12 +580,14 @@
   .hero-shell .drop-items { --cols: 5; }
 }
 
-/* ---------- Footer: about as tall as the header bar (task 074) ---------- */
-.site-footer { padding: calc(clamp(12px, .9vw, 24px) * var(--ds)) 0; }
+/* ---------- Footer: a bit taller than the header bar (task 075: ~80px at 1920) ---------- */
+.site-footer { padding: calc(clamp(18px, 1.45vw, 36px) * var(--ds)) 0; }
 .site-footer p { font-size: clamp(12px, calc(.75vw * var(--ds)), calc(16px * var(--ds))); line-height: 1.45; }
 @media (max-width: 1023px) {
-  .site-footer { padding: 14px 0 8px; }
-  .site-footer-inner { gap: 2px; }
+  .site-footer { padding: 18px 0 10px; }
+  /* Stacked, left-aligned on the header's side margin (disclaimer, then ©). */
+  .site-footer-inner { width: calc(100% - 24px); align-items: flex-start; gap: 4px; text-align: left; }
+  .site-footer-meta { justify-content: flex-start; }
   .site-footer p { font-size: 0.8125rem; line-height: 1.4; }
   /* Links keep their 44px tap height; the copyright line beside them doesn't need it. */
   .site-footer-meta { align-items: center; }
@@ -495,3 +597,24 @@
 body:has(> .notfound-shell) { display: flex; flex-direction: column; min-height: 100svh; }
 body > .notfound-shell { display: grid; flex: 1 0 auto; }
 body > .notfound-shell > .notfound { min-height: 0; }
+
+/* ---------- Drop 1 items + backgrounds on phones/tablets (task 075) ----------
+   A fixed grid of equal columns (the flex rows let long labels widen their card), equal card
+   heights, the last row starts on the left; backgrounds as two equal columns. */
+@media (max-width: 1023px) {
+  .hero-shell .drop-items { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-auto-rows: 1fr; justify-content: stretch; align-items: stretch; }
+  .hero-shell .drop-items > .item-card { width: auto; min-width: 0; }
+  .hero-shell .drop-items > .item-card * { min-width: 0; overflow-wrap: anywhere; }
+  .hero-shell .drop-backgrounds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .hero-shell .drop-backgrounds > .drop-bg { min-width: 0; justify-content: center; text-align: center; }
+}
+
+@media (max-width: 380px) { .site-footer-inner { width: calc(100% - 16px); } }
+/* Phones (task 075): mascots and section sprites ~12 % smaller, as the rest of the phone UI. */
+@media (max-width: 768px) {
+  .mascot-sprite, .hero-shell .mascot-sprite { height: 64px; }
+  .mascot-bubble { font-size: 14px; }
+  .hero-shell .faq-item p { font-size: .9375rem; }
+  .mobile-menu nav a { min-height: 44px; padding: 12px 16px; font-size: 11px; }
+  .mobile-menu-actions .button { min-height: 46px; padding: 10px; font-size: 10px; }
+}
