@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { fill, petPage, snackLabels } from "../../lib/copy";
-import { isTestnet } from "../../lib/chain";
+import { isOnChain } from "../../lib/chain";
 import { toast } from "../../lib/toast";
 import { levelOf, type DemoPet } from "../../lib/mocks";
 import { ENERGY_PACK, NEAR_PRICES, buyItem, getShop, subscribeShop, type BuyResult, type ItemId, type ShopItem } from "../../lib/shop";
@@ -69,17 +69,17 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
   const price = (id: ItemId) => (id === ENERGY_PACK.id ? ENERGY_PACK.price : (items.find((i) => i.snack.id === id)?.snack.price ?? 0));
   /** Price text: testnet NEAR on testnet, demo $NEARGotchi otherwise. */
   const priceOf = (id: ItemId) =>
-    isTestnet ? fill(petPage.shop.costNear, { n: NEAR_PRICES[id] }) : fill(petPage.shop.cost, { n: String(price(id)) });
+    isOnChain ? fill(petPage.shop.costNear, { n: NEAR_PRICES[id] }) : fill(petPage.shop.cost, { n: String(price(id)) });
 
   const reasonFor = (item: ShopItem): string | null => {
     if (item.stock !== null && item.stock <= 0)
       return fill(petPage.shop.reason.out_of_stock, { time: clock((item.nextAt ?? now) - now) });
-    if (!isTestnet && balance !== null && balance < item.snack.price) return petPage.shop.reason.broke;
+    if (!isOnChain && balance !== null && balance < item.snack.price) return petPage.shop.reason.broke;
     if (restful) return fill(petPage.shop.reason.full, { name: pet.name });
     return null;
   };
   const packReason = (): string | null => {
-    if (!isTestnet && balance !== null && balance < ENERGY_PACK.price) return petPage.shop.reason.broke;
+    if (!isOnChain && balance !== null && balance < ENERGY_PACK.price) return petPage.shop.reason.broke;
     if (energyFull) return fill(petPage.shop.reason.fullEnergy, { name: pet.name });
     return null;
   };
@@ -94,7 +94,7 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
       const text = fill(petPage.shop.result[key], {
         name: pet.name,
         snack,
-        n: isTestnet ? fill(petPage.shop.costNear, { n: NEAR_PRICES[id] }) : `${price(id)} demo $NEARGotchi`,
+        n: isOnChain ? fill(petPage.shop.costNear, { n: NEAR_PRICES[id] }) : `${price(id)} demo $NEARGotchi`,
         e: String(ENERGY_PACK.energy),
         time: clock(timeLeft),
       });
@@ -122,9 +122,9 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
       <div className="shop-head">
         <div>
           <h2 className="mint-subtitle">{petPage.shop.title}</h2>
-          <p className="shop-note">{petPage.shop.note} {isTestnet ? petPage.shop.noteChain : petPage.shop.noteDemo}</p>
+          <p className="shop-note">{petPage.shop.note} {isOnChain ? petPage.shop.noteChain : petPage.shop.noteDemo}</p>
         </div>
-        {isTestnet ? null : (
+        {isOnChain ? null : (
           <button
             type="button"
             className="button button-secondary shop-refill"

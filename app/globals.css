@@ -1662,6 +1662,13 @@ main > section[class] { background: transparent; }
 .mint-ready .mint-hint { max-width: 46ch; margin: 0; }
 .mint-ready .mint-error { margin: 0; }
 .mint-hatch-button { min-width: round(calc(240px * var(--ui-scale)), 1px); }
+.mint-hatch-button:disabled { border-style: dashed; color: var(--text-muted); background: var(--surface); box-shadow: none; cursor: not-allowed; }
+/* Mainnet only: unaudited / real funds warning with a confirmation checkbox before Hatch. */
+.mint-warning { display: grid; gap: 8px; max-width: 46ch; padding: 14px 16px; border: 2px solid var(--ink); border-left: 8px solid var(--pink); background: var(--surface); text-align: left; }
+.mint-warning-title { margin: 0; font-weight: 700; }
+.mint-warning-text { margin: 0; font-size: 1rem; line-height: 1.45; }
+.mint-ack { display: flex; align-items: flex-start; gap: 10px; font-size: 1rem; font-weight: 600; line-height: 1.4; cursor: pointer; }
+.mint-ack input { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--ink); }
 
 /* Drop progress (components/DropProgress.tsx): a small LCD, 30 ink cells of 10 tokens each + the count.
    Fixed width and height from the server render ("…" and empty cells), so nothing moves when it fills. */

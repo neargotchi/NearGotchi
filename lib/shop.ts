@@ -4,7 +4,7 @@
 // team treasury, and the effect is applied only after the transaction is confirmed (popup wallets: right away;
 // redirect wallets: resumePurchase() on return). Async on purpose: the UI only calls the functions below.
 
-import { TREASURY_ACCOUNT, isTestnet, nearToYocto, txStatus, type TxOutcome } from "./chain";
+import { TREASURY_ACCOUNT, isOnChain, nearToYocto, txStatus, type TxOutcome } from "./chain";
 import { baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
 import { WalletError, connectedAccountId, spend } from "./wallet";
 
@@ -244,7 +244,7 @@ export async function buyItem(petId: string, itemId: ItemId): Promise<{ pet: Dem
   if (slot && slot.stock <= 0) return keep("out_of_stock");
   const nothingToDo = snack ? levelOf(pet.hunger) <= 0 : levelOf(pet.energy) >= 100;
   if (nothingToDo) return keep("full");
-  if (isTestnet) {
+  if (isOnChain) {
     const paid = await payNear(owner, itemId, pet.id);
     if (paid !== "paid") return keep(paid);
   } else {
@@ -265,7 +265,7 @@ export async function buyItem(petId: string, itemId: ItemId): Promise<{ pet: Dem
  * treasury receiver, exact amount, not used before), then applies the purchase that was pending. null = nothing to do.
  */
 export async function resumePurchase(): Promise<{ pet: DemoPet; result: BuyResult; item: ItemId } | null> {
-  if (!isTestnet || typeof window === "undefined") return null;
+  if (!isOnChain || typeof window === "undefined") return null;
   const params = new URLSearchParams(window.location.search);
   const hash = params.get("transactionHashes")?.split(",").pop();
   const failed = params.get("errorCode") || params.get("errorMessage");

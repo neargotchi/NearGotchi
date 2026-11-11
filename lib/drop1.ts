@@ -3,7 +3,7 @@
 // (getDropStatus → nft_total_supply, hatchRandom → nft_mint + nft_token, getToken → nft_token).
 // Nothing here is a real mint. Copy rule: rarity only, never value.
 
-import { DROP1_CONTRACT, MINT_DEPOSIT, MINT_GAS, isTestnet, outcomeValue, txStatus, viewCall, type TxOutcome } from "./chain";
+import { DROP1_CONTRACT, MINT_DEPOSIT, MINT_GAS, isOnChain, outcomeValue, txStatus, viewCall, type TxOutcome } from "./chain";
 import list from "./drop1-tokens.json";
 
 export const tiers = ["common", "rare", "epic", "legendary"] as const;
@@ -265,7 +265,7 @@ export type DropStatus = { minted: number; total: number; soldOut: boolean; paus
  * "—" instead of a made-up 0 (task 064). Demo: this browser's list, never null.
  */
 export async function getDropStatus(): Promise<DropStatus | null> {
-  if (isTestnet) {
+  if (isOnChain) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         return await chainStatus();
@@ -280,7 +280,7 @@ export async function getDropStatus(): Promise<DropStatus | null> {
 
 /** Draws one free token from the whole pool and marks it minted. Throws DropError. Testnet: a real 2 NEAR mint. */
 export async function hatchRandom(): Promise<Drop1Token> {
-  if (isTestnet) return chainHatch();
+  if (isOnChain) return chainHatch();
   const token = claimRandomToken();
   if (!token) throw new DropError("sold_out");
   return token;
@@ -292,14 +292,14 @@ export async function getToken(tokenId: number): Promise<Drop1Token | null> {
 
 /** Demo only (sold-out screen): forgets every minted id in this browser. A saved pet keeps its token. */
 export async function resetDrop(): Promise<void> {
-  if (isTestnet) return;
+  if (isOnChain) return;
   writeMinted([]);
   listeners.forEach((listener) => listener([]));
 }
 
 /** Calls back with the new status on claims in this tab and on storage changes from other tabs (testnet: polls every 10 s). */
 export function subscribeDrop(callback: (next: DropStatus) => void): () => void {
-  if (isTestnet) {
+  if (isOnChain) {
     const timer = setInterval(() => {
       chainStatus().then(callback, () => {});
     }, 10000);
@@ -316,4 +316,44 @@ export function subscribeDrop(callback: (next: DropStatus) => void): () => void 
     listeners.delete(local);
     if (inBrowser()) window.removeEventListener("storage", onStorage);
   };
+}
+
+// ---------- holder rewards (contracts/drop1: pending_rewards_for_owner, claim_rewards) ----------
+
+/** yoctoNEAR → "0.1234" (4 decimals, floor). */
+export const yoctoToNear = (yocto: string) => {
+  const value = BigInt(yocto);
+  const whole = value / BigInt(10) ** BigInt(24);
+  const frac = (value % BigInt(10) ** BigInt(24)).toString().padStart(24, "0").slice(0, 4);
+  return `${whole}.${frac}`;
+};
+
+/**
+ * Unclaimed holder rewards of an account in yoctoNEAR, or null when the contract has no rewards
+ * (the older ng57 testnet contract) or the RPC failed. Demo mode: always null.
+ */
+export async function getPendingRewards(accountId: string): Promise<string | null> {
+  if (!isOnChain) return null;
+  try {
+    return await viewCall<string>("pending_rewards_for_owner", { account_id: accountId });
+  } catch {
+    return null;
+  }
+}
+
+/** Claims the rewards of every token the account owns (one transaction, no deposit). Returns the paid yoctoNEAR. */
+export async function claimAllRewards(accountId: string): Promise<string> {
+  const { getNear } = await import("./near");
+  const { selector } = await getNear();
+  const ids = (await ownedIds(accountId)).map(String);
+  if (!ids.length) return "0";
+  const { actionCreators } = await import("@near-wallet-selector/core");
+  const wallet = await selector.wallet();
+  const outcome = await wallet.signAndSendTransaction({
+    receiverId: DROP1_CONTRACT,
+    actions: [actionCreators.functionCall("claim_rewards", { token_ids: ids }, BigInt("50000000000000"), BigInt(0))],
+  });
+  const failure = failureText(outcome as TxOutcome | void);
+  if (failure) throw new Error(failure);
+  return outcomeValue<string>(outcome as TxOutcome | void) ?? "0";
 }

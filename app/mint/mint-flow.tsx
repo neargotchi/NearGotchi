@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import DropProgress from "../../components/DropProgress";
 import { fill, mintPage } from "../../lib/copy";
-import { isTestnet } from "../../lib/chain";
+import { isMainnet, isOnChain } from "../../lib/chain";
 import {
   DROP1_TOTAL,
   DropError,
@@ -155,7 +155,7 @@ export default function MintFlow() {
     setHatchError(null);
     go("hatching");
     setStarted(true);
-    setLine(isTestnet ? mintPage.chain.waitingWallet : mintPage.hatching);
+    setLine(isOnChain ? mintPage.chain.waitingWallet : mintPage.hatching);
     setFocus("line");
     try {
       await debugHatch();
@@ -166,7 +166,7 @@ export default function MintFlow() {
         saved = await mintPet({ token: drawn });
       } catch (error) {
         // reloaded after the mint: the pet already exists
-        const existing = isTestnet && error instanceof MintError ? await getPet(String(drawn.tokenId)) : null;
+        const existing = isOnChain && error instanceof MintError ? await getPet(String(drawn.tokenId)) : null;
         if (!existing) throw error;
         saved = existing;
       }
@@ -187,15 +187,17 @@ export default function MintFlow() {
     }
   };
 
+  const [acknowledged, setAcknowledged] = useState(false);
   const hatch = () => {
     if (viewRef.current !== "ready" || !account) return;
+    if (isMainnet && !acknowledged) return; // real funds: never without the checkbox
     return runHatch(hatchRandom);
   };
 
   // Redirect wallets return to /mint?transactionHashes=… (or ?errorCode=…): finish that mint once.
   const resumed = useRef(false);
   useEffect(() => {
-    if (!isTestnet || !walletReady || !account || resumed.current || view !== "ready") return;
+    if (!isOnChain || !walletReady || !account || resumed.current || view !== "ready") return;
     const params = new URLSearchParams(window.location.search);
     const hash = params.get("transactionHashes")?.split(",").pop();
     const failure = params.get("errorMessage") || params.get("errorCode");
@@ -208,7 +210,7 @@ export default function MintFlow() {
     }
     void runHatch(() => resumeMint(hash!, account.accountId));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTestnet, walletReady, account, view]);
+  }, [isOnChain, walletReady, account, view]);
 
   const hatched = () => {
     if (!token) return;
@@ -255,7 +257,7 @@ export default function MintFlow() {
         </h2>
         <p className="mint-card-text">{mintPage.soldOut.body}</p>
         <DropProgress className="mint-progress" />
-        {isTestnet ? null : (
+        {isOnChain ? null : (
           <>
             <div className="mint-actions">
               <button type="button" className="button button-secondary" onClick={resetDemoDrop}>
@@ -293,17 +295,35 @@ export default function MintFlow() {
             {walletReady && !account ? (
               <WalletGate context="mint" onConnected={() => setFocus("hatch")} />
             ) : (
-              <button ref={hatchRef} type="button" className="button button-primary mint-hatch-button" onClick={hatch}>
-                {mintPage.hatchButton}
-                <span className="mint-tag">{isTestnet ? mintPage.chain.hatchTag : mintPage.hatchTag}</span>
-              </button>
+              <>
+                {isMainnet ? (
+                  <div className="mint-warning" role="group" aria-labelledby="mint-warning-title">
+                    <p id="mint-warning-title" className="mint-warning-title">{mintPage.chain.warningTitle}</p>
+                    <p className="mint-warning-text">{mintPage.chain.warning}</p>
+                    <label className="mint-ack">
+                      <input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} />
+                      <span>{mintPage.chain.ackLabel}</span>
+                    </label>
+                  </div>
+                ) : null}
+                <button
+                  ref={hatchRef}
+                  type="button"
+                  className="button button-primary mint-hatch-button"
+                  onClick={hatch}
+                  disabled={isMainnet && !acknowledged}
+                >
+                  {mintPage.hatchButton}
+                  <span className="mint-tag">{isOnChain ? mintPage.chain.hatchTag : mintPage.hatchTag}</span>
+                </button>
+              </>
             )}
             {hatchError ? (
               <p className="mint-error" role="alert">
                 {hatchError === "demo" || hatchError === "sold_out" ? mintPage.hatchError : mintPage.chain.errors[hatchError]}
               </p>
             ) : null}
-            <p className="mint-hint">{isTestnet ? mintPage.chain.readyHint : mintPage.readyHint}</p>
+            <p className="mint-hint">{isOnChain ? mintPage.chain.readyHint : mintPage.readyHint}</p>
           </div>
         ) : null}
 

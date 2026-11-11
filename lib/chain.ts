@@ -1,14 +1,30 @@
 // Chain switch (docs/PLAN-CONTRACT-NFT.md §9). NEXT_PUBLIC_CHAIN=demo (default) keeps the localStorage mock;
-// =testnet talks to the drop 1 contract through a real wallet. Public config only, no secrets.
+// =testnet / =mainnet talk to the drop 1 contract through a real wallet. Public config only, no secrets.
 
-export const CHAIN: "demo" | "testnet" = process.env.NEXT_PUBLIC_CHAIN === "testnet" ? "testnet" : "demo";
+/** One build = one chain. Unknown values fall back to demo (never to mainnet by accident). */
+export type Chain = "demo" | "testnet" | "mainnet";
+export const CHAIN: Chain = process.env.NEXT_PUBLIC_CHAIN === "testnet" || process.env.NEXT_PUBLIC_CHAIN === "mainnet" ? process.env.NEXT_PUBLIC_CHAIN : "demo";
+/** Real wallet + real contract (testnet or mainnet). Demo = localStorage mock. */
+export const isOnChain = CHAIN !== "demo";
 export const isTestnet = CHAIN === "testnet";
+/** Real NEAR: the mint and the shop spend money. Shows the "unaudited, real funds" warning. */
+export const isMainnet = CHAIN === "mainnet";
+/** "testnet" | "mainnet" for copy (only meaningful when isOnChain). */
+export const NET = isMainnet ? "mainnet" : "testnet";
 
-export const DROP1_CONTRACT = process.env.NEXT_PUBLIC_DROP1_CONTRACT || "neargotchi-drop1-ng57.testnet";
-export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.near.org";
-/** Where testnet snack / energy-pack payments go (docs/CONTRACT-SETUP.md: team treasury). */
-export const TREASURY_ACCOUNT = process.env.NEXT_PUBLIC_TREASURY || "neargotchi-team-ng57.testnet";
-export const EXPLORER_URL = "https://testnet.nearblocks.io";
+// No default contract / treasury on mainnet: they must come from the environment, so a build can never point real
+// money at a testnet-era default. The testnet defaults are the shared judging deployment.
+// ng57 = the deployed testnet drop (old contract, still the default); the 50/50 version is a separate test account.
+const TESTNET_CONTRACT = "neargotchi-drop1-ng57.testnet";
+const TESTNET_TREASURY = "neargotchi-team-ng57.testnet";
+export const DROP1_CONTRACT = process.env.NEXT_PUBLIC_DROP1_CONTRACT || (isMainnet ? "" : TESTNET_CONTRACT);
+export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || (isMainnet ? "https://rpc.mainnet.near.org" : "https://rpc.testnet.near.org");
+/** Where snack / energy-pack payments go: the team account (docs/MAINNET-RUNBOOK.md). */
+export const TREASURY_ACCOUNT = process.env.NEXT_PUBLIC_TREASURY || (isMainnet ? "" : TESTNET_TREASURY);
+export const EXPLORER_URL = isMainnet ? "https://nearblocks.io" : "https://testnet.nearblocks.io";
+/** A mainnet build without both accounts is misconfigured: the UI refuses to sign anything. */
+export const CONFIG_ERROR: string | null =
+  isMainnet && (!DROP1_CONTRACT || !TREASURY_ACCOUNT) ? "mainnet build needs NEXT_PUBLIC_DROP1_CONTRACT and NEXT_PUBLIC_TREASURY" : null;
 
 /** 2 NEAR in yoctoNEAR (contract PRICE) and 100 Tgas (plan: mint measured at 6–12 Tgas, the rest is refunded). */
 export const MINT_DEPOSIT = "2000000000000000000000000";

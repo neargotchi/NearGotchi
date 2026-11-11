@@ -778,4 +778,34 @@ await test("rarity only: no value / price / growth words in the drop-1, /mint, /
   assert.deepEqual(hits, []);
 });
 
+console.log("chain config");
+// lib/chain.ts reads NEXT_PUBLIC_* at import time: each mode is checked in a fresh node process.
+const { execFileSync } = await import("node:child_process");
+const chainIn = (env) =>
+  JSON.parse(
+    execFileSync(
+      process.execPath,
+      ["--experimental-transform-types", "--no-warnings", "--input-type=module", "-e",
+        "const c = await import('./lib/chain.ts'); console.log(JSON.stringify({ chain: c.CHAIN, onChain: c.isOnChain, mainnet: c.isMainnet, net: c.NET, contract: c.DROP1_CONTRACT, rpc: c.RPC_URL, treasury: c.TREASURY_ACCOUNT, explorer: c.EXPLORER_URL, error: c.CONFIG_ERROR }))"],
+      { env: { PATH: process.env.PATH, ...env }, cwd: new URL("..", import.meta.url) },
+    ).toString(),
+  );
+await test("demo by default; unknown values never fall through to mainnet", async () => {
+  assert.equal(chainIn({}).chain, "demo");
+  assert.equal(chainIn({ NEXT_PUBLIC_CHAIN: "Mainnet" }).chain, "demo");
+  assert.equal(chainIn({ NEXT_PUBLIC_CHAIN: "demo" }).onChain, false);
+});
+await test("testnet unchanged: ng57 contract, testnet rpc + explorer, no config error", async () => {
+  const t = chainIn({ NEXT_PUBLIC_CHAIN: "testnet" });
+  assert.deepEqual([t.onChain, t.mainnet, t.net, t.contract, t.rpc, t.explorer, t.error], [true, false, "testnet", "neargotchi-drop1-ng57.testnet", "https://rpc.testnet.near.org", "https://testnet.nearblocks.io", null]);
+});
+await test("mainnet: contract + treasury only from env, mainnet rpc; missing env = config error", async () => {
+  const m = chainIn({ NEXT_PUBLIC_CHAIN: "mainnet", NEXT_PUBLIC_DROP1_CONTRACT: "drop.near", NEXT_PUBLIC_TREASURY: "team.near" });
+  assert.deepEqual([m.onChain, m.mainnet, m.net, m.contract, m.treasury, m.rpc, m.explorer, m.error], [true, true, "mainnet", "drop.near", "team.near", "https://rpc.mainnet.near.org", "https://nearblocks.io", null]);
+  const bare = chainIn({ NEXT_PUBLIC_CHAIN: "mainnet" });
+  assert.equal(bare.contract, "");
+  assert.equal(bare.treasury, "");
+  assert.match(bare.error, /NEXT_PUBLIC_DROP1_CONTRACT/);
+});
+
 console.log(`\n${passed} checks passed`);

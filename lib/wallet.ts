@@ -1,10 +1,10 @@
 // Demo wallet (docs/DEVLOG.md §1). Mock only: no wallet library, no network, nothing is signed.
 // Async on purpose: on NEAR, connect/disconnect/getAccount map to wallet-selector and spend/balance to
 // the $NEARGotchi FT (§7); the UI only uses these functions.
-// NEXT_PUBLIC_CHAIN=testnet (lib/chain.ts): connect / disconnect / getAccount use a real NEAR testnet wallet
+// NEXT_PUBLIC_CHAIN=testnet/mainnet (lib/chain.ts): connect / disconnect / getAccount use a real NEAR wallet
 // (wallet-selector); the balance stays demo $NEARGotchi (snacks are task 059). Demo mode is unchanged.
 
-import { isTestnet } from "./chain";
+import { isOnChain } from "./chain";
 
 /** One browser = one demo account (owner decision 1). */
 export const DEMO_ACCOUNT_ID = "you.demo";
@@ -64,7 +64,7 @@ function parse(raw: string): DemoAccount | null {
     const ok =
       !!data &&
       data.v === 1 &&
-      (isTestnet ? typeof data.accountId === "string" && data.accountId.length > 0 : data.accountId === DEMO_ACCOUNT_ID) &&
+      (isOnChain ? typeof data.accountId === "string" && data.accountId.length > 0 : data.accountId === DEMO_ACCOUNT_ID) &&
       typeof data.connected === "boolean" &&
       typeof data.connectedAt === "string" &&
       Number.isFinite(Date.parse(data.connectedAt)) &&
@@ -138,7 +138,7 @@ async function syncChain(): Promise<DemoAccount | null> {
 
 /** The connected account, or null (never connected / disconnected). */
 export async function getAccount(): Promise<DemoAccount | null> {
-  if (isTestnet && inBrowser()) {
+  if (isOnChain && inBrowser()) {
     try {
       return await syncChain();
     } catch {
@@ -180,7 +180,7 @@ async function connectChain(): Promise<DemoAccount> {
  * Testnet: real wallet sign-in (throws WalletError("cancelled") when the modal is closed).
  */
 export async function connect(): Promise<DemoAccount> {
-  if (isTestnet) return connectChain();
+  if (isOnChain) return connectChain();
   const record = readRecord();
   const now = new Date().toISOString();
   return save(
@@ -192,7 +192,7 @@ export async function connect(): Promise<DemoAccount> {
 
 /** Hides the account; nothing is deleted. */
 export async function disconnect(): Promise<void> {
-  if (isTestnet) {
+  if (isOnChain) {
     try {
       const { getNear } = await import("./near");
       const { selector } = await getNear();

@@ -1,7 +1,7 @@
 // Public copy for landing sections, from docs/neargotchi-copy-v1.md. Keep text verbatim.
 // NEXT_PUBLIC_CHAIN=testnet swaps the few "demo" strings that would be untrue with a real wallet and a real mint.
 
-import { isTestnet } from "./chain";
+import { NET, isMainnet, isOnChain } from "./chain";
 
 export type HowItWorksStep = {
   number: number;
@@ -13,7 +13,7 @@ export type HowItWorksStep = {
 
 /** Hero (app/page.tsx). Demo now, near next: no live near ai promise, no dressing up. */
 export const hero = {
-  lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " +(isTestnet ? "live on near testnet." : "demo now, near next."),
+  lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "demo now, near next."),
 };
 
 export const howItWorks = {
@@ -82,15 +82,14 @@ export const dropSection = {
 export const tokenomics = {
   header: "the numbers",
   stats: [
-    { label: "ticker", value: ["$NEARGotchi"] },
-    { label: "chain", value: ["near"] },
-    // Placeholder until the owner decides: always "tba".
-    { label: "supply", value: ["tba"] },
-    { label: "split", value: ["33% team /", "33% stakers /", "34% buyback & burn"] },
+    { label: "hatch", value: ["2 near"] },
+    { label: "supply", value: ["300"] },
+    { label: "team", value: ["50%"] },
+    { label: "holder rewards", value: ["50%"] },
   ],
-  // Under the tiles (body font).
-  note: "the planned split of hatch proceeds, platform fees and the 5% royalty. staking and buyback are not live: on testnet nothing is burned.",
-  closing: { lead: "planned: snacks ", accent: "burn." },
+  // Under the tiles (body font). Exactly what the contract does (contracts/drop1/src/lib.rs).
+  note: "every hatch pays 2 near, minus a small storage reserve. half goes to the team, half is split equally between the gotchis hatched before it, and their owners claim it from their wallet. the very first hatch has no earlier gotchi, so its half goes to the team. it is a share of hatch sales and nothing more is promised.",
+  closing: { lead: "every hatch ", accent: "pays holders." },
 };
 
 export const faq = {
@@ -114,11 +113,13 @@ export const faq = {
     },
     {
       question: "where do the fees go?",
-      answer: "the contract splits hatch proceeds three ways: 33% team, 33% stakers, 34% buyback & burn. staking and the $NEARGotchi token are planned, not live. testnet only.",
+      answer: "the contract splits hatch proceeds (2 near minus a small storage reserve): 50% to the team, 50% to the holders of the gotchis hatched earlier, split equally. holders claim from their wallet. the first hatch has no earlier gotchi, so its half goes to the team. nothing else is promised.",
     },
     {
       question: "is this live?",
-      answer: "it's a testnet demo. the mint is real on near testnet; snacks, games and chat are still mocks in your browser.",
+      answer: isMainnet
+        ? "yes, on near mainnet, with real near. the contract is unaudited: only spend what you can afford to lose. snacks are paid in real near; games and chat state live in your browser."
+        : "it's a testnet demo. the mint is real on near testnet; snacks, games and chat are still mocks in your browser.",
     },
   ],
 };
@@ -142,12 +143,12 @@ export const header = {
   /** Demo wallet (app/wallet-menu.tsx, lib/wallet.ts): one fake account per browser, nothing is signed. */
   wallet: {
     label: "connect wallet",
-    tag: isTestnet ? "testnet" : "demo",
+    tag: isOnChain ? NET : "demo",
     /** Chip label once connected; the button opens a small panel. */
-    chipLabel: isTestnet ? "wallet {account}, testnet. open menu" : "wallet {account}, demo. open menu",
-    note: isTestnet ? "near testnet wallet" : "demo wallet · nothing is signed",
-    connected: isTestnet ? "connected as {account}." : "connected as {account}. demo wallet, nothing is signed.",
-    disconnected: isTestnet ? "wallet disconnected." : "wallet disconnected. your gotchis wait in this browser.",
+    chipLabel: isOnChain ? `wallet {account}, ${NET}. open menu` : "wallet {account}, demo. open menu",
+    note: isOnChain ? `near ${NET} wallet` : "demo wallet · nothing is signed",
+    connected: isOnChain ? "connected as {account}." : "connected as {account}. demo wallet, nothing is signed.",
+    disconnected: isOnChain ? "wallet disconnected." : "wallet disconnected. your gotchis wait in this browser.",
     myPets: "my gotchis",
     disconnect: "disconnect",
   },
@@ -165,8 +166,8 @@ export type SocialLink = { label: string; url: string | null };
 export const footer = {
   disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value.",
   // No cookies, no analytics: only functional localStorage (theme, demo pet, chat).
-  privacy: isTestnet
-    ? "no tracking. game state (hunger, energy, chat) lives only in this browser; ownership is on near testnet."
+  privacy: isOnChain
+    ? `no tracking. game state (hunger, energy, chat) lives only in this browser; ownership is on near ${NET}.`
     : "no tracking. your demo wallet and pets live only in this browser.",
   copyright: "© 2026 neargotchi",
   // URLs not approved yet (copy v1 §7 has [URL]); null links are not rendered.
@@ -207,10 +208,10 @@ export const petGallery = {
  */
 export const mintPage = {
   metaTitle: "mint — NEARGOTCHI",
-  metaDescription: isTestnet ? "hatch an egg on near testnet, meet one of 300 gotchis, name it." : "hatch an egg, meet one of 300 gotchis, name it. demo, no real mint.",
+  metaDescription: isOnChain ? `hatch an egg on near ${NET}, meet one of 300 gotchis, name it.` : "hatch an egg, meet one of 300 gotchis, name it. demo, no real mint.",
   title: "hatch your gotchi",
   sub: "one egg. one of 300 gotchis inside. name it when it's out.",
-  demo: isTestnet ? "near testnet · 2 test near per hatch" : "demo · no real mint, demo wallet only",
+  demo: isOnChain ? (isMainnet ? "near mainnet · 2 real near per hatch" : "near testnet · 2 test near per hatch") : "demo · no real mint, demo wallet only",
   mascot: { name: "near dragon", spriteFolder: "pet2", line: "i hatched once. it was a lot." },
   hatchButton: "hatch",
   hatchTag: "demo",
@@ -218,12 +219,18 @@ export const mintPage = {
   hatchError: "the egg didn't crack. try again.",
   /** testnet (NEXT_PUBLIC_CHAIN=testnet): real 2 NEAR mint */
   chain: {
-    hatchTag: "2 near · testnet",
-    readyHint: "2 near on testnet. the contract picks the pet, not you. common, rare, epic or legendary.",
+    hatchTag: isMainnet ? "2 near · real" : "2 near · testnet",
+    readyHint: isMainnet
+      ? "2 real near. the contract picks the pet, not you. common, rare, epic or legendary."
+      : "2 near on testnet. the contract picks the pet, not you. common, rare, epic or legendary.",
     waitingWallet: "confirm in your wallet…",
+    /** mainnet only: shown above the hatch button; the button stays disabled until the box is ticked. */
+    warningTitle: "unaudited contract. real funds.",
+    warning: "this hatch spends 2 real near. the contract has not been audited and the mint cannot be undone. you get one random gotchi and nothing more is promised. only spend what you can afford to lose.",
+    ackLabel: "i understand: unaudited contract, real near, no refunds.",
     errors: {
       paused: "hatching is paused right now. try again soon.",
-      no_funds: "not enough testnet near. you need 2 near plus a little gas.",
+      no_funds: isMainnet ? "not enough near. you need 2 near plus a little gas." : "not enough testnet near. you need 2 near plus a little gas.",
       rejected: "cancelled in the wallet. nothing was spent.",
       failed: "the egg didn't crack. check your wallet and try again.",
     },
@@ -241,7 +248,7 @@ export const mintPage = {
     share: "share on x",
     shareNewTab: "(opens x in a new tab)",
     /** x.com/intent/tweet text (PLANNER REVIEW 037): no @handle until the X account is confirmed. */
-    shareText: "i hatched {token}, a {tier} {species}. one of {count} {tier} {pet}s in neargotchi drop 1 ("+(isTestnet ? "testnet" : "demo")+").",
+    shareText: "i hatched {token}, a {tier} {species}. one of {count} {tier} {pet}s in neargotchi drop 1 ("+(isOnChain ? NET : "demo")+").",
   },
   nameHint: "2–12 characters. letters, numbers, spaces, - and _. empty keeps {pet}.",
   errors: {
@@ -249,11 +256,11 @@ export const mintPage = {
     too_long: "too long. 12 characters max.",
     bad_chars: "letters, numbers, spaces, - and _ only.",
     no_pet: "that gotchi is gone. hatch again.",
-    no_wallet: isTestnet ? "connect your wallet first." : "connect the demo wallet first.",
+    no_wallet: isOnChain ? "connect your wallet first." : "connect the demo wallet first.",
   },
   soldOut: {
     title: "all {total} hatched.",
-    body: isTestnet ? "every egg in drop 1 is out." : "every egg in this demo drop is out. in this browser, anyway.",
+    body: isOnChain ? "every egg in drop 1 is out." : "every egg in this demo drop is out. in this browser, anyway.",
     reset: "reset demo drop",
     note: "demo only: puts all {total} eggs back in this browser.",
   },
@@ -266,7 +273,7 @@ export const mintPage = {
  * browser's demo hatches only, so "demo" is always part of it. "…" until the browser count is read.
  */
 export const dropProgress = {
-  label: isTestnet ? "{minted} / {total} hatched · {left} left · testnet" : "{minted} / {total} hatched · {left} left · demo",
+  label: isOnChain ? `{minted} / {total} hatched · {left} left · ${NET}` : "{minted} / {total} hatched · {left} left · demo",
   pending: "…",
   /** the contract could not be read */
   unavailable: "—",
@@ -274,11 +281,11 @@ export const dropProgress = {
 
 /** Shown on /pet and /mint without a connected demo wallet (app/wallet-gate.tsx). */
 export const walletGate = {
-  title: isTestnet ? "connect a wallet" : "connect a demo wallet",
-  pet: isTestnet ? "your gotchis belong to an account. connect your near testnet wallet to see them." : "your gotchis belong to an account. connect the demo wallet to see them.",
-  mint: isTestnet ? "hatching needs an account. connect your near testnet wallet first." : "hatching needs an account. connect the demo wallet first.",
-  button: isTestnet ? "connect wallet" : "connect demo wallet",
-  note: isTestnet ? "near testnet only. hatching costs 2 test near." : "a fake account, you.demo. nothing is signed, nothing leaves this browser.",
+  title: isOnChain ? "connect a wallet" : "connect a demo wallet",
+  pet: isOnChain ? `your gotchis belong to an account. connect your near ${NET} wallet to see them.` : "your gotchis belong to an account. connect the demo wallet to see them.",
+  mint: isOnChain ? `hatching needs an account. connect your near ${NET} wallet first.` : "hatching needs an account. connect the demo wallet first.",
+  button: isOnChain ? "connect wallet" : "connect demo wallet",
+  note: isOnChain ? (isMainnet ? "near mainnet. hatching costs 2 real near." : "near testnet only. hatching costs 2 test near.") : "a fake account, you.demo. nothing is signed, nothing leaves this browser.",
 };
 
 /** /pet (docs/DEVLOG.md §5). Demo only: balance is always "demo", chat is local. */
@@ -313,7 +320,7 @@ export const petPage = {
   },
   release: {
     button: "release {name}",
-    text: isTestnet ? "release {name}? it leaves this browser. you still own the token." : "release {name}? it leaves your demo account. its token stays hatched.",
+    text: isOnChain ? "release {name}? it leaves this browser. you still own the token." : "release {name}? it leaves your demo account. its token stays hatched.",
     yes: "yes, release",
     keep: "keep {name}",
   },
@@ -423,16 +430,26 @@ export const petPage = {
   meters: { hunger: "hunger", energy: "energy", valueText: "{n} of 100" },
   balance: "{n} demo $NEARGotchi",
   /** Feed tab = shop (app/pet/tab-feed.tsx, lib/shop.ts): snacks fill hunger, the energy pack fills energy. */
+  /** On-chain only (app/pet/holder-rewards.tsx): the 50% holder share of later hatches, claimed from the contract. */
+  rewards: {
+    title: "holder rewards",
+    pending: "unclaimed: {n} near, for all your gotchis.",
+    note: "half of every later hatch is split between the gotchis hatched before it. rewards follow the token: claim before you transfer one.",
+    claim: "claim",
+    claiming: "confirm in your wallet…",
+    claimed: "claimed {n} near.",
+    failed: "the claim didn't go through. nothing was paid; try again.",
+  },
   shop: {
     title: "snack shop",
     note: "snacks fill hunger. energy is for talking.",
     noteDemo: "demo $NEARGotchi · nothing real is spent",
-    noteChain: "paid in testnet near",
+    noteChain: isMainnet ? "paid in real near. unaudited, real funds." : "paid in testnet near",
     refill: "refill demo balance",
     refillDone: "refilled to 100 demo $NEARGotchi. still not real.",
     refillFull: "balance is already 100.",
     cost: "{n} demo",
-    costNear: "{n} testnet near",
+    costNear: isMainnet ? "{n} near (real)" : "{n} testnet near",
     hunger: "−{n} hunger",
     energy: "+{n} energy",
     pack: {
@@ -466,7 +483,7 @@ export const petPage = {
   /** Drop-1 token card (app/pet/token-card.tsx). Rarity only, never value. */
   token: {
     title: "{token}",
-    demo: isTestnet ? "token on near testnet" : "demo token · not on chain",
+    demo: isOnChain ? `token on near ${NET}` : "demo token · not on chain",
     number: "#{id} of {total}",
     rarity: "one of {count} {tier} {pet}s",
     pet: "pet",
@@ -499,7 +516,7 @@ export const petPage = {
 export const nftPage = {
   metaTitle: "{token} — NEARGOTCHI",
   imageAlt: "{token}: a {tier} {species} from neargotchi drop 1, on its tier colour.",
-  sub: isTestnet ? "one of {total} gotchis in drop 1, an nft on near testnet." : "one of {total} gotchis in drop 1. a demo token: it lives in this site, not on chain yet.",
+  sub: isOnChain ? `one of {total} gotchis in drop 1, an nft on near ${NET}.` : "one of {total} gotchis in drop 1. a demo token: it lives in this site, not on chain yet.",
   cta: "hatch your own",
   pets: "meet the pets",
 };

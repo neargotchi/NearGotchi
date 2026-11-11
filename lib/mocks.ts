@@ -1,7 +1,7 @@
 // Single mocks module (PLAN.md §4): the only place for demo pets, items, balances,
 // chat replies and simulation rules. All values here are demonstration data.
 
-import { isTestnet } from "./chain";
+import { isOnChain } from "./chain";
 import type { AiAnswer, AiRequest } from "./chat-client";
 import { claimRandomToken, ensureMinted, findToken, getOwnedTokens, type Drop1Token } from "./drop1";
 import { DEMO_ACCOUNT_ID, absorbBalance, connectedAccountId, subscribeAccount } from "./wallet";
@@ -445,7 +445,7 @@ let ownedSync: { owner: string; at: number; run: Promise<void> } | null = null;
 
 /** Testnet: every token the account owns on the contract gets a (local game-state) pet. Cached 15 s per account. */
 async function syncOwned(owner: string) {
-  if (!isTestnet) return;
+  if (!isOnChain) return;
   if (!ownedSync || ownedSync.owner !== owner || Date.now() - ownedSync.at > 15000) {
     ownedSync = {
       owner,

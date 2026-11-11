@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { isOnChain } from "../../lib/chain";
 import { fill, mintPage, petPage, petTraits } from "../../lib/copy";
 import {
   MintError,
@@ -14,6 +15,7 @@ import {
   type DemoPet,
   type NameError,
 } from "../../lib/mocks";
+import HolderRewards from "./holder-rewards";
 import StatBars from "./stat-bars";
 import TokenCard from "./token-card";
 
@@ -141,6 +143,8 @@ export default function TabStats({ pet, shown, balance, now, onReleased }: TabSt
           </div>
         </dl>
       </section>
+
+      {isOnChain ? <HolderRewards /> : null}
 
       <form className="pet-rename" noValidate onSubmit={rename}>
         <label className="mint-legend" htmlFor="pet-rename">

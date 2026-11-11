@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { isTestnet } from "../../lib/chain";
+import { isOnChain } from "../../lib/chain";
 import PetLoader from "../../components/PetLoader";
 import { fill, mintPage, petPage, snackLabels } from "../../lib/copy";
 import {
@@ -252,7 +252,7 @@ export default function PetView() {
                   key={pet.id}
                   pet={pet}
                   shown={shown}
-                  balance={isTestnet ? null : account.balance}
+                  balance={isOnChain ? null : account.balance}
                   now={now}
                   onReleased={() => {
                     focusTitle.current = true;
@@ -273,7 +273,7 @@ export default function PetView() {
                   }}
                 />
               ),
-              feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={isTestnet ? null : account.balance} now={now} onBought={onBought} notice={notice} />,
+              feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={isOnChain ? null : account.balance} now={now} onBought={onBought} notice={notice} />,
               chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} />,
             }}
           />
