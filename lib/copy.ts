@@ -96,6 +96,18 @@ export const tokenomics = {
   closing: { lead: "every hatch ", accent: "pays holders." },
 };
 
+/** $NEARGotchi coin (app/coin-section.tsx), under the numbers; no nav entry. No prices, no numbers, no promises. */
+export const coin = {
+  header: "$NEARGotchi",
+  body: "the community coin of the neargotchi crew. born on NEAR, made by the fans, for the fans. every gotchi has a friend in it. join the herd.",
+  disclaimer: "memecoin. no promise of value. not financial advice.",
+  cta: { label: "open on nearly.trade", url: "https://nearly.trade/neargotchi.nearlytrade.near" },
+  /** Screen readers only, after the external link label. */
+  newTab: "(opens in a new tab)",
+  address: "neargotchi.nearlytrade.near",
+  addressLabel: "token address",
+};
+
 export const faq = {
   header: "faq",
   items: [

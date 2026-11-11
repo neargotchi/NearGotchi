@@ -10,6 +10,7 @@ import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
 import Tokenomics from "./tokenomics";
 import DropSection from "./drop-section";
+import CoinSection from "./coin-section";
 import MeetYourGotchi from "./meet-your-gotchi";
 import Wordmark from "./wordmark";
 
@@ -137,6 +138,7 @@ export default function Home() {
       <MeetYourGotchi />
       <DropSection />
       <Tokenomics />
+      <CoinSection />
       <Faq />
     </main>
   );

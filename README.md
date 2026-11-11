@@ -8,6 +8,7 @@ you can afford to lose. To look around without real money, see [Try it without r
 
 - Live site: https://neargochi.vercel.app (one deployment; it switches from the testnet build to the mainnet build at launch)
 - Drop 1 NFT contract (mainnet): `[MAINNET CONTRACT]` (filled in after the deploy, `docs/MAINNET-RUNBOOK.md`)
+- $NEARGotchi community memecoin: `neargotchi.nearlytrade.near` ([nearly.trade](https://nearly.trade/neargotchi.nearlytrade.near)); no promise of value, not financial advice.
 - Drop 1 NFT contract (testnet, current contract with holder rewards): [`neargotchi-drop1-ng67.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng67.testnet)
 - Older testnet contract (33/33/34 split, no holder rewards; the testnet build of the site still reads it by default): [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
 - Holder rewards on testnet ng67: mint by a second account [`7edZwRA1…`](https://testnet.nearblocks.io/txns/7edZwRA1d5dSCQ6KFJNhFuLowScrzLgjPkaS8VfR16iF) → token #198's owner claims 0.995 NEAR [`4T7Ck242…`](https://testnet.nearblocks.io/txns/4T7Ck242PEM3rczLrY94fghnprTwNDegVgeiax7hNBDj)

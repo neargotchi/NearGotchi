@@ -27,7 +27,7 @@
 }
 
 /* ---------- Section shell: same spacing, divider and content width everywhere ---------- */
-.hero-shell > :is(.pets-section, .steps-section, .wardrobe-section, .tokenomics-section, .faq-section) {
+.hero-shell > :is(.pets-section, .steps-section, .wardrobe-section, .tokenomics-section, .coin-section, .faq-section) {
   padding: calc(var(--section-space) + var(--section-bubble)) 0 var(--section-space);
   border-top-color: var(--scene-border);
   color: var(--scene-ink);
@@ -37,7 +37,7 @@
 @media (min-width: 1024px) {
   .hero-shell .pets-section .pets-content { width: min(calc(100% - 48px), calc(2000px * var(--ds))); }
   .hero-shell .pets-section .pets-list-drop,
-  .hero-shell > :is(.steps-section, .wardrobe-section, .tokenomics-section, .faq-section) > .pets-content {
+  .hero-shell > :is(.steps-section, .wardrobe-section, .tokenomics-section, .coin-section, .faq-section) > .pets-content {
     width: min(calc(100% - 48px), max(calc(79vw * var(--ds)), 900px));
   }
 }
@@ -193,14 +193,14 @@
 
 /* ---------- Pixel frames: stepped corners drawn by ::before (line) and ::after (fill) ---------- */
 /* Frame defaults through :where(), so the per-element overrides below stay one class strong. */
-.hero-shell :where(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item) {
+.hero-shell :where(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card) {
   --frame-line: var(--scene-accent);
   --frame-fill: var(--card-fill);
   --frame-width: 3px;
   --corner: 14px;
   --pixel-step: 4px;
 }
-.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item) {
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card) {
   position: relative;
   isolation: isolate;
   border: 0;
@@ -212,8 +212,8 @@
 .hero-shell .pet-mood { --frame-line: var(--scene-ink); }
 .hero-shell .pet-mood.is-active { --frame-line: #a2ffe0; --frame-fill: var(--scene-button); color: #001b13; }
 .hero-shell .drop-bg { --frame-line: var(--tier-line, var(--scene-ink)); --frame-width: 2px; --corner: 6px; --pixel-step: 2px; }
-.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item)::before,
-.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item)::after {
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::before,
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -235,13 +235,13 @@
     0 var(--corner),var(--pixel-step) var(--corner),
     var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
 }
-.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item)::after {
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::after {
   inset: var(--frame-width);
   z-index: -1;
   background: var(--frame-fill);
 }
 /* Faint second line inside the large frames, as on the references. */
-.hero-shell :is(.pet-card.is-drop, .step-card, .gotchi-tile, .drop-tier, .stat-card, .faq-item)::after {
+.hero-shell :is(.pet-card.is-drop, .step-card, .gotchi-tile, .drop-tier, .stat-card, .faq-item, .coin-card)::after {
   box-shadow: inset 0 0 0 3px var(--frame-fill), inset 0 0 0 4px color-mix(in srgb, var(--frame-line) 30%, transparent);
 }
 
@@ -617,4 +617,57 @@ body > .notfound-shell > .notfound { min-height: 0; }
   .hero-shell .faq-item p { font-size: .9375rem; }
   .mobile-menu nav a { min-height: 44px; padding: 12px 16px; font-size: 11px; }
   .mobile-menu-actions .button { min-height: 46px; padding: 10px; font-size: 10px; }
+}
+
+/* ---------- $NEARGotchi (app/coin-section.tsx, task 076): one card under the numbers ---------- */
+.coin-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-top: 2px solid var(--scene-border);
+}
+.hero-shell .coin-section .section-head { justify-content: center; }
+/* Pixel title like .faq-title / .tokenomics-title (size comes from the shared section h2 rule). */
+.coin-title { margin: 0; font-family: var(--font-pixel), monospace; font-weight: 400; line-height: 1.3; letter-spacing: -.055em; }
+.hero-shell .coin-card {
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--heading-gap) * .8);
+  width: min(100%, calc(820px * var(--ds)));
+  margin: var(--content-gap) auto 0;
+  padding: calc(clamp(24px, 2.2vw, 48px) * var(--ds)) calc(clamp(20px, 2.6vw, 56px) * var(--ds));
+  text-align: center;
+}
+.hero-shell .coin-text {
+  max-width: 46ch;
+  margin: 0;
+  font-size: clamp(15px, calc(1.15vw * var(--ds)), calc(22px * var(--ds)));
+  font-weight: 500;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+.hero-shell :is(.coin-fine, .coin-address) {
+  margin: 0;
+  color: color-mix(in srgb, var(--scene-ink) 65%, transparent);
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(8px, calc(.6vw * var(--ds)), calc(13px * var(--ds)));
+  line-height: 1.7;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.hero-shell .coin-card .button {
+  --corner: 12px;
+  --pixel-step: 4px;
+  min-height: calc(clamp(48px, 3.4vw, 72px) * var(--ds));
+  margin-top: calc(var(--heading-gap) * .6);
+  padding: 0 calc(clamp(24px, 2vw, 44px) * var(--ds));
+  font-size: clamp(11px, calc(1vw * var(--ds)), calc(20px * var(--ds)));
+}
+.pixel-ui .hero-shell .coin-card .button::after { inset: 3px; }
+.pixel-ui .hero-shell .coin-card .button-primary::after { inset: 4px 3px 1px 4px; }
+/* The address keeps its case and is one click to select (no copy-button component yet). */
+.hero-shell .coin-address-id { text-transform: none; color: var(--scene-ink); user-select: all; overflow-wrap: anywhere; }
+@media (max-width: 1023px) {
+  .hero-shell .coin-card .button { width: 100%; max-width: 360px; padding-inline: 16px; font-size: clamp(10px, 2.5vw, 14px); white-space: normal; }
+  .hero-shell :is(.coin-fine, .coin-address) { font-size: clamp(8px, 2.1vw, 11px); }
 }
