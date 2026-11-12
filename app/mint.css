@@ -146,3 +146,6 @@
 
 /* Task 087: "how the draw works" line under the hatch button; the faq link in scene accent. */
 .mint-draw a { color: var(--scene-accent, inherit); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Task 088: the mainnet "real near, final…" line under the hatch button: small, muted, no alarm colours. */
+.mint-fine { max-width: 46ch; margin: 0; font-size: .875rem; font-weight: 400; line-height: 1.45; color: color-mix(in srgb, var(--scene-ink, var(--text)) 60%, transparent); }

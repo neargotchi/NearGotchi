@@ -188,10 +188,9 @@ export default function MintFlow() {
     }
   };
 
-  const [acknowledged, setAcknowledged] = useState(false);
+  // Task 088: no confirmation checkbox any more; the mainnet line under the button says it plainly.
   const hatch = () => {
     if (viewRef.current !== "ready" || !account) return;
-    if (isMainnet && !acknowledged) return; // real funds: never without the checkbox
     return runHatch(hatchRandom);
   };
 
@@ -303,26 +302,17 @@ export default function MintFlow() {
               <WalletGate context="mint" onConnected={() => setFocus("hatch")} />
             ) : (
               <>
-                {isMainnet ? (
-                  <div className="mint-warning" role="group" aria-labelledby="mint-warning-title">
-                    <p id="mint-warning-title" className="mint-warning-title">{mintPage.chain.warningTitle}</p>
-                    <p className="mint-warning-text">{mintPage.chain.warning}</p>
-                    <label className="mint-ack">
-                      <input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} />
-                      <span>{mintPage.chain.ackLabel}</span>
-                    </label>
-                  </div>
-                ) : null}
                 <button
                   ref={hatchRef}
                   type="button"
                   className="button button-primary mint-hatch-button"
                   onClick={hatch}
-                  disabled={(isMainnet && !acknowledged) || (isOnChain && status.paused === true)}
+                  disabled={isOnChain && status.paused === true}
                 >
                   {mintPage.hatchButton}
                   <span className="mint-tag">{isOnChain ? mintPage.chain.hatchTag : mintPage.hatchTag}</span>
                 </button>
+                {isMainnet ? <p className="mint-fine">{mintPage.chain.finalNote}</p> : null}
               </>
             )}
             {hatchError ? (

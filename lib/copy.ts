@@ -271,10 +271,8 @@ export const mintPage = {
       ? "2 real near. the contract picks the pet, not you. common, rare, epic or legendary."
       : "2 near on testnet. the contract picks the pet, not you. common, rare, epic or legendary.",
     waitingWallet: "confirm in your wallet…",
-    /** mainnet only: shown above the hatch button; the button stays disabled until the box is ticked. */
-    warningTitle: "unaudited contract. real funds.",
-    warning: "this hatch spends 2 real near. the contract has not been audited and the mint cannot be undone. you get one random gotchi and nothing more is promised. only spend what you can afford to lose.",
-    ackLabel: "i understand: unaudited contract, real near, no refunds.",
+    /** mainnet only (task 088): one calm line under the hatch button (replaces the warning box + checkbox). */
+    finalNote: "real near, final. no refunds. the contract is unaudited.",
     /** under the hatch button (task 087); `link` goes to the faq answer */
     draw: { text: "how the draw works: the contract draws after payment, nobody picks.", link: "details in the faq" },
     errors: {
