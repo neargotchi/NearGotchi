@@ -33,6 +33,16 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
   const blocked = check === "ok" ? null : fill(petPage.games.blocked[check], { name: pet.name });
   const best = (score: number) => (score > 0 ? String(score) : petPage.games.noScore);
 
+  // "feed it first" (task 088): switch to the feed tab, then bring the top of its panel into view
+  // (html scroll-padding-top keeps it under the sticky header), also when the page was scrolled
+  // further down. Two frames: the panel is unhidden by the re-render after onTab.
+  const goFeed = () => {
+    onTab("feed");
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => document.getElementById("pet-panel-feed")?.scrollIntoView({ block: "start" })),
+    );
+  };
+
   const end = async (gameId: GameId, score: number) => {
     const { pet: next, newBest } = await finishGame(pet.id, gameId, score);
     onFinished(next);
@@ -71,7 +81,7 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
             end("snack", score);
           }}
           onStop={() => setMessage(petPage.games.stopped)}
-          onFeed={() => onTab("feed")}
+          onFeed={goFeed}
         >
           <p className="game-rules">{fill(petPage.games.snack.rules, { name: pet.name })}</p>
           <p className="games-cost">{petPage.games.cost}</p>
@@ -105,7 +115,7 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
             end("fetch", score);
           }}
           onStop={() => setMessage(petPage.games.stopped)}
-          onFeed={() => onTab("feed")}
+          onFeed={goFeed}
         >
           <p className="game-rules">{petPage.games.fetch.rules}</p>
           <p className="games-cost">{petPage.games.cost}</p>
@@ -138,7 +148,7 @@ export default function TabGames({ pet, shown, active, onTab, onFinished }: TabG
             end("hideseek", score);
           }}
           onStop={() => setMessage(petPage.games.stopped)}
-          onFeed={() => onTab("feed")}
+          onFeed={goFeed}
         >
           <p className="game-rules">{fill(petPage.games.hideseek.rules, { name: pet.name })}</p>
           <p className="games-cost">{petPage.games.cost}</p>
