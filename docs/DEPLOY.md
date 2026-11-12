@@ -44,7 +44,7 @@ two Vercel projects built from the same commit of `main`:
 
 | project | URL | purpose | Production env (names = values) |
 |---|---|---|---|
-| `neargochi` (existing) | https://neargochi.vercel.app | the launch: real NEAR | `NEXT_PUBLIC_CHAIN=mainnet`, `NEXT_PUBLIC_DROP1_CONTRACT=drop1.neargochi-dev.near`, `NEXT_PUBLIC_TREASURY=neargotchiai.near`, `NEAR_AI_API_KEY` (server only); optional `NEXT_PUBLIC_RPC_URL`, `NEAR_AI_MODEL` |
+| `neargochi` (existing) | https://neargochi.vercel.app | the launch: real NEAR | `NEXT_PUBLIC_CHAIN=mainnet`, `NEXT_PUBLIC_DROP1_CONTRACT=drop1.neargochi-dev.near`, `NEXT_PUBLIC_TREASURY=neargotchiai.near`, `NEAR_AI_API_KEY` (server only), **energy ledger (task 081): Upstash Redis vars (from the integration), `SESSION_SECRET`, optional `DAILY_CHAT_CAP`** — see below; optional `NEXT_PUBLIC_RPC_URL`, `NEAR_AI_MODEL` |
 | `neargochi-demo` (new) | https://neargochi-demo.vercel.app | judges, without real funds | **testnet (recommended):** `NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`, `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet`, `NEAR_AI_API_KEY` (optional; without it the chat answers from a script) — **or demo (no wallet at all):** `NEXT_PUBLIC_CHAIN=demo` only |
 
 A mainnet build refuses to sign if the contract or treasury is missing or ends in `.testnet` (`lib/chain.ts` CONFIG_ERROR).
@@ -69,6 +69,40 @@ scripts/deploy-vercel.sh                                                        
 VERCEL_PROJECT=neargochi-demo VERCEL_LINK=.vercel-demo/project.json scripts/deploy-vercel.sh   # demo: neargochi-demo
 ```
 Each run checks `/`, `/mint` and `/api/chat` on that project's URL. Add `--dry-run` to see the export without deploying.
+
+## Energy ledger on mainnet: Upstash Redis + session secret (task 081)
+
+The mainnet build keeps energy (= NEAR AI credits) on the server (`docs/ENERGY.md`). **Without these variables the
+mainnet chat and energy packs answer 503 (fail closed)**; the rest of the site works. Only the `neargochi` project needs
+them; the demo project doesn't.
+
+| variable | where it comes from | notes |
+|---|---|---|
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` **or** `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` | set by the Upstash integration | the code reads either pair; server only, never `NEXT_PUBLIC_` |
+| `SESSION_SECRET` | you: a random string ≥ 32 characters | signs the 24 h session cookie; changing it signs everyone out |
+| `DAILY_CHAT_CAP` | you, optional | NEAR AI calls per UTC day for the whole site; default 300 |
+
+Steps (owner, Vercel dashboard):
+1. Vercel → **Storage** (or Marketplace) → **Upstash** → *Redis* → Create database: plan **Free**, region close to the
+   functions (e.g. Frankfurt `fra1` if the project runs in Europe; the project's region is under Settings → Functions).
+2. On the database page → **Connect Project** → choose **neargochi** → environments: **Production** (and Preview if you
+   test there) → Connect. This adds the URL / token variables to the project.
+3. Check which names arrived (the integration has used both namings):
+   ```sh
+   npx vercel@latest env ls          # in the repo folder (linked to neargochi): look for KV_REST_API_* or UPSTASH_REDIS_REST_*
+   ```
+4. Add the session secret (typed at the prompt, never in a file or chat):
+   ```sh
+   openssl rand -base64 48 | tr -d '\n' | pbcopy      # copies a random secret to the clipboard
+   npx vercel@latest env add SESSION_SECRET production # paste at the prompt
+   npx vercel@latest env add DAILY_CHAT_CAP production # optional, e.g. 300
+   ```
+5. Deploy (`scripts/deploy-vercel.sh`). Check: `/api/chat` → `{"enabled":true,"ledger":true}`;
+   `/api/auth/nonce` → 200 with a nonce (503 `store_unavailable` = Redis vars missing, 503 `not_configured` = secret
+   missing). Then on /pet: connect → **sign in with wallet** → the energy bar shows the server balance; send one
+   message (−4); buy one pack (+50 after "confirming payment…"). Try once with MyNearWallet and once with Meteor.
+
+Local runs need none of this: without Redis vars and outside Vercel the ledger uses memory and a per-process secret.
 
 ## When something fails
 
