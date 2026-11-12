@@ -5,9 +5,10 @@
 :root {
   --scene-color: #fffaf0;
   --scene-ink: #151b17;
-  --scene-accent: #007f62;
-  --scene-border: #00b88b;
-  --scene-button: #00e6ae;
+  /* Task 088: one accent (globals.css --accent). Text accent = the darker derivative on cream. */
+  --scene-accent: var(--accent-text);
+  --scene-border: var(--accent);
+  --scene-button: var(--accent);
   /* Desktop design scale (>768px): header, hero and section sizes are multiplied by it.
      .8 = the look approved at 80% browser zoom on a 2560×1323 screen. Font minimums stay put. */
   --ds: .8;
@@ -20,8 +21,9 @@
   /* Sky of public/hero/dark.png. */
   --scene-color: #001311;
   --scene-ink: #fffbed;
-  --scene-accent: #00efbd;
-  --scene-border: #00bc8f;
+  --accent-text: var(--accent);
+  --scene-accent: var(--accent);
+  --scene-border: var(--accent);
   --page: var(--scene-color);
   --surface: #04140f;
   --html-bg: var(--scene-color);
@@ -102,7 +104,7 @@ body { background: var(--page); }
   z-index: -2;
   pointer-events: none;
   opacity: 0;
-  background: var(--scene-accent);
+  background: var(--accent);
   clip-path: polygon(10px 0,calc(100% - 10px) 0,
     100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,
     10px 100%,0 calc(100% - 10px),0 10px);
@@ -160,8 +162,8 @@ body { background: var(--page); }
   margin-left: 8px;
   padding: 3px 4px;
   border: 0;
-  background: var(--scene-accent);
-  color: var(--scene-color);
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 6px;
   line-height: 1;
 }
@@ -180,7 +182,7 @@ body { background: var(--page); }
    element, so keyboard focus remains visible. */
 .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) {
   --frame-fill: var(--scene-color);
-  --frame-line: var(--scene-accent);
+  --frame-line: var(--accent);
   --corner: 8px;
   --pixel-step: 3px;
   position: relative;
@@ -198,9 +200,9 @@ body { background: var(--page); }
    the shared position: relative had dropped the game's close button out of its corner). */
 .pixel-ui :is(.nft-lightbox-close, .game-modal-close) { position: absolute; }
 .pixel-ui .button-primary {
-  --frame-fill: #00ecb1;
-  --frame-line: #a2ffe0;
-  color: #001b13;
+  --frame-fill: var(--accent);
+  --frame-line: var(--accent-light);
+  color: var(--on-accent);
 }
 .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::before,
 .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::after {
@@ -233,11 +235,11 @@ body { background: var(--page); }
 /* Highlight along the upper and left edges, as on the reference device UI. */
 .pixel-ui .button-primary::after {
   inset: 3px 2px 1px 3px;
-  box-shadow: inset -2px -2px 0 #00c494;
+  box-shadow: inset -2px -2px 0 var(--accent-deep);
 }
 /* Motion of the reference: hover (real pointer, desktop) = 2px down-right + lighter fill;
    press = 1px down. No shadows, no pulse, no sparkles on buttons. */
-.pixel-ui .button-primary:hover { --frame-fill: #17f8be; }
+.pixel-ui .button-primary:hover { --frame-fill: var(--accent-hover); }
 .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab):is(:hover, :active) { box-shadow: none; }
 @media (prefers-reduced-motion: no-preference) {
   @media (min-width: 1024px) and (hover: hover) {
@@ -253,7 +255,7 @@ body { background: var(--page); }
   cursor: not-allowed;
   transform: none;
 }
-.menu-button[aria-expanded="true"] { --frame-fill: var(--scene-button); color: #001b13; }
+.menu-button[aria-expanded="true"] { --frame-fill: var(--scene-button); color: var(--on-accent); }
 .pixel-ui .cta-labels { margin: 0; }
 .pixel-ui .cta-label { margin: 0; font: inherit; }
 .button .launch-arrow {
@@ -268,7 +270,7 @@ body { background: var(--page); }
     18% 100%,0 82%,57% 25%,20% 25%);
 }
 .pixel-ui :is(a, button):focus-visible {
-  outline: 3px solid var(--scene-accent);
+  outline: 3px solid var(--accent);
   outline-offset: 5px;
 }
 
@@ -364,7 +366,7 @@ body { background: var(--page); }
   left: -4%;
   width: 108%;
   height: 30%;
-  background: var(--scene-accent);
+  background: var(--accent);
   -webkit-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 108 30' preserveAspectRatio='none' shape-rendering='crispEdges'><path d='M3 3.5h3v2.2H3zM5.2 5.2h3v2.2h-3zM7.4 6.9h3v2.2h-3zM0 12.4h8.5v2.2H0zM3 23.3h3v2.2H3zM5.2 21.6h3v2.2h-3zM7.4 19.9h3v2.2h-3zM102 3.5h3v2.2h-3zM99.8 5.2h3v2.2h-3zM97.6 6.9h3v2.2h-3zM99.5 12.4h8.5v2.2h-8.5zM102 23.3h3v2.2h-3zM99.8 21.6h3v2.2h-3zM97.6 19.9h3v2.2h-3z'/></svg>") 0 0 / 100% 100% no-repeat;
   mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 108 30' preserveAspectRatio='none' shape-rendering='crispEdges'><path d='M3 3.5h3v2.2H3zM5.2 5.2h3v2.2h-3zM7.4 6.9h3v2.2h-3zM0 12.4h8.5v2.2H0zM3 23.3h3v2.2H3zM5.2 21.6h3v2.2h-3zM7.4 19.9h3v2.2h-3zM102 3.5h3v2.2h-3zM99.8 5.2h3v2.2h-3zM97.6 6.9h3v2.2h-3zM99.5 12.4h8.5v2.2h-8.5zM102 23.3h3v2.2h-3zM99.8 21.6h3v2.2h-3zM97.6 19.9h3v2.2h-3z'/></svg>") 0 0 / 100% 100% no-repeat;
 }
@@ -375,7 +377,7 @@ body { background: var(--page); }
   width: 97%;
   height: 7.4%;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--scene-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .hero .device-logo {
   display: block;
@@ -426,8 +428,8 @@ body { background: var(--page); }
   background: var(--scene-color);
   box-shadow: none;
 }
-.hero .drop-progress-bar > span { background: color-mix(in srgb, var(--scene-accent) 22%, transparent); }
-.hero .drop-progress-bar > .is-on { background: var(--scene-accent); }
+.hero .drop-progress-bar > span { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.hero .drop-progress-bar > .is-on { background: var(--accent); }
 .hero .drop-progress-label { white-space: normal; text-wrap: balance; }
 .hero-scroll {
   position: absolute;
@@ -592,8 +594,8 @@ body { background: var(--page); }
   padding: calc(10px * var(--ds)) calc(16px * var(--ds));
   border: 3px solid var(--scene-border);
   color: #17251c;
-  background: var(--lcd, #c8f5d8);
-  box-shadow: calc(5px * var(--ds)) calc(5px * var(--ds)) 0 var(--scene-accent);
+  background: var(--lcd);
+  box-shadow: calc(5px * var(--ds)) calc(5px * var(--ds)) 0 var(--accent);
   font-family: var(--font-pixel), monospace;
   font-size: clamp(10px, calc(.9vw * var(--ds)), calc(19px * var(--ds)));
   line-height: 1.4;
@@ -604,7 +606,7 @@ body { background: var(--page); }
     margin: calc(4px * var(--ds)) 0 calc(6px * var(--ds));
     padding: 6px 10px;
     border-width: 2px;
-    box-shadow: 3px 3px 0 var(--scene-accent);
+    box-shadow: 3px 3px 0 var(--accent);
     font-size: max(9px, calc(clamp(10px, 2.9vw, 15px) * var(--ds)));
   }
 }

@@ -8,8 +8,19 @@
   --ui-scale: 1;
   --cream: #fff6e5;
   --ink: #141414;
-  --green: #00ec97;
-  --green-deep: #00b877;
+  /* Task 088: ONE accent = the green of the logo (public/logo-transparent.png, mean of the N / screen
+     green: #01eba3). Everything green in the UI is this token or a derivative of it: --accent-deep
+     (shadows/insets, ≈ the logo's own shading), --accent-text (text on light backgrounds, contrast
+     ≥ 4.5:1 on the cream page; dark theme = the accent itself), --accent-light (highlights),
+     --accent-hover (button hover), --on-accent (text on accent fills). */
+  --accent: #01eba3;
+  --accent-deep: color-mix(in srgb, var(--accent) 68%, #000);
+  --accent-text: color-mix(in srgb, var(--accent) 52%, #000);
+  --accent-light: color-mix(in srgb, var(--accent) 38%, #fff);
+  --accent-hover: color-mix(in srgb, var(--accent) 85%, #fff);
+  --on-accent: color-mix(in srgb, var(--accent) 12%, #000);
+  --green: var(--accent);
+  --green-deep: var(--accent-deep);
   --lcd: #b7c9a0;
   --lcd-shadow: #9db088;
   --pink: #ff6b9d;

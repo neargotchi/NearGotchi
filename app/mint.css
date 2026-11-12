@@ -24,7 +24,7 @@
     width: .55em;
     height: 1.15em;
     translate: 0 -50%;
-    background: var(--scene-accent);
+    background: var(--accent);
     -webkit-mask: var(--marks-left) center / contain no-repeat;
     mask: var(--marks-left) center / contain no-repeat;
   }
@@ -32,9 +32,9 @@
 .mint-shell .mint-demo {
   padding: calc(8px * var(--ds)) calc(12px * var(--ds));
   border: 0;
-  color: #001b13;
+  color: var(--on-accent);
   background: var(--scene-button);
-  box-shadow: inset 0 0 0 2px #a2ffe0;
+  box-shadow: inset 0 0 0 2px var(--accent-light);
   font-size: clamp(8px, calc(.56vw * var(--ds)), calc(12px * var(--ds)));
   text-transform: uppercase;
   clip-path: polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),
@@ -79,7 +79,7 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--lcd-mark) 45%, transparent);
 }
-.mint-shell .hatch-pet.hatch-nft { border: 3px solid var(--scene-accent); }
+.mint-shell .hatch-pet.hatch-nft { border: 3px solid var(--accent); }
 .mint-shell .hatch-line { color: var(--scene-ink); }
 
 /* ---------- Counter, hints, errors, warning, name input ---------- */
@@ -89,8 +89,8 @@
   background: var(--scene-color);
   box-shadow: none;
 }
-.mint-shell .drop-progress-bar > span { background: color-mix(in srgb, var(--scene-accent) 22%, transparent); }
-.mint-shell .drop-progress-bar > .is-on { background: var(--scene-accent); }
+.mint-shell .drop-progress-bar > span { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.mint-shell .drop-progress-bar > .is-on { background: var(--accent); }
 .mint-shell :is(.mint-hint, .mint-note) { color: color-mix(in srgb, var(--scene-ink) 65%, transparent); }
 .mint-shell :is(.mint-card-text, .mint-error, .mint-confirm p) { color: var(--scene-ink); }
 .mint-shell :is(.mint-legend, .mint-subtitle) { color: var(--scene-accent); text-transform: uppercase; letter-spacing: .06em; }
@@ -98,7 +98,7 @@
   border: 0;
   color: var(--scene-ink);
   background: var(--card-fill);
-  box-shadow: inset 0 0 0 2px var(--scene-accent), inset 8px 0 0 var(--pink);
+  box-shadow: inset 0 0 0 2px var(--accent), inset 8px 0 0 var(--pink);
   clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
     calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
 }
@@ -106,13 +106,13 @@
   border: 0;
   color: var(--scene-ink);
   background: var(--card-fill);
-  box-shadow: inset 0 0 0 2px var(--scene-accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
   clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
     calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
 }
 .mint-shell .mint-input[aria-invalid="true"] { box-shadow: inset 0 0 0 2px var(--pink); }
 /* clip-path would cut an outside outline: the focus ring goes inside, thicker. */
-.mint-shell .mint-input:focus-visible { outline: none; box-shadow: inset 0 0 0 4px var(--scene-accent); }
+.mint-shell .mint-input:focus-visible { outline: none; box-shadow: inset 0 0 0 4px var(--accent); }
 .mint-shell .mint-input::placeholder { color: color-mix(in srgb, var(--scene-ink) 55%, transparent); }
 
 /* Reveal card (name form after the hatch): the landing card frame instead of the black box. */
@@ -120,7 +120,7 @@
   border: 0;
   color: var(--scene-ink);
   background: var(--card-fill);
-  box-shadow: inset 0 0 0 3px var(--scene-accent), inset 0 0 0 6px var(--card-fill), inset 0 0 0 7px color-mix(in srgb, var(--scene-accent) 30%, transparent);
+  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 6px var(--card-fill), inset 0 0 0 7px color-mix(in srgb, var(--accent) 30%, transparent);
   clip-path: polygon(14px 0,calc(100% - 14px) 0,calc(100% - 14px) 4px,calc(100% - 4px) 4px,
     calc(100% - 4px) 14px,100% 14px,100% calc(100% - 14px),calc(100% - 4px) calc(100% - 14px),
     calc(100% - 4px) calc(100% - 4px),calc(100% - 14px) calc(100% - 4px),calc(100% - 14px) 100%,
@@ -139,8 +139,8 @@
   margin-left: .8em;
   padding: 3px 4px;
   border: 0;
-  color: #a2ffe0;
-  background: #001b13;
+  color: var(--accent-light);
+  background: var(--on-accent);
   line-height: 1;
 }
 

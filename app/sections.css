@@ -5,7 +5,7 @@
 :root {
   --card-fill: #fffefa;
   --lcd-line: #d8e4c3;
-  --lcd-mark: #1f6b52;
+  --lcd-mark: var(--accent-text);
   --tier-legendary-line: #a8740a;
   /* Signal marks drawn around the hero egg: left pair "›", right pair "‹". */
   --marks-left: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 3 11 23' shape-rendering='crispEdges'><path d='M3 3.5h3v2.2H3zM5.2 5.2h3v2.2h-3zM7.4 6.9h3v2.2h-3zM0 12.4h8.5v2.2H0zM3 23.3h3v2.2H3zM5.2 21.6h3v2.2h-3zM7.4 19.9h3v2.2h-3z'/></svg>");
@@ -60,7 +60,7 @@
   width: .55em;
   height: 1.15em;
   translate: 0 -50%;
-  background: var(--scene-accent);
+  background: var(--accent);
   -webkit-mask: var(--marks-left) center / contain no-repeat;
   mask: var(--marks-left) center / contain no-repeat;
 }
@@ -121,7 +121,7 @@
   bottom: calc(-1 * var(--th));
   width: auto;
   height: auto;
-  background: var(--scene-accent);
+  background: var(--accent);
   clip-path: polygon(
     var(--c) 0, calc(100% - var(--c)) 0, calc(100% - var(--c)) var(--s), calc(100% - var(--s)) var(--s),
     calc(100% - var(--s)) var(--c), 100% var(--c),
@@ -194,7 +194,7 @@
 /* ---------- Pixel frames: stepped corners drawn by ::before (line) and ::after (fill) ---------- */
 /* Frame defaults through :where(), so the per-element overrides below stay one class strong. */
 .hero-shell :where(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card) {
-  --frame-line: var(--scene-accent);
+  --frame-line: var(--accent);
   --frame-fill: var(--card-fill);
   --frame-width: 3px;
   --corner: 14px;
@@ -210,7 +210,7 @@
 }
 .hero-shell :is(.pet-mood, .item-card) { --frame-width: 2px; --corner: 8px; --pixel-step: 3px; }
 .hero-shell .pet-mood { --frame-line: var(--scene-ink); }
-.hero-shell .pet-mood.is-active { --frame-line: #a2ffe0; --frame-fill: var(--scene-button); color: #001b13; }
+.hero-shell .pet-mood.is-active { --frame-line: var(--accent-light); --frame-fill: var(--scene-button); color: var(--on-accent); }
 .hero-shell .drop-bg { --frame-line: var(--tier-line, var(--scene-ink)); --frame-width: 2px; --corner: 6px; --pixel-step: 2px; }
 .hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::before,
 .hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::after {
@@ -352,9 +352,9 @@
   width: 2.5em;
   height: 2.2em;
   border: 0;
-  color: #001b13;
+  color: var(--on-accent);
   background: var(--scene-button);
-  box-shadow: inset 0 0 0 2px #a2ffe0;
+  box-shadow: inset 0 0 0 2px var(--accent-light);
   font-size: .7em;
   clip-path: polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 2px,100% 2px,100% calc(100% - 2px),
     calc(100% - 3px) calc(100% - 2px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 2px),
@@ -368,14 +368,14 @@
   margin: 3cqi 0 0 3cqi;
   padding: 1.4cqi 3cqi;
   border: 0;
-  color: #001b13;
+  color: var(--on-accent);
   background: var(--scene-button);
-  box-shadow: inset 0 0 0 2px #a2ffe0;
+  box-shadow: inset 0 0 0 2px var(--accent-light);
   font-size: max(9px, 1.9cqi);
   clip-path: polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),
     calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
 }
-.hero-shell .gotchi-preview { border-bottom: 2px dashed color-mix(in srgb, var(--scene-accent) 35%, transparent); }
+.hero-shell .gotchi-preview { border-bottom: 2px dashed color-mix(in srgb, var(--accent) 35%, transparent); }
 .hero-shell .gotchi-tile-body { padding: 3.6cqi 4.4cqi 4.4cqi; font-size: max(13px, 2.6cqi); }
 /* Previews (task 074): the /pet components they reuse still carry the old black frames and
    shadows; inside the tiles they get the landing's look (scene colours, pixel corners, LCD
@@ -385,16 +385,16 @@
   border: 0;
   color: var(--scene-ink);
   background: var(--card-fill);
-  box-shadow: inset 0 0 0 2px var(--scene-accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
   clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
     calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
 }
 .hero-shell .gotchi-preview :is(.pet-chat-log, .gotchi-input, .pet-msg.is-pet) {
-  border-color: color-mix(in srgb, var(--scene-accent) 60%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   color: var(--scene-ink);
   background: var(--card-fill);
 }
-.hero-shell .gotchi-preview .pet-msg.is-you { border-color: #a2ffe0; color: #001b13; background: var(--scene-button); }
+.hero-shell .gotchi-preview .pet-msg.is-you { border-color: var(--accent-light); color: var(--on-accent); background: var(--scene-button); }
 .hero-shell .gotchi-preview :is(.pet-traits li, .snack-cost, .pet-chat-note) {
   border: 0;
   color: #17251c;
@@ -404,9 +404,9 @@
 }
 .hero-shell .gotchi-preview .tier-badge { border-color: var(--tier-line, var(--scene-ink)); background: var(--card-fill); box-shadow: none; }
 .hero-shell .gotchi-preview .token-art { border-color: var(--scene-ink); }
-.hero-shell .gotchi-preview .pet-stats span { border-color: color-mix(in srgb, var(--scene-accent) 70%, transparent); background-color: var(--card-fill); }
-.hero-shell .gotchi-preview .pet-stats span.is-on { border-color: var(--scene-accent); background-color: var(--scene-button); }
-.hero-shell .gotchi-preview .snack-art { border-color: var(--scene-accent); }
+.hero-shell .gotchi-preview .pet-stats span { border-color: color-mix(in srgb, var(--accent) 70%, transparent); background-color: var(--card-fill); }
+.hero-shell .gotchi-preview .pet-stats span.is-on { border-color: var(--accent); background-color: var(--scene-button); }
+.hero-shell .gotchi-preview .snack-art { border-color: var(--accent); }
 .hero-shell .gotchi-preview .catch-screen { border-color: var(--scene-button); }
 
 /* ---------- Drop 1: tiers, items, backgrounds ---------- */
@@ -436,8 +436,8 @@
   background: var(--scene-color);
   box-shadow: none;
 }
-.hero-shell .drop-progress-bar > span { background: color-mix(in srgb, var(--scene-accent) 22%, transparent); }
-.hero-shell .drop-progress-bar > .is-on { background: var(--scene-accent); }
+.hero-shell .drop-progress-bar > span { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.hero-shell .drop-progress-bar > .is-on { background: var(--accent); }
 
 /* ---------- The numbers ---------- */
 .hero-shell .stat-list { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
@@ -460,9 +460,9 @@
   display: inline-block;
   padding: .14em .26em .16em;
   line-height: 1.1;
-  color: #001b13;
+  color: var(--on-accent);
   background: var(--scene-button);
-  box-shadow: inset 0 0 0 3px #a2ffe0;
+  box-shadow: inset 0 0 0 3px var(--accent-light);
   clip-path: polygon(8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,
     calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),
     calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,
@@ -478,7 +478,7 @@
   margin: var(--content-gap) auto 0;
 }
 .hero-shell .faq-item { --corner: 12px; }
-.hero-shell .faq-item[open] { --frame-line: #a2ffe0; }
+.hero-shell .faq-item[open] { --frame-line: var(--accent-light); }
 :root:not([data-theme='dark']) .hero-shell .faq-item[open] { --frame-line: var(--scene-border); }
 .hero-shell .faq-item summary {
   padding: calc(clamp(18px, 1.5vw, 30px) * var(--ds)) calc(clamp(20px, 1.7vw, 34px) * var(--ds));
@@ -489,7 +489,7 @@
 .hero-shell .faq-item[open] summary {
   margin: 0 6px;
   padding-inline: calc(clamp(20px, 1.7vw, 34px) * var(--ds) - 6px);
-  border-bottom: 2px dashed color-mix(in srgb, var(--scene-accent) 40%, transparent);
+  border-bottom: 2px dashed color-mix(in srgb, var(--accent) 40%, transparent);
   color: var(--scene-accent);
   background: none;
 }
@@ -497,7 +497,7 @@
   padding: calc(clamp(16px, 1.3vw, 26px) * var(--ds)) calc(clamp(20px, 1.7vw, 34px) * var(--ds)) calc(clamp(20px, 1.6vw, 32px) * var(--ds));
   font-size: clamp(14px, calc(1vw * var(--ds)), calc(20px * var(--ds)));
 }
-.hero-shell .faq-item summary:focus-visible { outline: 3px solid var(--scene-accent); outline-offset: 4px; }
+.hero-shell .faq-item summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 
 /* ---------- CTAs between two pairs of signal marks ---------- */
 .hero-shell .cta-marks {
@@ -513,7 +513,7 @@
   flex: none;
   width: calc(clamp(16px, 1.25vw, 28px) * var(--ds));
   height: calc(clamp(36px, 2.7vw, 60px) * var(--ds));
-  background: var(--scene-accent);
+  background: var(--accent);
   -webkit-mask: var(--marks-left) center / contain no-repeat;
   mask: var(--marks-left) center / contain no-repeat;
 }

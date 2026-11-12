@@ -7,7 +7,7 @@
 
 /* ---------- Cards: the landing frame (::before line, ::after fill, stepped corners) ---------- */
 .pet-shell :is(.token-card, .pet-card-block, .pet-stats, .snack-card, .pet-chat, .simon-device, .pet-device-body) {
-  --frame-line: var(--scene-accent);
+  --frame-line: var(--accent);
   --frame-fill: var(--card-fill);
   --frame-width: 3px;
   --s: 3px;           /* corner stair (radius 9px) */
@@ -67,25 +67,25 @@
   box-shadow: none;
 }
 .pet-shell .pet-tab { border: 0; font-size: clamp(10px, calc(.7vw * var(--ds)), calc(15px * var(--ds))); }
-.pixel-ui .pet-tab[aria-selected="true"] { --frame-fill: #00ecb1; --frame-line: #a2ffe0; color: #001b13; }
-.pixel-ui .pet-tab[aria-selected="true"]::after { inset: 3px 2px 1px 3px; box-shadow: inset -2px -2px 0 #00c494; }
+.pixel-ui .pet-tab[aria-selected="true"] { --frame-fill: var(--accent); --frame-line: var(--accent-light); color: var(--on-accent); }
+.pixel-ui .pet-tab[aria-selected="true"]::after { inset: 3px 2px 1px 3px; box-shadow: inset -2px -2px 0 var(--accent-deep); }
 
 /* ---------- Pet switcher thumbnails ---------- */
 .pet-shell .pet-thumb {
   border: 0;
   color: var(--scene-ink);
   background: var(--card-fill);
-  box-shadow: inset 0 0 0 2px var(--scene-accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
   clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
     calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
 }
-.pet-shell .pet-thumb.is-active { color: #001b13; background: var(--scene-button); box-shadow: inset 0 0 0 2px #a2ffe0; }
+.pet-shell .pet-thumb.is-active { color: var(--on-accent); background: var(--scene-button); box-shadow: inset 0 0 0 2px var(--accent-light); }
 .pet-shell .pet-thumb-art { border-color: var(--scene-ink); }
 
 /* ---------- Stat bars: cells in scene colours ---------- */
-.pet-shell .pet-stats span { border-color: color-mix(in srgb, var(--scene-accent) 70%, transparent); }
+.pet-shell .pet-stats span { border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
 .pet-shell .pet-stats span:not(.is-on) { background-color: var(--card-fill); }
-.pet-shell .pet-stats span.is-on { border-color: var(--scene-accent); background-color: var(--scene-button); }
+.pet-shell .pet-stats span.is-on { border-color: var(--accent); background-color: var(--scene-button); }
 
 /* ---------- Small LCD tags (prices, notes, best score, game banners, traits) ---------- */
 .pet-shell :is(.snack-cost, .pet-chat-note, .game-best, .catch-banner, .pet-traits li) {
@@ -96,15 +96,15 @@
     calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px);
 }
 .pet-shell .token-art { border-color: var(--scene-ink); }
-.pet-shell .snack-art { border-color: var(--scene-accent); box-shadow: none; }
+.pet-shell .snack-art { border-color: var(--accent); box-shadow: none; }
 .pet-shell .catch-screen { border-color: var(--scene-button); }
-.pet-shell .pet-reset { border-color: color-mix(in srgb, var(--scene-accent) 40%, transparent); border-style: dashed; }
+.pet-shell .pet-reset { border-color: color-mix(in srgb, var(--accent) 40%, transparent); border-style: dashed; }
 
 /* ---------- Chat: log and bubbles with stepped corners ---------- */
 .pet-shell .pet-chat-log {
   border: 0;
-  background: color-mix(in srgb, var(--scene-accent) 6%, var(--card-fill));
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--scene-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--card-fill));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
   clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
     calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
 }
@@ -115,12 +115,12 @@
     calc(100% - 6px) 100%,6px 100%,6px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 6px),0 calc(100% - 6px),
     0 6px,2px 6px,2px 2px,6px 2px);
 }
-.pet-shell .pet-msg.is-you { color: #001b13; background: var(--scene-button); box-shadow: inset 0 0 0 2px #a2ffe0; }
-.pet-shell .pet-msg.is-pet { color: var(--scene-ink); background: var(--card-fill); box-shadow: inset 0 0 0 2px var(--scene-accent); }
+.pet-shell .pet-msg.is-you { color: var(--on-accent); background: var(--scene-button); box-shadow: inset 0 0 0 2px var(--accent-light); }
+.pet-shell .pet-msg.is-pet { color: var(--scene-ink); background: var(--card-fill); box-shadow: inset 0 0 0 2px var(--accent); }
 .pet-shell .pet-msg.is-note {
   color: color-mix(in srgb, var(--scene-ink) 65%, transparent);
   background: var(--card-fill);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--scene-accent) 35%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 /* Muted copy inside cards follows the scene ink (globals.css uses the old --text-muted). */
@@ -147,7 +147,7 @@
   border: 0;
   color: var(--scene-ink);
   background: var(--card-fill);
-  box-shadow: 0 0 0 100vmax rgb(0 0 0 / .86), inset 0 0 0 3px var(--scene-accent);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / .86), inset 0 0 0 3px var(--accent);
 }
 .pet-shell .simon.is-modal .simon-device {
   width: min(calc(100vw - 72px), max(260px, calc((100svh - var(--header-height) - var(--reserve)) * var(--ar) + 40px)));
@@ -163,7 +163,7 @@
     width: calc(100vw - 16px);
     max-width: none;
     padding: 48px 10px 12px;
-    box-shadow: 0 0 0 100vmax rgb(0 0 0 / .86), inset 0 0 0 2px var(--scene-accent);
+    box-shadow: 0 0 0 100vmax rgb(0 0 0 / .86), inset 0 0 0 2px var(--accent);
   }
   .pet-shell .simon.is-modal .simon-device { width: min(100%, max(240px, calc((100svh - var(--header-height) - var(--reserve)) * var(--ar) + 40px))); }
 }
@@ -187,7 +187,7 @@
 /* Board: the card frame (accent line, stepped corners); type follows the board width (cqi). */
 .pet-shell .catch-screen {
   container-type: inline-size;
-  border: 3px solid var(--scene-accent);
+  border: 3px solid var(--accent);
   outline: 0;
   box-shadow: inset 0 0 0 2px var(--lcd-line);
   clip-path: polygon(9px 0,calc(100% - 9px) 0,calc(100% - 9px) 3px,calc(100% - 6px) 3px,calc(100% - 6px) 6px,
@@ -218,8 +218,8 @@
 /* Pads (◀ ▶, throw): the reference button — mint face, light line, stepped corners, same hover /
    press motion; disabled = flat card colours. Tap targets stay ≥ 54px on phones. */
 .pet-shell .simon-pad {
-  --ink: #001b13;
-  background: #a2ffe0;
+  --ink: var(--on-accent);
+  background: var(--accent-light);
   clip-path: polygon(9px 0,calc(100% - 9px) 0,calc(100% - 9px) 3px,calc(100% - 6px) 3px,calc(100% - 6px) 6px,
     calc(100% - 3px) 6px,calc(100% - 3px) 9px,100% 9px,100% calc(100% - 9px),calc(100% - 3px) calc(100% - 9px),
     calc(100% - 3px) calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) calc(100% - 3px),
@@ -228,10 +228,10 @@
     6px 6px,6px 3px,9px 3px);
   transition: transform 140ms;
 }
-.pet-shell .simon-pad > span { width: calc(100% - 4px); height: calc(100% - 4px); background: #00ecb1; box-shadow: inset -2px -2px 0 #00c494; }
+.pet-shell .simon-pad > span { width: calc(100% - 4px); height: calc(100% - 4px); background: var(--accent); box-shadow: inset -2px -2px 0 var(--accent-deep); }
 .pet-shell .simon-pad:active > span,
-.pet-shell .simon-pad.is-lit > span { background: #17f8be; box-shadow: none; }
-.pet-shell .simon-pad[aria-disabled="true"] { --ink: color-mix(in srgb, var(--scene-ink) 55%, transparent); background: color-mix(in srgb, var(--scene-accent) 45%, transparent); }
+.pet-shell .simon-pad.is-lit > span { background: var(--accent-hover); box-shadow: none; }
+.pet-shell .simon-pad[aria-disabled="true"] { --ink: color-mix(in srgb, var(--scene-ink) 55%, transparent); background: color-mix(in srgb, var(--accent) 45%, transparent); }
 .pet-shell .simon-pad[aria-disabled="true"] > span { background: var(--card-fill); box-shadow: none; }
 .pet-shell .simon-pad:focus-visible { background: var(--scene-ink); }
 @media (prefers-reduced-motion: no-preference) {
