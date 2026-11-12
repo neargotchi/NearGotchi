@@ -3,7 +3,7 @@
 // Demo / testnet builds never call any of this.
 
 import { isMainnet } from "./chain";
-import { normalizeSignedMessage, safeDetail } from "./sign-shapes";
+import { nonceBuffer, normalizeSignedMessage, safeDetail } from "./sign-shapes";
 
 /** One build = one chain: only mainnet uses the server ledger. */
 export const usesLedger = isMainnet;
@@ -36,8 +36,6 @@ export async function sessionAccount(): Promise<string | null | "unavailable"> {
  */
 export type SignInResult = { ok: true; account: string } | { ok: false; reason: "cancelled" | "unsupported" | "failed" | "unavailable"; detail: string };
 
-const fromBase64 = (text: string) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
-
 /**
  * Sign in: a nonce from the server → the wallet signs it (NEP-413 signMessage: no transaction, no cost) → the
  * server checks the signature and the account's full-access key → HttpOnly session cookie (24 h).
@@ -54,6 +52,9 @@ export async function signIn(): Promise<SignInResult> {
   const issued = await json<{ nonce?: string; message?: string; recipient?: string; error?: string }>(nonceResponse);
   if (!nonceResponse.ok) return fail(nonceResponse.status === 503 ? "unavailable" : "failed", `nonce: ${nonceResponse.status}${issued?.error ? ` ${issued.error}` : ""}`);
   if (!issued?.nonce || !issued.message || !issued.recipient) return fail("failed", "nonce: bad_answer");
+  // task 083: the selector core rejects anything but a Buffer of 32 bytes ("Invalid nonce. It must be a Buffer…")
+  const nonce = nonceBuffer(issued.nonce);
+  if (!nonce) return fail("failed", "sign: no_buffer (nonce)");
 
   let signedRaw: unknown;
   let activeAccount: string | null = null;
@@ -67,7 +68,7 @@ export async function signIn(): Promise<SignInResult> {
     signedRaw = await wallet.signMessage({
       message: issued.message,
       recipient: issued.recipient,
-      nonce: fromBase64(issued.nonce) as unknown as Buffer,
+      nonce,
       callbackUrl,
     });
   } catch (error) {

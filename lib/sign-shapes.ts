@@ -1,6 +1,7 @@
 // NEP-413 signMessage results come back in slightly different shapes depending on the wallet (task 082). This turns
 // them into the one form /api/auth/verify expects — publicKey "ed25519:<base58>", signature standard base64 — or
-// names the field that is missing. Pure and browser-safe (no Buffer), so it is unit tested (scripts/check-energy.mjs).
+// names the field that is missing. Pure and browser-safe, so it is unit tested (scripts/check-energy.mjs). The one
+// Buffer use is nonceBuffer(): the wallet-selector core demands a real Buffer there (task 083).
 // It never relaxes anything: the server still checks the signature, the single-use nonce and the full-access key.
 
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -91,6 +92,19 @@ export function normalizeSignedMessage(result: unknown, activeAccount: string | 
   if (!publicKey) missing.push("publicKey");
   if (!signature) missing.push("signature");
   return accountId && publicKey && signature ? { ok: true, accountId, publicKey, signature } : { ok: false, missing };
+}
+
+/**
+ * The NEP-413 nonce exactly as @near-wallet-selector/core accepts it (task 083): its `validateSignMessageParams`
+ * throws "Invalid nonce. It must be a Buffer with a length of 32 bytes." unless `Buffer.isBuffer(nonce)` and
+ * `nonce.length === 32` — a plain Uint8Array fails. The core uses the free global `Buffer`, which the bundler
+ * (Turbopack / webpack) replaces with Next's `buffer` polyfill; this function uses the same free `Buffer`, so it gets
+ * the same polyfill (whose isBuffer checks the `_isBuffer` mark). null = no Buffer here, or not 32 bytes.
+ */
+export function nonceBuffer(base64: string): Buffer | null {
+  if (typeof Buffer === "undefined" || typeof base64 !== "string") return null;
+  const bytes = Buffer.from(base64, "base64");
+  return bytes.length === 32 ? bytes : null;
 }
 
 /** A wallet error message safe to show: no long base58/base64 runs (keys, signatures, nonces), max 80 chars. */

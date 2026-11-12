@@ -501,4 +501,64 @@ await test("server says which part is malformed: bad_public_key / bad_signature_
   assert.equal((await S.handleVerify({ accountId: ME, publicKey: PUB, signature: Buffer.alloc(64).toString("base64"), nonce: nonce3 }, "ip-shape", d)).body.error, "bad_signature");
 });
 
+// ---------- task 083: the nonce must be a real Buffer (wallet-selector core) ----------
+console.log("nonce as Buffer for the selector core (task 083)");
+const { createRequire } = await import("node:module");
+// The REAL validateSignMessageParams from node_modules (not a copy): it runs with whichever Buffer we hand it.
+const coreSource = readFileSync(new URL("../node_modules/@near-wallet-selector/core/index.js", import.meta.url), "utf8");
+const vStart = coreSource.indexOf("validateSignMessageParams({");
+const vEnd = coreSource.indexOf("decorateWallet(wallet)", vStart);
+assert.ok(vStart > 0 && vEnd > vStart, "found validateSignMessageParams in @near-wallet-selector/core");
+const coreValidate = (BufferImpl) => new Function("Buffer", `return function ${coreSource.slice(vStart, vEnd).trim()}`)(BufferImpl);
+const { Buffer: PolyBuffer } = createRequire(import.meta.url)("next/dist/compiled/buffer");
+const issuedNonce = Buffer.from(specNonce).toString("base64");
+const signParams = (nonce) => ({ message: rules.SIGN_IN_MESSAGE, recipient: rules.SIGN_IN_RECIPIENT, nonce });
+
+await test("the selector core's own check: a Uint8Array nonce reproduces the live error, nonceBuffer() passes", async () => {
+  const validate = coreValidate(Buffer);
+  assert.throws(() => validate(signParams(Uint8Array.from(specNonce))), /Invalid nonce\. It must be a Buffer with a length of 32 bytes\./, "the bug from production");
+  const nonce = shapes.nonceBuffer(issuedNonce);
+  assert.ok(Buffer.isBuffer(nonce) && nonce.length === 32);
+  assert.doesNotThrow(() => validate(signParams(nonce)));
+  assert.deepEqual([...nonce], [...specNonce], "same bytes as issued");
+  assert.equal(shapes.nonceBuffer(Buffer.alloc(31).toString("base64")), null, "31 bytes → null, never sent");
+  assert.equal(shapes.nonceBuffer(undefined), null);
+});
+await test("in the browser the core's Buffer is Next's polyfill: it also refuses Uint8Array and accepts a polyfill Buffer", async () => {
+  const validate = coreValidate(PolyBuffer);
+  assert.throws(() => validate(signParams(Uint8Array.from(specNonce))), /Invalid nonce/);
+  assert.doesNotThrow(() => validate(signParams(PolyBuffer.from(issuedNonce, "base64"))));
+  assert.equal(PolyBuffer.isBuffer(PolyBuffer.from(issuedNonce, "base64")), true, "isBuffer = the _isBuffer mark of that polyfill");
+});
+await test("mock Meteor (core-decorated, same pass-through as @near-wallet-selector/meteor-wallet): Buffer nonce in, {accountId, publicKey, signature, state} out → server session", async () => {
+  const d = deps();
+  keys.set(`${SPEC_ACCOUNT}|${SPEC_FAK.getPublicKey().toString()}`, "FullAccess");
+  const issued = (await S.handleNonce("ip-meteor", d)).body;
+  let received = null;
+  // what the Meteor SDK returns inside `payload` (IODappAction_SignMessage_Output): base64 signature, key string, state
+  const meteorSdk = async ({ message, nonce, recipient, state }) => {
+    received = { isBuffer: Buffer.isBuffer(nonce), length: nonce.length };
+    const signed = await nearJsSign(SPEC_FAK, Uint8Array.from(nonce), undefined);
+    assert.equal(message, issued.message);
+    assert.equal(recipient, issued.recipient);
+    return { success: true, payload: { accountId: SPEC_ACCOUNT, publicKey: signed.publicKey.toString(), signature: Buffer.from(signed.signature).toString("base64"), state } };
+  };
+  const meteorModule = async (params) => {
+    const response = await meteorSdk(params);
+    if (!response.success) throw new Error("Couldn't sign message owner");
+    return response.payload;
+  };
+  const validate = coreValidate(Buffer);
+  const decorated = async (params) => {
+    validate(params);
+    return meteorModule(params);
+  };
+  const out = await decorated({ ...signParams(shapes.nonceBuffer(issued.nonce)), callbackUrl: "https://neargochi.vercel.app/pet" });
+  assert.deepEqual(received, { isBuffer: true, length: 32 });
+  const shaped = shapes.normalizeSignedMessage(out, null);
+  assert.ok(shaped.ok);
+  const res = await S.handleVerify({ accountId: shaped.accountId, publicKey: shaped.publicKey, signature: shaped.signature, nonce: issued.nonce, callbackUrl: "https://neargochi.vercel.app/pet" }, "ip-meteor", d);
+  assert.deepEqual([res.status, res.body.account], [200, SPEC_ACCOUNT], "Meteor ignores callbackUrl: the server's no-callbackUrl payload matches");
+});
+
 console.log(`${passed} checks passed (rpc calls: ${rpcCalls})`);
