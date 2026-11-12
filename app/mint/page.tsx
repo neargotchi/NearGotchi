@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import Mascot from "../../components/Mascot";
 import TitleSparkles from "../../components/TitleSparkles";
+import { isOnChain } from "../../lib/chain";
 import { mintPage } from "../../lib/copy";
 import { pageMeta } from "../../lib/site";
 import MintFlow from "./mint-flow";
@@ -23,7 +24,8 @@ export default function MintPage() {
               </h1>
               <Mascot {...mintPage.mascot} />
             </div>
-            <p className="mint-demo">{mintPage.demo}</p>
+            {/* Task 088: no network/price tag on chain builds (2 near stays on the hatch button and under it). */}
+            {isOnChain ? null : <p className="mint-demo">{mintPage.demo}</p>}
             <p className="mint-sub">{mintPage.sub}</p>
           </header>
           <MintFlow />

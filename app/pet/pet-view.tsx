@@ -270,7 +270,7 @@ export default function PetView() {
           </h1>
           <p className="mint-sub">{fill(petPage.sub, { species: pet.species, date: hatched })}</p>
         </div>
-        <p className="mint-demo">{mintPage.demo}</p>
+        {isOnChain ? null : <p className="mint-demo">{mintPage.demo}</p>}
       </header>
 
       {usesLedger && signedIn === false ? <EnergySignIn onSignedIn={() => setSignedIn(true)} unavailable={ledgerDown} /> : null}
