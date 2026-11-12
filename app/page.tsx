@@ -71,7 +71,7 @@ export default function Home() {
                 how it works <span aria-hidden="true">↓</span>
               </a>
             </div>
-            {/* "how many are left": this browser's demo count, so it always says "demo" (docs/DEVLOG.md §3). */}
+            {/* "how many are left": the contract's counter on chain builds, this browser's demo count in demo mode. */}
             <DropProgress className="hero-progress" />
           </div>
 

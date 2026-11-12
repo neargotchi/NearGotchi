@@ -7,7 +7,8 @@ import TitleSparkles from "../components/TitleSparkles";
 import { fill, mascots, petPage, petTraits, snackLabels, yourGotchi } from "../lib/copy";
 import { findToken } from "../lib/drop1";
 import { findPet, petSpriteSrc } from "../lib/mocks";
-import { findSnack, type SnackId } from "../lib/shop";
+import { isOnChain } from "../lib/chain";
+import { NEAR_PRICES, findSnack, type SnackId } from "../lib/shop";
 import SnackSprite from "./pet/snack-sprites";
 import StatBars from "./pet/stat-bars";
 import { TokenArt } from "./pet/token-card";
@@ -29,7 +30,8 @@ function StatsPreview() {
           ))}
         </ul>
       </div>
-      <StatBars hunger={30} energy={80} balance={100} />
+      {/* no demo balance on chain builds: snacks are paid in NEAR there */}
+      <StatBars hunger={30} energy={80} balance={isOnChain ? null : 100} />
     </div>
   );
 }
@@ -78,7 +80,9 @@ function SnackCard({ id, stock }: { id: SnackId; stock: string }) {
         </span>
         <div className="snack-title">
           <p className="snack-name">{snackLabels[id]}</p>
-          <p className="snack-cost">{fill(petPage.shop.cost, { n: String(snack.price) })}</p>
+          <p className="snack-cost">
+            {isOnChain ? fill(petPage.shop.costNear, { n: NEAR_PRICES[id] }) : fill(petPage.shop.cost, { n: String(snack.price) })}
+          </p>
         </div>
       </div>
       <ul className="snack-effects">

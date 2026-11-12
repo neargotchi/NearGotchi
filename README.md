@@ -6,8 +6,9 @@ Built for the NEAR hackathon (deadline 2026-11-14).
 **Real funds warning:** drop 1 goes live on NEAR **mainnet** (real NEAR). The contract is **not audited**. Only spend what
 you can afford to lose. To look around without real money, see [Try it without real funds](#try-it-without-real-funds).
 
-- Live site: https://neargochi.vercel.app (one deployment; it switches from the testnet build to the mainnet build at launch)
-- Drop 1 NFT contract (mainnet): `[MAINNET CONTRACT]` (filled in after the deploy, `docs/MAINNET-RUNBOOK.md`)
+- Live site: https://neargochi.vercel.app (production = the mainnet build; a free build for looking around: [Try it without real funds](#try-it-without-real-funds))
+- Drop 1 NFT contract (mainnet): [`drop1.neargochi-dev.near`](https://nearblocks.io/address/drop1.neargochi-dev.near) (owner `neargochi-dev.near`, team `neargotchiai.near`; test mint, token #195: [`9JEEHWBk…`](https://nearblocks.io/txns/9JEEHWBkgMtmcSYk15jUkyCAG8bTovZuzF2Rz2TduBcZ); deploy record in `docs/MAINNET-RUNBOOK.md`)
+- $NEARGotchi token (mainnet): [`neargotchi.nearlytrade.near`](https://nearblocks.io/address/neargotchi.nearlytrade.near)
 - Drop 1 NFT contract (testnet, current contract with holder rewards): [`neargotchi-drop1-ng67.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng67.testnet)
 - Older testnet contract (33/33/34 split, no holder rewards; the testnet build of the site still reads it by default): [`neargotchi-drop1-ng57.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet)
 - Holder rewards on testnet ng67: mint by a second account [`7edZwRA1…`](https://testnet.nearblocks.io/txns/7edZwRA1d5dSCQ6KFJNhFuLowScrzLgjPkaS8VfR16iF) → token #198's owner claims 0.995 NEAR [`4T7Ck242…`](https://testnet.nearblocks.io/txns/4T7Ck242PEM3rczLrY94fghnprTwNDegVgeiax7hNBDj)
@@ -76,7 +77,8 @@ Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mo
   self-callback in a later block draws a random token from the pool of 300 (public `reveal(ticket)` is the fallback). Proceeds:
   50% team (`distribute()`), 50% holder rewards (reward per token, `claim_rewards`), see above. Mainnet limit: 5 mints per account.
   34 unit tests + a near-workspaces sandbox suite (300 mints, sold out, fallback, rewards, claims, transfer, limit) run in GitHub
-  Actions. No upgrade method; at launch the contract account's keys are deleted. Details: `docs/MAINNET-RUNBOOK.md`,
+  Actions. No upgrade method. On 2026-11-12 the mainnet contract account still holds its deploy key; the runbook deletes it
+  before the sale opens (step 11), after which nobody can change the code. Details: `docs/MAINNET-RUNBOOK.md`,
   `docs/CONTRACT-SETUP.md`, money-path review in `docs/REPORT.md` (DONE: 067).
 - **Mainnet mode:** `NEXT_PUBLIC_CHAIN=mainnet` + `NEXT_PUBLIC_DROP1_CONTRACT` + `NEXT_PUBLIC_TREASURY` (no defaults). The mint page
   shows an "unaudited contract, real funds" warning and the hatch button stays disabled until the visitor ticks the checkbox.
@@ -89,8 +91,11 @@ Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mo
   browser under its own key but is never shown.
 - **Front** (Next.js, React, Tailwind): `lib/chain.ts` (config + RPC), `lib/near.ts` (wallet-selector), `lib/wallet.ts`, `lib/drop1.ts`.
   Redirect wallets come back to `/mint?transactionHashes=…` and the mint finishes from the transaction result.
-- **Images:** on mainnet `base_uri` is an IPFS gateway URL of a folder with the 300 original PNGs, and every `media_hash` matches
-  (`scripts/ipfs_drop1.py` checks it). The testnet contracts use `https://neargochi.vercel.app/drop1-full/`, which serves 512px WebP
+- **Images:** on mainnet `base_uri` is the project's dedicated Pinata IPFS gateway
+  (`https://lavender-known-gorilla-623.mypinata.cloud/ipfs/<CID>/`) for a folder with the 300 original PNGs, and every `media_hash`
+  matches (`scripts/ipfs_drop1.py` checks it). Public gateways are not used: ipfs.io / dweb.link stopped serving hotlinks on
+  2026-09-21 and the public Pinata gateway rate-limits; `base_uri` stays changeable until a second pin provider is added
+  (`docs/DEVLOG.md`). The testnet contracts use `https://neargochi.vercel.app/drop1-full/`, which serves 512px WebP
   renders (there the `media_hash` does not match the served bytes).
 
 ## NEAR AI

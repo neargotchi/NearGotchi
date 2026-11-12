@@ -858,6 +858,8 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
 
 .site-footer p { margin: 0; font-size: 1rem; font-weight: 500; line-height: 1.5; }
 .site-footer-meta { display: flex; gap: round(calc(24px * var(--ui-scale)), 1px); }
+/* listed addresses (task 080): long account names wrap instead of widening the page on phones */
+.site-footer-address a { overflow-wrap: anywhere; }
 
 @media (max-width: 1280px) {
   .pets-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1660,6 +1662,7 @@ main > section[class] { background: transparent; }
 
 .mint-ready { display: grid; justify-items: center; gap: round(calc(16px * var(--ui-scale)), 1px); margin-top: round(calc(8px * var(--ui-scale)), 1px); }
 .mint-ready .mint-hint { max-width: 46ch; margin: 0; }
+.mint-ready .mint-paused { font-weight: 700; color: var(--text); }
 .mint-ready .mint-error { margin: 0; }
 .mint-hatch-button { min-width: round(calc(240px * var(--ui-scale)), 1px); }
 .mint-hatch-button:disabled { border-style: dashed; color: var(--text-muted); background: var(--surface); box-shadow: none; cursor: not-allowed; }

@@ -23,6 +23,14 @@ export default function SiteFooter() {
         <div className="site-footer-legal">
           <p>{footer.disclaimer}</p>
           <p>{footer.privacy}</p>
+          {footer.addresses.map((item) => (
+            <p key={item.account} className="site-footer-address">
+              {item.label}:{" "}
+              <a href={`https://nearblocks.io/address/${item.account}`} rel="noopener noreferrer" target="_blank" translate="no">
+                {item.account}
+              </a>
+            </p>
+          ))}
         </div>
         <div className="site-footer-meta">
           <p>{footer.copyright}</p>

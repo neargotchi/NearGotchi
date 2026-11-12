@@ -292,6 +292,12 @@ export default function MintFlow() {
         {!started ? (
           <div className="mint-ready">
             <DropProgress className="mint-progress" />
+            {/* task 080: the contract's pause is visible before anyone connects or clicks (polled with the counter) */}
+            {isOnChain && status.paused ? (
+              <p className="mint-hint mint-paused" role="status">
+                {mintPage.chain.errors.paused}
+              </p>
+            ) : null}
             {walletReady && !account ? (
               <WalletGate context="mint" onConnected={() => setFocus("hatch")} />
             ) : (
@@ -311,7 +317,7 @@ export default function MintFlow() {
                   type="button"
                   className="button button-primary mint-hatch-button"
                   onClick={hatch}
-                  disabled={isMainnet && !acknowledged}
+                  disabled={(isMainnet && !acknowledged) || (isOnChain && status.paused === true)}
                 >
                   {mintPage.hatchButton}
                   <span className="mint-tag">{isOnChain ? mintPage.chain.hatchTag : mintPage.hatchTag}</span>

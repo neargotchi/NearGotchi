@@ -40,7 +40,9 @@ export const howItWorks = {
     {
       number: 4,
       title: "talk",
-      body: "every message uses energy. an energy pack refills it. near ai comes next; the demo answers on its own.",
+      body: isOnChain
+        ? "every message uses energy. an energy pack refills it. replies come from near ai."
+        : "every message uses energy. an energy pack refills it. near ai comes next; the demo answers on its own.",
       sprite: { src: "/pets/pet3/happy.png", width: 489, height: 431, alt: "" },
     },
   ] as HowItWorksStep[],
@@ -116,6 +118,10 @@ export const faq = {
       answer: "the contract splits hatch proceeds (2 near minus a small storage reserve): 50% to the team, 50% to the holders of the gotchis hatched earlier, split equally. holders claim from their wallet. the first hatch has no earlier gotchi, so its half goes to the team. nothing else is promised.",
     },
     {
+      question: "i hatch more than one. does part of it come back to me?",
+      answer: "partly. the holder half of each hatch is split between all gotchis hatched before it, your own earlier ones included, so a share of your second hatch is credited to your first gotchi and you claim it like any other reward. same split for everyone, not a refund. nothing more is promised.",
+    },
+    {
       question: "is this live?",
       answer: isMainnet
         ? "yes, on near mainnet, with real near. the contract is unaudited: only spend what you can afford to lose. snacks are paid in real near; games and chat state live in your browser."
@@ -170,6 +176,11 @@ export const footer = {
     ? `no tracking. game state (hunger, energy, chat) lives only in this browser; ownership is on near ${NET}.`
     : "no tracking. your demo wallet and pets live only in this browser.",
   copyright: "© 2026 neargotchi",
+  /** listed addresses (task 080): text only, no claims. Links go to the mainnet explorer. */
+  addresses: [
+    { label: "drop 1 contract (near mainnet)", account: "drop1.neargochi-dev.near" },
+    { label: "$NEARGotchi token", account: "neargotchi.nearlytrade.near" },
+  ],
   // URLs not approved yet (copy v1 §7 has [URL]); null links are not rendered.
   socials: [
     { label: "X", url: null },
@@ -483,7 +494,7 @@ export const petPage = {
       broke: "not enough demo $NEARGotchi for the {snack}.",
       out_of_stock: "{snack} is sold out. back in {time}.",
       cancelled: "cancelled in the wallet. nothing was spent.",
-      failed: "the payment didn't go through. check your wallet and try again.",
+      failed: "couldn't confirm the payment. check your wallet before you try again: if it went through, it is applied the next time you open this page.",
     },
   },
   /** Drop-1 token card (app/pet/token-card.tsx). Rarity only, never value. */
@@ -499,7 +510,7 @@ export const petPage = {
   },
   chat: {
     title: "talk",
-    note: "demo · near ai soon",
+    note: isOnChain ? "powered by near ai" : "demo · near ai soon",
     noteAi: "powered by near ai",
     noteMock: "demo mode (mock answers)",
     thinking: "{name} is thinking…",
