@@ -588,26 +588,45 @@ body { background: var(--page); }
   .hero-title-host > .sparkles > .sparkle:is(:nth-child(1), :nth-child(6)) { display: none; }
 }
 
-/* Task 088/089: "$NEARGOTCHI" nav link (header bar and burger panel). Only the TEXT animates: its
-   colour pulses softly to the accent with a tight 2px text glow — no background, ring or blurred
-   shape behind it. A thin solid 2px underline in the accent stays. Its current / hover frame is the
-   same as every other nav link. No motion with reduced motion, on touch and ≤768 px (burger). */
+/* Tasks 088–090: "$NEARGOTCHI" nav link (header bar and burger panel). A steady 2px underline in the
+   accent, no glow, no frame on hover; current (scrollspy) and keyboard focus keep the shared frame. */
 nav a.nav-glow {
   text-decoration: underline;
   text-decoration-color: var(--accent);
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
-  animation: nav-glow 2.6s ease-in-out infinite;
 }
-@keyframes nav-glow {
-  0%, 100% { color: inherit; text-shadow: none; }
-  50% { color: var(--accent); text-shadow: 0 0 2px var(--accent); }
-}
-/* Hover adds no frame on this link (the text already moves); current (scrollspy) and keyboard
-   focus keep the shared frame, so only one framed link shows at a time from the page state. */
 .site-header nav a.nav-glow:not(.is-current):hover:not(:focus-visible)::before,
 .site-header nav a.nav-glow:not(.is-current):hover:not(:focus-visible)::after { opacity: 0; }
-@media (prefers-reduced-motion: reduce), (hover: none), (max-width: 768px) {
-  nav a.nav-glow { animation: none; text-shadow: none; }
-}
 
+/* Task 090: the hero N's sweep on the label's letters. The base text stays the nav ink; a copy of
+   the label on top (::after, same text, transparent fill) shows only the band: a pixel-stepped
+   diagonal strip, green #01eba3 on its lower-left half and white on its upper-right half, exactly
+   the shape and split of .n-sweep-box > span (globals.css), clipped to the glyphs with
+   background-clip: text. Same timing as n-sweep: var(--sweep-cycle), 20 % = 12 steps across.
+   In light a hairline ink stroke keeps the white part of the band readable on the cream page.
+   Off with reduced motion, on touch / ≤768 px and in the burger panel. */
+.nav-sweep { position: relative; display: inline-block; }
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (min-width: 769px) {
+  .site-header .site-nav .nav-sweep::after {
+    content: attr(data-label);
+    content: attr(data-label) / "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    color: transparent;
+    background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 8' preserveAspectRatio='none' shape-rendering='crispEdges'><defs><linearGradient id='g' x1='0' x2='13' gradientUnits='userSpaceOnUse'><stop offset='.5' stop-color='%2301eba3'/><stop offset='.5' stop-color='%23fff'/></linearGradient></defs><polygon fill='url(%23g)' points='13,0 13,1 12,1 12,2 11,2 11,3 10,3 10,4 9,4 9,5 8,5 8,6 7,6 7,7 6,7 6,8 0,8 0,7 1,7 1,6 2,6 2,5 3,5 3,4 4,4 4,3 5,3 5,2 6,2 6,1 7,1 7,0'/></svg>") no-repeat;
+    background-size: 26% 100%;
+    background-position: -36% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: nav-sweep var(--sweep-cycle) infinite;
+  }
+  :root:not([data-theme='dark']) .site-header .site-nav .nav-sweep::after { -webkit-text-stroke: .5px var(--scene-ink); }
+}
+/* Same keyframe shape as n-sweep: the band (26 % of the label) goes from fully left of the text to fully
+   right in steps(12), then rests. Percent positions: −26/74 ≈ −36 % and 100/74 ≈ 136 %. */
+@keyframes nav-sweep {
+  0% { background-position: -36% 0; animation-timing-function: steps(12, end); }
+  20%, 100% { background-position: 136% 0; }
+}

@@ -76,7 +76,14 @@ export default function SectionNav({ className }: { className?: string }) {
                 className={classes || undefined}
                 aria-current={isCurrent ? "location" : undefined}
               >
-                {link.label}
+                {"highlight" in link && link.highlight ? (
+                  // task 090: the label gets the hero N's pixel sweep (hero-header.css .nav-sweep)
+                  <span className="nav-sweep" data-label={link.label}>
+                    {link.label}
+                  </span>
+                ) : (
+                  link.label
+                )}
               </a>
             </li>
           );

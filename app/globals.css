@@ -14,6 +14,10 @@
      Not green: --accent-deep = pixel shadows / 3D edges in translucent ink; --on-accent = ink text on
      accent fills; --accent-copy = sentence-length text (ink on light, the accent on dark). */
   --accent: #01eba3;
+  /* One cycle for both pixel sweeps (task 090): the hero N (@keyframes n-sweep) and the
+     "$NEARGOTCHI" nav label (@keyframes nav-sweep, hero-header.css): 20 % of it = the pass in
+     steps(12, end) (0.5 s), the rest = the pause (2 s). */
+  --sweep-cycle: 2.5s;
   --accent-deep: rgb(20 20 20 / 0.3);
   --accent-text: var(--accent);
   --accent-light: color-mix(in srgb, var(--accent) 38%, #fff);
@@ -2437,7 +2441,7 @@ main > section[class] { background: transparent; }
   }
 
   /* Hero: green/white pixel sweep over the black N strokes (0.5s sweep, 2s pause). */
-  .n-sweep-box > span { animation: n-sweep 2.5s infinite; }
+  .n-sweep-box > span { animation: n-sweep var(--sweep-cycle) infinite; }
 
   @keyframes n-sweep {
     0% { transform: translateX(-100%); animation-timing-function: steps(12, end); }
