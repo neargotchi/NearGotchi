@@ -7,17 +7,23 @@
 #
 #   scripts/deploy-vercel.sh            # deploy HEAD to production, then check /, /mint, /api/chat
 #   scripts/deploy-vercel.sh --dry-run  # export + list what would be uploaded, no deploy
+#
+# Two projects, one build each (one build = one chain, task 080; env values live in each Vercel project, not here):
+#   mainnet (default): project neargochi, link .vercel/project.json
+#   demo / testnet:    VERCEL_PROJECT=neargochi-demo VERCEL_LINK=.vercel-demo/project.json scripts/deploy-vercel.sh
 set -euo pipefail
 
-SITE="https://neargochi.vercel.app"
+PROJECT="${VERCEL_PROJECT:-neargochi}"
+LINK="${VERCEL_LINK:-.vercel/project.json}"
+SITE="${SITE:-https://$PROJECT.vercel.app}"
 ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 cd "$ROOT"
 
 DRY=0
 [ "${1:-}" = "--dry-run" ] && DRY=1
 
-[ -f .vercel/project.json ] || { echo "no .vercel/project.json: run 'npx vercel@latest link' (existing project neargochi)"; exit 1; }
-grep -q '"projectName": *"neargochi"' .vercel/project.json || { echo ".vercel/project.json is not linked to the project 'neargochi'"; exit 1; }
+[ -f "$LINK" ] || { echo "no $LINK: link the project '$PROJECT' first (docs/DEPLOY.md)"; exit 1; }
+grep -q "\"projectName\": *\"$PROJECT\"" "$LINK" || { echo "$LINK is not linked to the project '$PROJECT'"; exit 1; }
 if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
   echo "uncommitted changes: the deploy is HEAD ($(git rev-parse --short HEAD)), commit them first"; git status --short --untracked-files=no; exit 1
 fi
@@ -29,7 +35,8 @@ trap cleanup EXIT
 
 git archive HEAD | tar -x -C "$DIR"
 mkdir -p "$DIR/.vercel"
-cp .vercel/project.json "$DIR/.vercel/project.json"   # only the link; never .vercel/.env* or the repo's .env.local
+cp "$LINK" "$DIR/.vercel/project.json"   # only the link; never .vercel/.env* or the repo's .env.local
+echo "project $PROJECT ($SITE)"
 echo "exported $(git rev-parse --short HEAD) to $DIR ($(du -sh "$DIR" | cut -f1)); .git: $([ -e "$DIR/.git" ] && echo present || echo none)"
 # .env.example (tracked template, no values) is fine; any real env file means something is committed that shouldn't be
 ENVS="$(ls -A "$DIR" | grep -E '^\.env' | grep -v '^\.env\.example$' || true)"

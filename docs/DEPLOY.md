@@ -37,6 +37,39 @@ Set in Vercel → Project → Settings → Environment Variables (names only her
 changing any variable, deploy again** (`scripts/deploy-vercel.sh`, or Deployments → ⋯ → Redeploy). List them with
 `npx vercel@latest env ls`.
 
+## Two projects: mainnet + free demo (task 080)
+
+One build = one chain (`NEXT_PUBLIC_*` are baked in at build time), so the real-money site and the free "try it" site are
+two Vercel projects built from the same commit of `main`:
+
+| project | URL | purpose | Production env (names = values) |
+|---|---|---|---|
+| `neargochi` (existing) | https://neargochi.vercel.app | the launch: real NEAR | `NEXT_PUBLIC_CHAIN=mainnet`, `NEXT_PUBLIC_DROP1_CONTRACT=drop1.neargochi-dev.near`, `NEXT_PUBLIC_TREASURY=neargotchiai.near`, `NEAR_AI_API_KEY` (server only); optional `NEXT_PUBLIC_RPC_URL`, `NEAR_AI_MODEL` |
+| `neargochi-demo` (new) | https://neargochi-demo.vercel.app | judges, without real funds | **testnet (recommended):** `NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`, `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet`, `NEAR_AI_API_KEY` (optional; without it the chat answers from a script) — **or demo (no wallet at all):** `NEXT_PUBLIC_CHAIN=demo` only |
+
+A mainnet build refuses to sign if the contract or treasury is missing or ends in `.testnet` (`lib/chain.ts` CONFIG_ERROR).
+
+Once (owner, not from the repo folder — `vercel link` would overwrite `.vercel/project.json`):
+```sh
+npx vercel@latest login
+mkdir -p ~/neargochi-demo-link && cd ~/neargochi-demo-link
+npx vercel@latest project add neargochi-demo
+npx vercel@latest link --yes --project neargochi-demo
+npx vercel@latest env add NEXT_PUBLIC_CHAIN production                 # testnet   (or: demo)
+npx vercel@latest env add NEXT_PUBLIC_DROP1_CONTRACT production        # neargotchi-drop1-ng67.testnet  (testnet only)
+npx vercel@latest env add NEXT_PUBLIC_TREASURY production              # neargotchi-team-ng67.testnet   (testnet only)
+npx vercel@latest env add NEAR_AI_API_KEY production                   # optional, typed at the prompt, never in a file
+mkdir -p ~/Desktop/neargochi/.vercel-demo && cp .vercel/project.json ~/Desktop/neargochi/.vercel-demo/project.json
+```
+`.vercel-demo/` is gitignored. Check the mainnet project's variables with `npx vercel@latest env ls` from the repo folder.
+
+Deploy (from the repo folder, committed `main`):
+```sh
+scripts/deploy-vercel.sh                                                                         # mainnet: neargochi
+VERCEL_PROJECT=neargochi-demo VERCEL_LINK=.vercel-demo/project.json scripts/deploy-vercel.sh   # demo: neargochi-demo
+```
+Each run checks `/`, `/mint` and `/api/chat` on that project's URL. Add `--dry-run` to see the export without deploying.
+
 ## When something fails
 
 - "Git author … must have access to the team": you ran `vercel deploy` inside the git checkout — use
