@@ -1645,7 +1645,7 @@ main > section[class] { background: transparent; }
 .mint-ready .mint-error { margin: 0; }
 .mint-hatch-button { min-width: round(calc(240px * var(--ui-scale)), 1px); }
 .mint-hatch-button:disabled { border-style: dashed; color: var(--text-muted); background: var(--surface); box-shadow: none; cursor: not-allowed; }
-/* Mainnet only: unaudited / real funds warning with a confirmation checkbox before Hatch. */
+/* Old mainnet warning box + checkbox (removed from /mint in tasks 088–089; styles unused). */
 .mint-warning { display: grid; gap: 8px; max-width: 46ch; padding: 14px 16px; border: 2px solid var(--ink); border-left: 8px solid var(--pink); background: var(--surface); text-align: left; }
 .mint-warning-title { margin: 0; font-weight: 700; }
 .mint-warning-text { margin: 0; font-size: 1rem; line-height: 1.45; }

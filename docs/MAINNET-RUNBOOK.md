@@ -328,8 +328,8 @@ NEAR_AI_API_KEY=...                       # server-only, as on testnet
 # optional: NEXT_PUBLIC_RPC_URL=https://a,https://b  (tried first; the built-in free list follows)
 ```
 Without the two account variables a mainnet build refuses to open the wallet. Check on the preview URL: header shows
-"mainnet", /mint shows `1 / 300` and the "unaudited contract. real funds." box, hatch stays disabled until the checkbox
-is ticked; /pet with OWNER connected shows the test token and "holder rewards".
+"mainnet", /mint shows `1 / 300` and the hatch button with "2 near · real" (no warning box or checkbox since task 089;
+the FAQ says the contract is unaudited); /pet with OWNER connected shows the test token and "holder rewards".
 
 RPC (task 068): the site reads through free key-less endpoints (FastNear, dRPC, ZAN, Intear; `rpc.mainnet.near.org` is
 deprecated). If you ever buy a keyed plan, never put the key in a `NEXT_PUBLIC_` variable: add a server route that

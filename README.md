@@ -81,7 +81,8 @@ Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mo
   before the sale opens (step 11), after which nobody can change the code. Details: `docs/MAINNET-RUNBOOK.md`,
   `docs/CONTRACT-SETUP.md`, money-path review in `docs/REPORT.md` (DONE: 067).
 - **Mainnet mode:** `NEXT_PUBLIC_CHAIN=mainnet` + `NEXT_PUBLIC_DROP1_CONTRACT` + `NEXT_PUBLIC_TREASURY` (no defaults). The mint page
-  shows an "unaudited contract, real funds" warning and the hatch button stays disabled until the visitor ticks the checkbox.
+  shows the real-NEAR price on the hatch button and under it; no extra confirmation besides the wallet. The "not audited"
+  notice lives in the FAQ ("is this live?", "is the hatch fair?") and in this README, not on the purchase path.
 - **RPC:** all chain reads (counter, owned tokens, rewards, tx status after a wallet redirect) go through a fallback list of
   free public endpoints without API keys (FastNear, dRPC, ZAN, Intear; `rpc.*.near.org` is deprecated and answers 429): each
   request tries the endpoints in turn (starting with the last one that worked), then backs off and repeats; the counter keeps

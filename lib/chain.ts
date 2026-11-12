@@ -7,7 +7,7 @@ export const CHAIN: Chain = process.env.NEXT_PUBLIC_CHAIN === "testnet" || proce
 /** Real wallet + real contract (testnet or mainnet). Demo = localStorage mock. */
 export const isOnChain = CHAIN !== "demo";
 export const isTestnet = CHAIN === "testnet";
-/** Real NEAR: the mint and the shop spend money. Shows the "unaudited, real funds" warning. */
+/** Real NEAR: the mint and the shop spend money (the faq "is this live?" says the contract is unaudited). */
 export const isMainnet = CHAIN === "mainnet";
 /** "testnet" | "mainnet" for copy (only meaningful when isOnChain). */
 export const NET = isMainnet ? "mainnet" : "testnet";

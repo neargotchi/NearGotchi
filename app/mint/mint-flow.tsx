@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import DropProgress from "../../components/DropProgress";
 import { FAIR_HATCH_ID, fill, mintPage } from "../../lib/copy";
-import { isMainnet, isOnChain } from "../../lib/chain";
+import { isOnChain } from "../../lib/chain";
 import {
   DROP1_TOTAL,
   DropError,
@@ -188,7 +188,7 @@ export default function MintFlow() {
     }
   };
 
-  // Task 088: no confirmation checkbox any more; the mainnet line under the button says it plainly.
+  // Tasks 088–089: no confirmation checkbox and no audit notice on the purchase path (the faq says it).
   const hatch = () => {
     if (viewRef.current !== "ready" || !account) return;
     return runHatch(hatchRandom);
@@ -312,7 +312,6 @@ export default function MintFlow() {
                   {mintPage.hatchButton}
                   <span className="mint-tag">{isOnChain ? mintPage.chain.hatchTag : mintPage.hatchTag}</span>
                 </button>
-                {isMainnet ? <p className="mint-fine">{mintPage.chain.finalNote}</p> : null}
               </>
             )}
             {hatchError ? (

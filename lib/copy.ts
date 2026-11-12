@@ -269,8 +269,6 @@ export const mintPage = {
       ? "2 real near. the contract picks the pet, not you. common, rare, epic or legendary."
       : "2 near on testnet. the contract picks the pet, not you. common, rare, epic or legendary.",
     waitingWallet: "confirm in your wallet…",
-    /** mainnet only (task 088): one calm line under the hatch button (replaces the warning box + checkbox). */
-    finalNote: "real near, final. no refunds. the contract is unaudited.",
     /** under the hatch button (task 087); `link` goes to the faq answer */
     draw: { text: "how the draw works: the contract draws after payment, nobody picks.", link: "details in the faq" },
     errors: {
@@ -508,7 +506,7 @@ export const petPage = {
     title: "snack shop",
     note: "snacks fill hunger. energy is for talking.",
     noteDemo: "demo $NEARGotchi · nothing real is spent",
-    noteChain: isMainnet ? "paid in real near. unaudited, real funds." : "paid in testnet near",
+    noteChain: isMainnet ? "paid in real near." : "paid in testnet near",
     /** mainnet energy pack while the server waits for the chain (task 081) */
     confirming: "confirming payment…",
     refill: "refill demo balance",
