@@ -20,6 +20,9 @@
   --section-bubble: calc(clamp(90px, 5.7vw, 140px) * var(--ds));
   --content-gap: calc(clamp(40px, 3.75vw, 96px) * var(--ds));
   --heading-gap: calc(var(--content-gap) * .4);
+  /* Task 088: one scale for the vertical room between landing sections (+20 %). The hero → pets
+     gap is left as it was (.pets-section keeps the unscaled top padding below). */
+  --section-scale: 1.2;
 }
 :root[data-theme='dark'] {
   --card-fill: #031c17;
@@ -28,10 +31,11 @@
 
 /* ---------- Section shell: same spacing, divider and content width everywhere ---------- */
 .hero-shell > :is(.pets-section, .steps-section, .wardrobe-section, .tokenomics-section, .coin-section, .faq-section) {
-  padding: calc(var(--section-space) + var(--section-bubble)) 0 var(--section-space);
+  padding: calc(var(--section-space) * var(--section-scale) + var(--section-bubble)) 0 calc(var(--section-space) * var(--section-scale));
   border-top-color: var(--scene-border);
   color: var(--scene-ink);
 }
+.hero-shell > .pets-section { padding-top: calc(var(--section-space) + var(--section-bubble)); }
 /* Content spans 79 % of the screen, as the card row on the references (type inside cards
    follows the card width); 900px keeps four tier thumbnails per pet card. */
 @media (min-width: 1024px) {
