@@ -332,3 +332,24 @@
 @media (max-width: 768px) {
   .energy-signin { right: 12px; left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: auto; }
 }
+
+/* Task 088 point 9: touch devices and narrow screens get no motion on buttons — no hover / press
+   translate, no transitions, no glow or pulse on links and buttons. A tap still reads at once:
+   the pressed button swaps its fill instantly. Pet / egg sprites keep their animations. */
+@media (hover: none), (max-width: 768px) {
+  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .game-modal-close, .pet-tab, .pet-mood, .energy-signin-close),
+  .pet-shell .simon-pad,
+  .chat-shop-link,
+  nav a {
+    transition: none !important;
+    animation: none !important;
+  }
+  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .game-modal-close, .pet-tab, .pet-mood):is(:hover, :active),
+  .pet-shell .simon-pad:active {
+    transform: none !important;
+  }
+  .pixel-ui .button-primary:active { --frame-fill: var(--accent-hover); }
+  .pixel-ui :is(.button-secondary, .theme-toggle, .menu-button, .social-x, .pet-tab, .pet-mood):active { --frame-fill: color-mix(in srgb, var(--accent) 22%, var(--scene-color)); }
+  /* The FAQ question is a button too: answers open at once. */
+  .faq-item::details-content { transition: none !important; }
+}
