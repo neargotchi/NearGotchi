@@ -348,6 +348,9 @@ export const petPage = {
     cancelled: "signing was cancelled. nothing happened.",
     failed: "the signature couldn't be checked. try again.",
     unavailable: "the energy service is down right now. chat and energy packs wait; everything else works.",
+    /** task 088: the popup's close button (screen readers) and the action in "sign in first" notes */
+    close: "close",
+    action: "sign in",
   },
   metaTitle: "my gotchi — NEARGOTCHI",
   empty: "no pet yet.",
@@ -550,7 +553,7 @@ export const petPage = {
       cancelled: "cancelled in the wallet. nothing was spent.",
       failed: "couldn't confirm the payment. check your wallet before you try again: if it went through, it is applied the next time you open this page.",
       /** mainnet energy pack (task 081): no session yet — nothing was paid */
-      signin: "sign in first (top of this page) so the energy can go to {name}. nothing was paid.",
+      signin: "sign in first so the energy can go to {name}. nothing was paid.",
       /** mainnet energy pack: paid, the server is still confirming it on chain */
       confirming: "payment sent. the energy arrives once it's confirmed on chain; this page keeps checking.",
     },
@@ -578,7 +581,7 @@ export const petPage = {
     /** mainnet (task 081): the site's daily near ai budget is used up; nothing was spent */
     resting: "ai is resting, try tomorrow. nothing was spent.",
     /** mainnet (task 081): no / expired sign-in */
-    signedOut: "sign in first (top of this page): it proves the pet is yours. no transaction, no cost.",
+    signedOut: "sign in first: it proves the pet is yours. no transaction, no cost.",
     label: "message",
     placeholder: "say something to {name}",
     hint: "each message uses 4 energy. food is not touched.",

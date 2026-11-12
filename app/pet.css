@@ -291,3 +291,44 @@
   .pet-chat-log::-webkit-scrollbar { width: 3px; }
   .pet-chat-log::-webkit-scrollbar-track { background: transparent; }
 }
+
+/* Task 088: mainnet sign-in as a fixed popup (app/pet/energy-sign-in.tsx): bottom-right card,
+   ~360px, pixel frame in the accent, above the page content (header 20, game modal 15) but under
+   the toasts (120). Phones: the bottom edge, full width minus the margins. */
+.energy-signin {
+  position: fixed;
+  right: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 60;
+  width: min(360px, calc(100vw - 40px));
+  max-width: none;
+  margin: 0;
+  padding: 18px 18px 16px;
+  border: 0;
+  color: var(--scene-ink, var(--text));
+  background: var(--card-fill, var(--surface));
+  box-shadow: inset 0 0 0 3px var(--accent), 6px 6px 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+.energy-signin-title { padding-right: 36px; font-family: var(--font-pixel), monospace; font-size: .75rem; font-weight: 400; line-height: 1.5; color: var(--scene-accent, var(--text)); }
+.energy-signin-body { font-size: .95rem; }
+.energy-signin-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  color: var(--scene-ink, var(--text));
+  background: transparent;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent);
+  font: 700 14px/1 var(--font-pixel), monospace;
+  cursor: pointer;
+}
+.energy-signin-close:hover, .energy-signin-close:focus-visible { color: var(--on-accent); background: var(--accent); outline: none; }
+@media (max-width: 768px) {
+  .energy-signin { right: 12px; left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: auto; }
+}

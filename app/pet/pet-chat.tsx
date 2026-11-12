@@ -24,6 +24,8 @@ type PetChatProps = {
   onReply: () => void;
   /** Mainnet (task 081): the server said the session is gone — show the sign-in again. */
   onSignedOut?: () => void;
+  /** task 088: "sign in" in the signed-out note reopens the sign-in popup. */
+  onSignIn?: () => void;
 };
 
 const typingDelay = (reply: ChatMessage) => {
@@ -35,7 +37,7 @@ const typingDelay = (reply: ChatMessage) => {
  * Local chat: your message shows at once; the reply (already stored) is revealed after a short
  * pixel "typing…" delay. One reply at a time, one message queued behind it.
  */
-export default function PetChat({ name, onShop, onPet, onReply, onSignedOut }: PetChatProps) {
+export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onSignIn }: PetChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typing, setTyping] = useState(false);
   /** The pet is waiting for NEAR AI (the energy is spent only once the answer is in). */
@@ -146,7 +148,14 @@ export default function PetChat({ name, onShop, onPet, onReply, onSignedOut }: P
               ) : message.text === "resting" ? (
                 petPage.chat.resting
               ) : message.text === "signed_out" ? (
-                petPage.chat.signedOut
+                <>
+                  {petPage.chat.signedOut}{" "}
+                  {onSignIn ? (
+                    <button type="button" className="chat-shop-link" onClick={onSignIn}>
+                      {petPage.signIn.action}
+                    </button>
+                  ) : null}
+                </>
               ) : (
                 <>
                   {fill(petPage.chat.noEnergy, { name })}{" "}

@@ -30,6 +30,8 @@ type TabFeedProps = {
   onBought: (pet: DemoPet, result: BuyResult, item: ItemId) => void;
   /** Message from a purchase finished after a wallet redirect. */
   notice?: string | null;
+  /** task 088: "sign in" next to the "sign in first" result reopens the sign-in popup. */
+  onSignIn?: () => void;
 };
 
 /**
@@ -37,9 +39,10 @@ type TabFeedProps = {
  * 4 snack cards (pixel sprite, cost, effect, stock + restock countdown, "buy & feed"). A card that can't
  * be bought says why (sold out / not enough demo balance / full and rested). Demo $NEARGotchi only.
  */
-export default function TabFeed({ pet, shown, balance, now, onBought, notice = null }: TabFeedProps) {
+export default function TabFeed({ pet, shown, balance, now, onBought, notice = null, onSignIn }: TabFeedProps) {
   const [items, setItems] = useState<ShopItem[]>([]);
   const [message, setMessage] = useState<string | null>(notice);
+  const [needSignIn, setNeedSignIn] = useState(false);
   const busy = useRef(false);
 
   useEffect(() => {
@@ -100,6 +103,7 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
         time: clock(timeLeft),
       });
       setMessage(text);
+      setNeedSignIn(result === "signin");
       if (result === "cancelled" || result === "failed" || result === "signin") toast(text, "error");
       onBought(next, result, id);
       setItems(await getShop());
@@ -137,7 +141,19 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
         )}
       </div>
       <div className="pet-result" role="status">
-        {message ? <p>{message}</p> : null}
+        {message ? (
+          <p>
+            {message}
+            {needSignIn && onSignIn ? (
+              <>
+                {" "}
+                <button type="button" className="chat-shop-link" onClick={onSignIn}>
+                  {petPage.signIn.action}
+                </button>
+              </>
+            ) : null}
+          </p>
+        ) : null}
       </div>
       <ul className="shop-grid">
         {items.map((item) => {

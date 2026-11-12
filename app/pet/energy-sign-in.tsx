@@ -7,8 +7,18 @@ import { signIn } from "../../lib/energy-client";
 /**
  * Mainnet only (task 081): energy is NEAR AI credits on the server, so /pet asks once for a NEP-413 signature
  * (no transaction, no cost) and gets a 24 h session. One click: the wallet opens a popup, which needs the gesture.
+ * Task 088: shown as a fixed card in the bottom-right corner (bottom edge on phones), with a ✕.
  */
-export default function EnergySignIn({ onSignedIn, unavailable = false }: { onSignedIn: () => void; unavailable?: boolean }) {
+export default function EnergySignIn({
+  onSignedIn,
+  onClose,
+  unavailable = false,
+}: {
+  onSignedIn: () => void;
+  /** task 088: the ✕ hides the popup until "sign in" is clicked in a note (or the page reloads). */
+  onClose: () => void;
+  unavailable?: boolean;
+}) {
   const [state, setState] = useState<"idle" | "busy" | "cancelled" | "failed" | "unavailable">(unavailable ? "unavailable" : "idle");
   /** task 082: which step failed, e.g. "verify: 401 bad_signature" (no keys, signatures or nonces) */
   const [detail, setDetail] = useState<string | null>(null);
@@ -31,6 +41,9 @@ export default function EnergySignIn({ onSignedIn, unavailable = false }: { onSi
 
   return (
     <section className="energy-signin" aria-labelledby="energy-signin-title">
+      <button type="button" className="energy-signin-close" onClick={onClose} aria-label={petPage.signIn.close}>
+        <span aria-hidden="true">✕</span>
+      </button>
       <p id="energy-signin-title" className="energy-signin-title">
         {petPage.signIn.title}
       </p>

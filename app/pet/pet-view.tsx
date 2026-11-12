@@ -49,6 +49,14 @@ export default function PetView() {
   const { ready: walletReady, account } = useWallet();
   /** Mainnet (task 081): is this browser signed in (NEP-413 session) as the connected account? null = checking. */
   const [signedIn, setSignedIn] = useState<boolean | null>(usesLedger ? null : true);
+  /** task 088: the sign-in popup was closed with ✕ (reopened by "sign in" in a note). */
+  const [signInOpen, setSignInOpen] = useState(true);
+  // Only offered after a "sign in first" answer (chat: the server, shop: no session for this owner),
+  // so the session is known to be missing: same as the chat's onSignedOut, then show the popup.
+  const openSignIn = () => {
+    setSignedIn(false);
+    setSignInOpen(true);
+  };
   const [ledgerDown, setLedgerDown] = useState(false);
   const [ready, setReady] = useState(false);
   const [pet, setPet] = useState<DemoPet | null>(null);
@@ -273,7 +281,9 @@ export default function PetView() {
         {isOnChain ? null : <p className="mint-demo">{mintPage.demo}</p>}
       </header>
 
-      {usesLedger && signedIn === false ? <EnergySignIn onSignedIn={() => setSignedIn(true)} unavailable={ledgerDown} /> : null}
+      {usesLedger && signedIn === false && signInOpen ? (
+        <EnergySignIn onSignedIn={() => setSignedIn(true)} onClose={() => setSignInOpen(false)} unavailable={ledgerDown} />
+      ) : null}
       {usesLedger && signedIn === true && ledgerDown ? <p className="mint-note">{petPage.signIn.unavailable}</p> : null}
 
       <div className="pet-hatch-row">
@@ -322,8 +332,8 @@ export default function PetView() {
                   }}
                 />
               ),
-              feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={isOnChain ? null : account.balance} now={now} onBought={onBought} notice={notice} />,
-              chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} onSignedOut={() => setSignedIn(false)} />,
+              feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={isOnChain ? null : account.balance} now={now} onBought={onBought} notice={notice} onSignIn={openSignIn} />,
+              chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} onSignedOut={() => setSignedIn(false)} onSignIn={openSignIn} />,
             }}
           />
         </div>
