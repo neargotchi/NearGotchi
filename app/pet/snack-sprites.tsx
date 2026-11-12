@@ -10,7 +10,7 @@ const COLORS: Record<string, string> = {
   C: "#fff6e5", // cream (cookie)
   R: "#d0342c", // berry red
   W: "#ffffff", // shine
-  G: "#00b877", // leaf / bowl green
+  G: "#01eba3", // leaf / bowl green (the one site green, task 089)
   Y: "#ffd04a", // noodles / candy gold
   O: "#ff9f2e", // candy orange
   P: "#ff6b9d", // candy pink

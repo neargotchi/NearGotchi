@@ -7,8 +7,8 @@ import type { SpotKind } from "../../../lib/hideseek-game";
  */
 const INK = "#141414";
 const COLORS: Record<string, string> = {
-  G: "#00b877", // leaf
-  L: "#5fe3a8", // leaf light
+  G: "#01eba3", // leaf (the one site green, task 089)
+  L: "#73f4cc", // leaf light (lighter tint of the same green)
   T: "#c98a4b", // cardboard / wood
   D: "#8a5a2b", // trunk / dark wood
   S: "#b9b2a3", // stone

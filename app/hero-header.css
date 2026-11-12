@@ -4,9 +4,9 @@
    (same breakpoint as app/mobile-menu.tsx), the hero to the portrait scene at ≤768px. */
 :root {
   --scene-color: #fffaf0;
-  --scene-ink: #151b17;
-  /* Task 088: one accent (globals.css --accent). Text accent = the darker derivative on cream. */
-  --scene-accent: var(--accent-text);
+  --scene-ink: #141414;
+  /* Tasks 088–089: one accent (globals.css --accent), also for short accent text; sentences use --accent-copy. */
+  --scene-accent: var(--accent);
   --scene-border: var(--accent);
   --scene-button: var(--accent);
   /* Desktop design scale (>768px): header, hero and section sizes are multiplied by it.
@@ -19,13 +19,12 @@
 }
 :root[data-theme='dark'] {
   /* Sky of public/hero/dark.png. */
-  --scene-color: #001311;
+  --scene-color: #0a0a0a;
   --scene-ink: #fffbed;
-  --accent-text: var(--accent);
   --scene-accent: var(--accent);
   --scene-border: var(--accent);
   --page: var(--scene-color);
-  --surface: #04140f;
+  --surface: #121212;
   --html-bg: var(--scene-color);
 }
 /* Anchor jumps land 24px under the bar (scroll-padding replaces globals.css scroll-margin). */

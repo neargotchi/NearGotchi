@@ -42,7 +42,7 @@
 }
 .mint-shell .mint-sub {
   margin-top: var(--heading-gap);
-  color: var(--scene-accent);
+  color: var(--accent-copy);
   font-family: var(--font-pixel), monospace;
   font-size: clamp(8px, calc(.68vw * var(--ds)), calc(16px * var(--ds)));
   font-weight: 400;

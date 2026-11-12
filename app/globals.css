@@ -8,17 +8,18 @@
   --ui-scale: 1;
   --cream: #fff6e5;
   --ink: #141414;
-  /* Task 088: ONE accent = the green of the logo (public/logo-transparent.png, mean of the N / screen
-     green: #01eba3). Everything green in the UI is this token or a derivative of it: --accent-deep
-     (shadows/insets, ≈ the logo's own shading), --accent-text (text on light backgrounds, contrast
-     ≥ 4.5:1 on the cream page; dark theme = the accent itself), --accent-light (highlights),
-     --accent-hover (button hover), --on-accent (text on accent fills). */
+  /* Tasks 088–089: ONE green = the green of the logo egg (public/logo-transparent.png, mean of the N /
+     screen green: #01eba3). No darker green anywhere (scripts/check-greens.mjs fails on one). Only
+     lighter derivatives of the same hue: --accent-light (highlights), --accent-hover (button hover).
+     Not green: --accent-deep = pixel shadows / 3D edges in translucent ink; --on-accent = ink text on
+     accent fills; --accent-copy = sentence-length text (ink on light, the accent on dark). */
   --accent: #01eba3;
-  --accent-deep: color-mix(in srgb, var(--accent) 68%, #000);
-  --accent-text: color-mix(in srgb, var(--accent) 52%, #000);
+  --accent-deep: rgb(20 20 20 / 0.3);
+  --accent-text: var(--accent);
   --accent-light: color-mix(in srgb, var(--accent) 38%, #fff);
   --accent-hover: color-mix(in srgb, var(--accent) 85%, #fff);
-  --on-accent: color-mix(in srgb, var(--accent) 12%, #000);
+  --on-accent: var(--ink);
+  --accent-copy: var(--ink);
   --green: var(--accent);
   --green-deep: var(--accent-deep);
   --lcd: #b7c9a0;
@@ -38,7 +39,7 @@
   --divider: #d7cfbf;
   --scrim: rgb(20 20 20 / 0.25);
   --locked-box: #c4c1ba;
-  --sparkle-alt: var(--green-deep);
+  --sparkle-alt: var(--accent);
   --html-bg: var(--ink);
   --footer-bg: var(--ink);
   /* Drop-1 tier text (TierBadge, "one of N {tier} …"): every colour ≥ 4.5:1 on the page and surface. */
@@ -58,7 +59,8 @@
   --text: var(--cream);
   --text-muted: rgb(255 246 229 / 0.7);
   --line: var(--cream);
-  --shadow: var(--green-deep);
+  --shadow: color-mix(in srgb, var(--accent) 45%, transparent);
+  --accent-copy: var(--accent);
   --grid-line: rgb(255 246 229 / 0.06);
   --grid-opacity: 1;
   --divider: rgb(255 246 229 / 0.15);
@@ -2538,7 +2540,7 @@ main > section[class] { background: transparent; }
 
   @keyframes burns-pulse {
     0% { background: var(--green); }
-    50% { background: var(--green-deep); }
+    50% { background: var(--accent-light); }
   }
 
   @keyframes sparkle {

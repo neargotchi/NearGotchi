@@ -25,7 +25,7 @@
   --section-scale: 1.32;
 }
 :root[data-theme='dark'] {
-  --card-fill: #031c17;
+  --card-fill: #141414;
   --tier-legendary-line: #ffd43b;
 }
 
@@ -70,7 +70,7 @@
 }
 .hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) {
   max-width: 100%;
-  color: var(--scene-accent);
+  color: var(--accent-copy);
   font-family: var(--font-pixel), monospace;
   font-size: clamp(8px, calc(.68vw * var(--ds)), calc(16px * var(--ds)));
   font-weight: 400;
@@ -314,7 +314,7 @@
 .hero-shell .pet-card-traits li {
   padding: 1.4cqi 2.9cqi;
   border: 0;
-  color: #17251c;
+  color: var(--ink);
   background: var(--lcd);
   font-size: max(7px, 2.3cqi);
   clip-path: polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),
@@ -401,7 +401,7 @@
 .hero-shell .gotchi-preview .pet-msg.is-you { border-color: var(--accent-light); color: var(--on-accent); background: var(--scene-button); }
 .hero-shell .gotchi-preview :is(.pet-traits li, .snack-cost, .pet-chat-note) {
   border: 0;
-  color: #17251c;
+  color: var(--ink);
   background: var(--lcd);
   clip-path: polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),
     calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px);
