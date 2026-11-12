@@ -18,7 +18,7 @@ Nothing here has been sent or published. The owner does every step after their o
 ## Links
 - Demo: https://neargochi.vercel.app
 - Repo: https://github.com/neargotchi/NearGochi (visibility = owner's decision)
-- Contract (NEAR mainnet): `[MAINNET CONTRACT]` · https://nearblocks.io/address/[MAINNET CONTRACT] (after `docs/MAINNET-RUNBOOK.md`)
+- Contract (NEAR mainnet): `drop1.neargochi-dev.near` · https://nearblocks.io/address/drop1.neargochi-dev.near (deploy record: `docs/MAINNET-RUNBOOK.md`)
 - Contract (NEAR testnet, same code as mainnet, 50/50 + holder rewards): `neargotchi-drop1-ng67.testnet` · https://testnet.nearblocks.io/address/neargotchi-drop1-ng67.testnet
 - Holder rewards on testnet: 2nd mint `7edZwRA1d5dSCQ6KFJNhFuLowScrzLgjPkaS8VfR16iF` → token #198's owner claims 0.995 NEAR `4T7Ck242PEM3rczLrY94fghnprTwNDegVgeiax7hNBDj`
 - Older testnet contract (33/33/34, no holder rewards): `neargotchi-drop1-ng57.testnet` · https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet
