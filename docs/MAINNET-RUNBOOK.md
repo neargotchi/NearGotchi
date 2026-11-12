@@ -10,6 +10,33 @@ Contract: `contracts/drop1`. Split: **50 % team / 50 % holder rewards** (per min
 Limit **5 mints per account** (set in `new`). Review: `docs/REPORT.md` → DONE: 067. No Ledger (owner decision, task 069):
 a fresh project account with its seed phrase on paper; ownership can move to a Ledger later (optional step L).
 
+## Mainnet record (2026-11-12, done by the owner)
+
+Accounts: OWNER `neargochi-dev.near`, CONTRACT **`drop1.neargochi-dev.near`**, TEAM `neargotchiai.near`. Code hash on chain
+`D7z3DKfjddZ6XRRpQUX7BXSMzLn24wHtwFePtCFpArTM` = local `contracts/drop1/res/neargotchi_drop1.wasm` (sha256 `b41638a1…eb634`,
+`cargo test --lib` 34/34). Letters = `docs/MAINNET-COMMANDS.md`; tx ids on https://nearblocks.io/txns/<id>.
+
+| step | what | signer | tx | result |
+|---|---|---|---|---|
+| A (§4) | create CONTRACT, 8 NEAR | OWNER | `HdzS6EginreRQv7ec6aqCvvAd5L2Nwj3RZvkeLwgeBMV` | OK |
+| B (§5) | deploy + `new` (limit 5, `base_uri` ipfs.io without `/`) | CONTRACT | `3sFbDP1A4FpriSzNaEQ4BC4P4StuJRiEkGVUtgWUe1xd` | OK |
+| C (§6) | `load_catalog` 1…6 | CONTRACT | `FhNzwoGDCVfnyo2g44FYiNMtH4nKP9wcBZt1JFaX1D6T`, `HSZkgrYkC5JtofGUjfkHd7254RHJWhZ4wNXtcYYZUNgC`, `DGsacbkzasXzZ4zY8kEu7LHupmmt6vKavg384ARwvRrA`, `CdNnwFz5CWFwuKR1ZbUk1KuZB77aC947NNBCqX4Z4xfw`, `DS7xhiEGS1setyjrBcpmXEFC4a9hCo6rKgjaceCR5Hjz`, `9wenrur6dK5V5cJBqN2pRyWCpDPSoEj16UCyJs7F5Lq2` | 300/300 |
+| E (§8) | `unpause` → `nft_mint` 2 NEAR → `pause` | CONTRACT / OWNER / CONTRACT | `FbRkq7ExNGRiTtdxe3s1NRnnvscaHHQUtcUqpr2E11dy`, `9JEEHWBkgMtmcSYk15jUkyCAG8bTovZuzF2Rz2TduBcZ` (token **#195**, `nft_mint` event OK), `BSgSPxe8AEyrnqtorRBBaX7jVCqvZb33gPee7Uskr12f` | minted 1, paused |
+| D (§7) | `set_base_uri` ipfs.io with `/` | CONTRACT | `88dcrLAGJgihceHKaEJu2fsMzniqawj27m6E3A4zQsqD` | OK, but ipfs.io is retired → no image |
+| D (§7) | `set_base_uri` public `gateway.pinata.cloud` | CONTRACT | `3KA2A9q4tv2M8socgycnMphZvAq2duYeGqFhNfsfm8yv` | OK, but rate-limited → grey image in Meteor |
+| G (§10) | `propose_owner` with `{"new_owner":…}` | CONTRACT | `DFb3CV96M8bBPoxYrY5qwodKQZ8vexDpUfMBkfdGerH4` | **FAIL** `missing field owner_id` (nothing changed) |
+| G (§10) | `propose_owner {"owner_id":"neargochi-dev.near"}` | CONTRACT | `Cbhsf2iaZGCYVcBTBv7wUjfZkPkMiiUvJ1jKTPmSw3sa` | OK |
+| H (§10) | `accept_owner` | OWNER | `96NjRTxoiM7ZaL6LFwWawQ3sVPzStkjDvpZ5USanX9N7` | `owner()` = `neargochi-dev.near` |
+| §14 | `distribute` | OWNER | `F4wbNzySYw5NQ2GyU36zYSZxBUzWxpmrMHTu46WyGq16` | 1.99 NEAR → `neargotchiai.near` |
+| D (§7) | `set_base_uri` dedicated `https://lavender-known-gorilla-623.mypinata.cloud/ipfs/<CID>/` | **OWNER** | `36Hu1Zb3cBiNJ8NLKA1Puj6fkNdbmgBdJTrEc4nC21V4` | OK — image #195 shows in Meteor |
+| F (§9) | `freeze_metadata` | — | — | **not done on purpose** (see §9) |
+| J (§11) | delete the CONTRACT key | — | — | **not done**: 1 full-access key left (preflight WARN) |
+
+Lessons (also in "Where it is easy to make a mistake"): the `propose_owner` argument is **`owner_id`**; after
+`accept_owner` every owner function (`set_base_uri`, `pause`/`unpause`, `freeze_metadata`, `set_team`…) needs
+**`sign-as $OWNER`** — the CONTRACT key only still signs account-level actions (deploy, delete key). State after the
+record: paused, catalog 300/300, minted 1, limit 5, `metadata_frozen: false`, `accrued.team` 0.
+
 ## Accounts
 
 | role | account | what it does | funds |
@@ -88,7 +115,7 @@ in every version (no file is uploaded anywhere, the shell inserts the JSON).
 | decision | recommendation | why now |
 |---|---|---|
 | media: PNG or WebP | **PNG** (1024 px, `images/drop1`, 154.5 MB) | `media` = `{id}.png` and `media_hash` = sha256 of the PNG go into the contract with `load_catalog` (step 6) and can't be changed afterwards, not even before the freeze. WebP = regenerate metadata + hashes before step 5. |
-| gateway in `base_uri` | `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm` (no trailing slash) | NEP-177 `base_uri` is an https gateway; wallets build `base_uri + "/" + media`. Changeable until step 9. |
+| gateway in `base_uri` | `https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/` (dedicated Pinata gateway, paid Picnic plan, trailing slash) — see §3 | NEP-177 `base_uri` is an https gateway; wallets build `base_uri + "/" + media`. Changeable until step 9. |
 | TEAM | see "Accounts" | `init.json` contains it. |
 
 ## 1. Costs (measured: sandbox CI run 43052461862, testnet ng67)
@@ -119,9 +146,12 @@ The folder `ipfs/drop1` (300 × `{id}.png` + 300 × `{id}.json`) is pinned on Pi
 
 **CID `bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm`**
 
-`base_uri` = `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm` (default of `scripts/mainnet_args.py`, no trailing slash). Wallets build the
-image URL as `base_uri + "/" + media`, e.g. token #10: `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/10.png` (its JSON:
-`…/10.json`). Verification (all 300 PNG sha256 == `media_hash`, all 300 JSON == `metadata/drop1`): `docs/REPORT.md` → DONE: 071.
+`base_uri` (on chain since 2026-11-12, default of `scripts/mainnet_args.py`) =
+`https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/` — the
+project's **dedicated** Pinata gateway, **with** a trailing slash. Wallets build the image URL as `base_uri + "/" + media`
+(Nearblocks and MyNearWallet trim the slash first; clients that don't produce `…//10.png`, which the gateway serves too;
+details and source links: `docs/DEVLOG.md`), e.g. token #10:
+`https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/10.png` (its JSON: `…/10.json`). Verification (all 300 PNG sha256 == `media_hash`, all 300 JSON == `metadata/drop1`): `docs/REPORT.md` → DONE: 071.
 How it was verified: the folder's CID computed locally from the files (`cid`, UnixFS with kubo's CIDv1 defaults) equals
 the CID Pinata reports, so the pinned bytes are exactly the local folder; locally every PNG matches its `media_hash` and
 every JSON equals `metadata/drop1`. A one-byte change in any file gives a different CID (tested). Re-check before step 9
@@ -129,30 +159,45 @@ every JSON equals `metadata/drop1`. A one-byte change in any file gives a differ
 ```sh
 python3 scripts/ipfs_drop1.py verify-dir                                              # 300 PNG == media_hash
 python3 scripts/ipfs_drop1.py cid ipfs/drop1 bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm                                    # local bytes == pinned CID (no network)
-python3 scripts/ipfs_drop1.py verify-url https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm 12                 # sample through the gateway in base_uri
-# full download of all 600 files (slow; gateways rate-limit): IPFS_WORKERS=1 IPFS_DELAY=2 python3 scripts/ipfs_drop1.py verify-url <gateway>/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm all
+python3 scripts/ipfs_drop1.py verify-url https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm 12   # sample through the gateway in base_uri
+# full download of all 600 files (slow): IPFS_WORKERS=1 IPFS_DELAY=2 python3 scripts/ipfs_drop1.py verify-url https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm all
 ```
-Public gateways rate-limit per IP: on 2026-11-11 ipfs.io / dweb.link / w3s.link answered `429, retry-after: 900` after a
-handful of requests, and gateway.pinata.cloud `429, retry-after: 2804` during the first full 600-file download. If you see 429, wait; don't hammer it.
-Keep the pin.
+Keep the pin (and the Pinata plan: see below).
+
+**Gateway notes (2026-11-12, task 079 → `docs/DEVLOG.md`):**
+- **ipfs.io and dweb.link are retired** for hotlinked content since **2026-09-21** (IPFS Foundation / Shipyard, Aug 2026):
+  every request gets `429` "switching to a service worker gateway only". The `429, retry-after: 900` seen on 2026-11-11
+  was this, not a per-IP limit. A `base_uri` on them = no image in any wallet.
+- **Public `gateway.pinata.cloud`** rate-limits hard: `429` + a Cloudflare bot challenge after ~5 requests from one IP;
+  Pinata's docs: public gateways "are not meant for production apps". Meteor showed a grey placeholder with it.
+- **Dedicated gateway** (`lavender-known-gorilla-623.mypinata.cloud`): no request rate limits per Pinata's docs; serves only
+  CIDs pinned on our account. It needs a **paid plan**: the Free plan allows 500 files and drop 1 is 600 (300 PNG + 300
+  JSON), so the account is on **Picnic** ($20/month: 500 GB bandwidth, 1 M requests). If the plan lapses, every image
+  breaks — keep it paid while the collection matters.
+- **`base_uri` is deliberately NOT frozen** (no step 9 yet): the owner can still re-point it with `set_base_uri` if the
+  gateway or plan changes. Integrity does not depend on the gateway: each token's `media_hash` (sha256 of the PNG) and the
+  content-addressed CID are on chain / in the URL, so any gateway serving the CID serves verifiably the same bytes.
+- **Target before the freeze (after the hackathon):** a second pinning provider by CID (see "Redundancy") and/or a custom
+  domain on the gateway (e.g. `img.<own domain>`), so a frozen `base_uri` survives a provider change via DNS. Then freeze.
 
 **Which gateway in `base_uri`** (it can't change after step 9):
 
 | option | verdict |
 |---|---|
-| `https://ipfs.io/ipfs/<CID>` | **recommended.** NEP-177 defines `base_uri` as a "centralized gateway"; ipfs.io is the public gateway run for the IPFS project, not tied to our Pinata account, so it outlives a cancelled plan; CORS `*`. MyNearWallet builds `${base_uri}/${media}` (source verified) → works. Risk: per-IP rate limits (seen during verification). |
-| `https://dweb.link/ipfs/<CID>` | answered the same `429, retry-after: 900` at the same moment as ipfs.io; no advantage seen. |
-| `https://gateway.pinata.cloud/ipfs/<CID>` | answered 200 with correct bytes, but it is Pinata's shared public gateway; a free-plan gateway's long-term terms for third-party traffic are not verified. Second choice. |
-| `https://<name>.mypinata.cloud/ipfs/<CID>` (dedicated) | bound to the Pinata account and plan: if the account goes, every token image breaks. Not for a frozen `base_uri`. |
+| `https://<name>.mypinata.cloud/ipfs/<CID>/` (dedicated, paid) | **in use.** Works in Meteor; bound to the Pinata account and plan, so not yet for a frozen `base_uri` — add a custom domain and a second pin first. |
+| `https://<own domain>/ipfs/<CID>/` (custom domain on a dedicated gateway) | **target for the freeze**: provider can change behind DNS. |
+| `https://ipfs.io/ipfs/<CID>` · `https://dweb.link/ipfs/<CID>` | **no** — retired for hotlinks 2026-09-21. |
+| `https://gateway.pinata.cloud/ipfs/<CID>` | **no** — public, 429 + bot challenge after a few requests. |
 | `ipfs://<CID>` | **no.** NEP-177 asks for a gateway; MyNearWallet passes `ipfs://…/10.png` through unchanged, which a browser `<img>` can't load (source verified). |
 
-Not verified: how Meteor (source not found), Mintbase and Paras resolve `base_uri` + `media`. Check after step 8 by
-opening the test token in Meteor (and on a marketplace if you list it).
+How clients build the URL (source-verified for Nearblocks, MyNearWallet, Intear, Mintbase template; Meteor closed source):
+`docs/DEVLOG.md` §2. Meteor shows #195 with the dedicated gateway (checked by the owner, 2026-11-12).
 
 ## Redundancy (after the hackathon)
 
 One pin = one point of failure. The CID is content-addressed: any provider that pins **the same CID** serves the same
-files, and the on-chain `base_uri` (ipfs.io) finds them wherever they are pinned. Pin **by CID** (don't re-upload the
+files; the on-chain `base_uri` (dedicated Pinata gateway) serves only what is pinned on our Pinata account, so a second
+provider protects the files, and a gateway on our own domain lets `base_uri` follow them. Pin **by CID** (don't re-upload the
 folder: a different uploader's chunking can produce a different CID):
 - Another pinning service with "pin by CID" (e.g. Filebase, 4EVERLAND, Storacha): in its dashboard choose "pin by CID" /
   "import CID" and paste `bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm`. Or with a local IPFS node (kubo) and the IPFS Pinning Service API:
@@ -176,7 +221,7 @@ near account view-account-summary $CONTRACT network-config $NET now     # 8 NEAR
 ## 5. Deploy + init (one transaction)
 
 ```sh
-python3 scripts/mainnet_args.py --owner $CONTRACT --team $TEAM        # base_uri = https://ipfs.io/ipfs/<drop 1 CID> by default
+python3 scripts/mainnet_args.py --owner $CONTRACT --team $TEAM        # base_uri = dedicated gateway /ipfs/<drop 1 CID>/ by default
 #  → contracts/drop1/res/mainnet/init.json (owner = the contract during setup, limit 5, provenance) + catalog-1..6.json
 python3 scripts/mainnet_preflight.py --network $NET --owner $OWNER --contract $CONTRACT --team $TEAM      # local files all OK
 
@@ -206,12 +251,17 @@ fails with "token id already loaded" and changes nothing.
 
 ## 7. base_uri
 
-Set in step 5 if you passed `--base-uri`. To set / change it (only until step 9):
+Set in step 5 if you passed `--base-uri`. To set / change it (only until step 9). **Signer = the current owner:**
+`$CONTRACT` before step 10, **`$OWNER` after `accept_owner`** (mainnet: already `$OWNER`; the contract key gets "owner only"):
 ```sh
-near contract call-function as-transaction $CONTRACT set_base_uri json-args '{"base_uri":"https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm"}' \
-  prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' sign-as $CONTRACT network-config $NET sign-with-keychain send
+near contract call-function as-transaction $CONTRACT set_base_uri json-args '{"base_uri":"https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/"}' \
+  prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' sign-as $OWNER network-config $NET sign-with-keychain send
 near contract call-function as-read-only $CONTRACT nft_metadata json-args '{}' network-config $NET now
+curl -sI https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/195.png | head -3   # 200, image/png
 ```
+Mainnet history: `new` set ipfs.io (no slash), then ipfs.io with `/`, then public `gateway.pinata.cloud`, then the
+dedicated gateway (record at the top). Before a new value: `curl` the image through it (200, `image/png`, CORS `*`) and
+open the token in Meteor.
 
 ## 8. Test mint (paused except for a few seconds)
 
@@ -224,16 +274,20 @@ near contract call-function as-transaction $CONTRACT pause json-args '{}' prepai
   sign-as $CONTRACT network-config $NET sign-with-keychain send
 ```
 Check: the mint result shows a token; `drop_status` → minted 1, pending 0, paused true; `accrued` → team 1.99 NEAR;
-`nft_token {"token_id":"<id>"}` → `media` `<id>.png`; `https://ipfs.io/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/<id>.png` opens; the token shows in
-your wallet's NFT tab with its image.
+`nft_token {"token_id":"<id>"}` → `media` `<id>.png`; `https://lavender-known-gorilla-623.mypinata.cloud/ipfs/bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm/<id>.png` opens; the token shows in
+your wallet's NFT tab with its image. (Mainnet: token #195, done.) Nearblocks lists the token only after its NFT indexer
+catches up (on 2026-11-12 its API was still empty for the collection although the `nft_mint` event was emitted).
 
 ## 9. Freeze the metadata (irreversible)
 
+**Mainnet: postponed on purpose** until after the hackathon, when a second pinning provider (by CID) and/or a custom
+domain for the gateway are in place (§3 "Gateway notes"). Until then `base_uri` stays changeable; `media_hash` + CID keep
+the images verifiable. Signer after step 10 = `$OWNER`:
 ```sh
 near contract call-function as-transaction $CONTRACT freeze_metadata json-args '{}' prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' \
-  sign-as $CONTRACT network-config $NET sign-with-keychain send
+  sign-as $OWNER network-config $NET sign-with-keychain send
 ```
-Preflight: `frozen True`, `base_uri` = your gateway URL.
+Preflight: `frozen True`, `base_uri` = your gateway URL (OK, not retired / not the public Pinata gateway).
 
 ## 10. Ownership to OWNER (two steps)
 
@@ -245,7 +299,9 @@ near contract call-function as-transaction $CONTRACT accept_owner json-args '{}'
   prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' sign-as $OWNER network-config $NET sign-with-keychain send
 near contract call-function as-read-only $CONTRACT owner json-args '{}' network-config $NET now           # OWNER
 ```
-A typo in `propose_owner` is harmless: nobody can accept it; propose again with the right name.
+A typo in `propose_owner` is harmless: nobody can accept it; propose again with the right name. The argument is
+**`owner_id`** (mainnet: a first call with `new_owner` failed with "missing field `owner_id`" and changed nothing). From
+here on all owner functions are signed with `sign-as $OWNER`.
 
 ## 11. Delete the contract account's key (makes the code final)
 
@@ -336,6 +392,9 @@ live site with a second account (≥ 2.1 NEAR) and check that your test token no
 | 5 | deploying a different wasm than the tested one | code hash on chain vs local build (preflight) |
 | 6 | 6 × `load_catalog`: one fails, or a batch is sent twice | `drop_status.catalog_loaded` after each (the loop prints it); re-send only the missing batch; the sale can't start before 300/300 ("catalog not loaded") |
 | 7–9 | freeze with the wrong `base_uri` | `nft_metadata` + open an image URL before step 9; after the freeze it can't be fixed |
+| 7 | `base_uri` on a retired or public gateway (ipfs.io / dweb.link / gateway.pinata.cloud) | grey image in wallets; preflight FAILs on these hosts; use the dedicated gateway (§3) |
+| 10 | `propose_owner` with the wrong field name (`new_owner`) | fails with "missing field `owner_id`"; nothing changes — the field is `owner_id` |
+| after 10 | owner function signed by `$CONTRACT` | "owner only": after `accept_owner` sign with `$OWNER` |
 | 8 | forgetting to `pause` after the test mint | preflight shows `paused`; step 13 is the only `unpause` that should stay |
 | 10 | `propose_owner` with a typo | `proposed_owner` view before `accept_owner`; a wrong proposal can't be accepted, propose again |
 | 11 | deleting the key before the setup is finished | do steps 6–10 first; after 11 the contract can't sign for itself any more |

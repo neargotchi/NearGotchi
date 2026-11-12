@@ -82,6 +82,26 @@ def view(network, contract, method, args=None):
     return json.loads(bytes(result["result"]).decode())
 
 
+RETIRED_GATEWAYS = ("ipfs.io", "dweb.link")          # retired for hotlinked content 2026-09-21 (docs/DEVLOG.md)
+RATE_LIMITED_GATEWAYS = ("gateway.pinata.cloud",)    # public Pinata: 429 + bot challenge after ~5 requests per IP
+
+
+def base_uri_verdict(base):
+    """(level, text) for a drop 1 base_uri: https gateway + /ipfs/<CID>, with or without one trailing '/'."""
+    if base is None:
+        return "WARN", "base_uri is null — set it with set_base_uri before freeze (step 7)"
+    host = base.split("://", 1)[-1].split("/", 1)[0]
+    if not base.startswith("https://") or base.endswith("//") or "<CID>" in base or "TODO" in base:
+        return "FAIL", f"base_uri {base!r}: must be https://<gateway>/ipfs/<CID>/"
+    if host in RETIRED_GATEWAYS or host.endswith("." + RETIRED_GATEWAYS[1]):
+        return "FAIL", f"base_uri {base}: {host} is retired for hotlinks since 2026-09-21 — wallets show no image"
+    if host in RATE_LIMITED_GATEWAYS:
+        return "FAIL", f"base_uri {base}: public {host} rate-limits (429) — use the dedicated gateway"
+    if not base.rstrip("/").endswith("/ipfs/" + CID):
+        return "WARN", f"base_uri {base} does not point at the drop 1 CID {CID}"
+    return "OK", f"base_uri {base}"
+
+
 def local_checks(a):
     print("local files")
     wasm_hash = None
@@ -103,15 +123,8 @@ def local_checks(a):
                           ("provenance", provenance), ("royalty_account", None)):
             got = init.get(key)
             say("OK" if got == want else "FAIL", f"init.{key} = {got!r}" + ("" if got == want else f" (expected {want!r})"))
-        base = init.get("base_uri")
-        if base is None:
-            say("WARN", "init.base_uri is null — set it with set_base_uri before freeze (step 7)")
-        elif not base.startswith("https://") or base.endswith("/") or "<CID>" in base or "TODO" in base:
-            say("FAIL", f"init.base_uri {base!r}: must be https://<gateway>/ipfs/<CID> without a trailing slash")
-        elif not base.endswith("/ipfs/" + CID):
-            say("WARN", f"init.base_uri {base} does not point at the drop 1 CID {CID}")
-        else:
-            say("OK", f"init.base_uri {base}")
+        level, text = base_uri_verdict(init.get("base_uri"))
+        say(level, f"init.{text}")
     seen = []
     for i in range(1, 7):
         path = os.path.join(ARGS, f"catalog-{i}.json")
@@ -183,7 +196,8 @@ def chain_checks(a, wasm_hash):
             say("OK" if owner in (a.contract, a.owner) else "FAIL", f"owner() = {owner}"
                 + (" (setup phase: the contract itself, step 10 moves it to the owner account)" if owner == a.contract else ""))
             meta = view(a.network, a.contract, "nft_metadata") or {}
-            say("OK" if meta.get("base_uri") else "WARN", f"base_uri = {meta.get('base_uri')}")
+            level, text = base_uri_verdict(meta.get("base_uri"))
+            say(level, f"on chain {text}")
         keys, _ = rpc(a.network, {"request_type": "view_access_key_list", "finality": "final", "account_id": a.contract})
         n = len((keys or {}).get("keys", []))
         say("OK" if n == 0 else "WARN", f"contract account has {n} access key(s)" + (" — code is final" if n == 0 else " — delete before unpausing (step 11)"))

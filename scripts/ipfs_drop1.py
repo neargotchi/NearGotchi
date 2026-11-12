@@ -5,7 +5,7 @@ reads (GET) from a gateway. Upload is done by the owner on Pinata.
   python3 scripts/ipfs_drop1.py verify-dir [DIR]   → re-checks a folder (default ipfs/drop1) against metadata/drop1
   python3 scripts/ipfs_drop1.py cid [DIR] [EXPECTED] → the folder's IPFS CID computed locally (kubo CIDv1 defaults), no network
   python3 scripts/ipfs_drop1.py verify-url BASE [N] → downloads N tokens (default 12 + #1 + #300) from BASE
-                                                     (e.g. https://gateway.pinata.cloud/ipfs/<CID>/) and checks them
+                                                     (e.g. https://lavender-known-gorilla-623.mypinata.cloud/ipfs/<CID>/) and checks them
   python3 scripts/ipfs_drop1.py verify-url BASE all → all 300 PNG (sha256 == media_hash) + 300 JSON (== metadata/drop1),
                                                      IPFS_WORKERS (default 4) parallel requests, IPFS_DELAY s (0.25) apart per worker;
                                                      429 → waits (Retry-After, ≥ 30 s), 5 tries
@@ -68,7 +68,7 @@ def prepare():
     assert len(files) == 2 * TOTAL, len(files)
     print(f"ok: {OUT} — 300 PNG ({total_bytes / 1e6:.1f} MB) + 300 JSON, every PNG matches its media_hash")
     print("next: upload the FOLDER ipfs/drop1 to Pinata (as a folder, not 600 single files), note the CID,")
-    print("      then: python3 scripts/ipfs_drop1.py verify-url https://gateway.pinata.cloud/ipfs/<CID>/")
+    print("      then: python3 scripts/ipfs_drop1.py verify-url https://lavender-known-gorilla-623.mypinata.cloud/ipfs/<CID>/")
 
 
 def verify_dir(folder: str):

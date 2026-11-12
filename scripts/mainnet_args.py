@@ -1,6 +1,6 @@
 """JSON argument files for the mainnet deploy (docs/MAINNET-RUNBOOK.md). Writes, never sends anything.
 
-  python3 scripts/mainnet_args.py --owner drop1.OWNER.near --team TEAM.near [--base-uri https://<gateway>/ipfs/<CID>]
+  python3 scripts/mainnet_args.py --owner drop1.OWNER.near --team TEAM.near [--base-uri https://<gateway>/ipfs/<CID>/]
 
 → contracts/drop1/res/mainnet/init.json      (args of `new`: limit 5 per account, provenance from metadata)
   contracts/drop1/res/mainnet/catalog-1.json … catalog-6.json   (args of `load_catalog`, 50 tokens each)
@@ -13,7 +13,12 @@ META = os.path.join(ROOT, "metadata", "drop1")
 OUT = os.path.join(ROOT, "contracts", "drop1", "res", "mainnet")
 # Drop 1 images + metadata on IPFS (Pinata, uploaded 2026-11-11; all 300 PNG + JSON verified, docs/REPORT.md DONE: 071)
 CID = "bafybeih3wekkmxod2plah2wq54tcjt2gvxryttg6rnz57pao22nmwnnkgm"
-DEFAULT_BASE_URI = f"https://ipfs.io/ipfs/{CID}"   # NEP-177: an https gateway; no trailing slash (wallets add "/")
+# NEP-177: an https gateway. Dedicated Pinata gateway (paid Picnic plan) — the one on mainnet since 2026-11-12.
+# Not ipfs.io / dweb.link (retired for hotlinks 2026-09-21) and not the public gateway.pinata.cloud (429 after ~5
+# requests). Trailing "/" on purpose: clients that glue base_uri + media without a separator still get a valid URL;
+# the ones that add "/" either trim it (Nearblocks, MyNearWallet) or produce "//", which the gateway serves too.
+GATEWAY = "https://lavender-known-gorilla-623.mypinata.cloud"
+DEFAULT_BASE_URI = f"{GATEWAY}/ipfs/{CID}/"
 ACCOUNT = re.compile(r"^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$")
 
 
@@ -21,7 +26,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--owner", required=True, help="owner during setup = the contract account itself (drop1.OWNER.near); step 10 hands it to OWNER.near")
     ap.add_argument("--team", required=True, help="team account: receives distribute() and the 5%% royalty")
-    ap.add_argument("--base-uri", default=DEFAULT_BASE_URI, help="https gateway + /ipfs/<CID>, no trailing slash (default: %(default)s)")
+    ap.add_argument("--base-uri", default=DEFAULT_BASE_URI, help="https gateway + /ipfs/<CID>/ (default: %(default)s)")
     ap.add_argument("--limit", type=int, default=5, help="mints per account (mainnet: 5)")
     ap.add_argument("--network", choices=["mainnet", "testnet"], default="mainnet", help="testnet only for a dry run")
     args = ap.parse_args()
