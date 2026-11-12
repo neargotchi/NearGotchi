@@ -137,7 +137,7 @@ export type Result =
 
 type Env = { key?: string; model?: string };
 
-type Attempt = { ok: true; reply: string } | { ok: false; timeout: boolean };
+export type Attempt = { ok: true; reply: string } | { ok: false; timeout: boolean };
 
 /** One call to one model. Never throws. */
 async function callModel(model: string, req: ChatRequest, key: string, doFetch: typeof fetch): Promise<Attempt> {
@@ -178,9 +178,15 @@ export async function handleChat(
   const parsed = parseRequest(body);
   if (!parsed.ok) return { status: 400, body: { error: parsed.error } };
   if (rateLimited(ip)) return { status: 429, body: { error: "rate_limited" } };
-  const primary = env.model || DEFAULT_MODEL;
-  let attempt = await callModel(primary, parsed.value, env.key, doFetch);
-  if (!attempt.ok && primary !== FALLBACK_MODEL) attempt = await callModel(FALLBACK_MODEL, parsed.value, env.key, doFetch);
+  const attempt = await askModels(parsed.value, env.key, env.model, doFetch);
   if (attempt.ok) return { status: 200, body: { reply: attempt.reply } };
   return attempt.timeout ? { status: 504, body: { error: "timeout" } } : { status: 502, body: { error: "upstream" } };
+}
+
+/** The default (or NEAR_AI_MODEL) model, then the fallback once. Never throws. Also used by the mainnet chat (task 081). */
+export async function askModels(req: ChatRequest, key: string, model: string | undefined, doFetch: typeof fetch = fetch): Promise<Attempt> {
+  const primary = model || DEFAULT_MODEL;
+  let attempt = await callModel(primary, req, key, doFetch);
+  if (!attempt.ok && primary !== FALLBACK_MODEL) attempt = await callModel(FALLBACK_MODEL, req, key, doFetch);
+  return attempt;
 }

@@ -16,7 +16,8 @@
     "start": "next start",
     "lint": "eslint .",
     "check:drop1": "node --experimental-transform-types --no-warnings scripts/check-drop1.mjs",
-    "check:chat": "node --experimental-transform-types --no-warnings scripts/check-chat-api.mjs"
+    "check:chat": "node --experimental-transform-types --no-warnings scripts/check-chat-api.mjs",
+    "check:energy": "node --experimental-transform-types --no-warnings scripts/check-energy.mjs"
   },
   "dependencies": {
     "@near-wallet-selector/core": "10.1.4",
