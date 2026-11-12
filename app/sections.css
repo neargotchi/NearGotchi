@@ -678,3 +678,8 @@ body > .notfound-shell > .notfound { min-height: 0; }
 
 /* Task 087: link inside an FAQ answer ("verify on nearblocks", mainnet only). */
 .hero-shell .faq-item p a { color: var(--scene-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Task 089: the sparkles around "$NEARGotchi" sat low against the title (the "+" under it hung
+   below the letters): lift them ~10px at 1920 (scales with --ds on phones) so title + ornaments
+   read as one centred group, as in the FAQ / drop 1 headings. */
+.coin-title > .sparkles { translate: 0 calc(-12px * var(--ds)); }
