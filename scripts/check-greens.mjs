@@ -13,8 +13,7 @@ const ALLOWED = new Map([
   ["#b7c9a0", "LCD screen of the logo egg (--lcd)"],
   ["#9db088", "LCD screen shade (--lcd-shadow)"],
   ["#d8e4c3", "LCD screen line (--lcd-line)"],
-  ["#1a7d36", "rarity rainbow, light theme (--tier-rainbow)"],
-  ["#69db7c", "rarity rainbow, dark theme (--tier-rainbow)"],
+  ["#69db7c", "rarity rainbow (--tier-rainbow)"],
 ]);
 const ROOTS = ["app", "components", "lib"];
 const EXT = new Set([".css", ".tsx", ".ts"]);

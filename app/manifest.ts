@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { SITE_DESCRIPTION, SITE_NAME } from "../lib/site";
-import { THEME_COLORS } from "../lib/theme";
+import { THEME_COLOR } from "../lib/theme";
 
 /** Web manifest: wallets (Meteor's "Approve transaction" popup) and phones read the name and the square dark icons from here. */
 export default function manifest(): MetadataRoute.Manifest {
@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
-    background_color: THEME_COLORS.dark,
-    theme_color: THEME_COLORS.dark,
+    background_color: THEME_COLOR,
+    theme_color: THEME_COLOR,
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },

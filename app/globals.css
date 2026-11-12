@@ -12,7 +12,7 @@
      screen green: #01eba3). No darker green anywhere (scripts/check-greens.mjs fails on one). Only
      lighter derivatives of the same hue: --accent-light (highlights), --accent-hover (button hover).
      Not green: --accent-deep = pixel shadows / 3D edges in translucent ink; --on-accent = ink text on
-     accent fills; --accent-copy = sentence-length text (ink on light, the accent on dark). */
+     accent fills; --accent-copy = sentence-length text (the accent on the dark page). */
   --accent: #01eba3;
   /* One cycle for both pixel sweeps (task 090): the hero N (@keyframes n-sweep) and the
      "$NEARGOTCHI" nav label (@keyframes nav-sweep, hero-header.css): 20 % of it = the pass in
@@ -23,48 +23,21 @@
   --accent-light: color-mix(in srgb, var(--accent) 38%, #fff);
   --accent-hover: color-mix(in srgb, var(--accent) 85%, #fff);
   --on-accent: var(--ink);
-  --accent-copy: var(--ink);
+  --accent-copy: var(--accent);
   --green: var(--accent);
   --green-deep: var(--accent-deep);
   --lcd: #b7c9a0;
   --lcd-shadow: #9db088;
   --pink: #ff6b9d;
 
-  /* Theme tokens. Light values are the approved light design; the dark set below swaps them
-     (NEAR-style near-black + NEAR green). Pet sprites, logo and LCD boxes never change. */
-  --page: var(--cream);
-  --surface: var(--cream);
-  --text: var(--ink);
-  --text-muted: #6f6c66;
-  --line: var(--ink);
-  --shadow: var(--ink);
-  --grid-line: #d7cfbf;
-  --grid-opacity: 0.33;
-  --divider: #d7cfbf;
-  --scrim: rgb(20 20 20 / 0.25);
-  --locked-box: #c4c1ba;
-  --sparkle-alt: var(--accent);
-  --html-bg: var(--ink);
-  --footer-bg: var(--ink);
-  /* Drop-1 tier text (TierBadge, "one of N {tier} …"): every colour ≥ 4.5:1 on the page and surface. */
-  --tier-common: #66625b;
-  --tier-rare: #a35c00;
-  --tier-epic: #7b3fd6;
-  --tier-rainbow: linear-gradient(90deg, #d0342c, #a35c00, #7d6b00, #1a7d36, #1f63c7, #7b3fd6,
-    #d0342c, #a35c00, #7d6b00, #1a7d36, #1f63c7, #7b3fd6, #d0342c);
-}
-
-/* Dark mode: set on <html> before paint by the inline script in app/layout.tsx
-   (saved choice in localStorage "neargotchi-theme", else prefers-color-scheme). */
-:root[data-theme="dark"] {
-  color-scheme: dark;
+  /* Theme tokens: the site has one theme, dark (task 093; the light theme and its toggle are gone).
+     NEAR-style near-black + the logo green. Pet sprites, logo and LCD boxes never change. */
   --page: #0b0c0a;
   --surface: #17181a;
   --text: var(--cream);
   --text-muted: rgb(255 246 229 / 0.7);
   --line: var(--cream);
   --shadow: color-mix(in srgb, var(--accent) 45%, transparent);
-  --accent-copy: var(--accent);
   --grid-line: rgb(255 246 229 / 0.06);
   --grid-opacity: 1;
   --divider: rgb(255 246 229 / 0.15);
@@ -73,11 +46,13 @@
   --sparkle-alt: #fff;
   --html-bg: #000;
   --footer-bg: #000;
+  /* Drop-1 tier text (TierBadge, "one of N {tier} …"): every colour ≥ 4.5:1 on the page and surface. */
   --tier-common: #b5b0a6;
   --tier-rare: #ffb340;
   --tier-epic: #c79bff;
   --tier-rainbow: linear-gradient(90deg, #ff6b6b, #ffa94d, #ffd43b, #69db7c, #4dabf7, #b197fc,
     #ff6b6b, #ffa94d, #ffd43b, #69db7c, #4dabf7, #b197fc, #ff6b6b);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -791,39 +766,6 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
   white-space: nowrap;
 }
 
-/* Theme toggle: pixel moon (light) / sun (dark), same height as the header buttons (≥44px
-   tap target). The icon follows <html data-theme> in CSS so it is right before hydration. */
-.theme-toggle {
-  display: inline-grid;
-  flex: none;
-  width: round(calc(48px * var(--ui-scale)), 1px);
-  height: round(calc(48px * var(--ui-scale)), 1px);
-  place-items: center;
-  padding: 0;
-  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--line);
-  border-radius: 0;
-  color: var(--text);
-  background: var(--surface);
-  cursor: pointer;
-}
-
-.theme-icon {
-  display: block;
-  width: round(calc(20px * var(--ui-scale)), 1px);
-  height: round(calc(20px * var(--ui-scale)), 1px);
-  fill: currentColor;
-  shape-rendering: crispEdges;
-}
-
-.theme-icon-sun,
-:root[data-theme="dark"] .theme-icon-moon { display: none; }
-:root[data-theme="dark"] .theme-icon-sun { display: block; }
-
-/* Header-bar copy of the toggle, left of the burger: only where the burger is used (≤1279px). */
-.header-theme-toggle { display: none; }
-
-.theme-toggle:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
-
 .site-brand:focus-visible,
 .site-nav a:focus-visible,
 .site-footer a:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(4px * var(--ui-scale)), 1px); }
@@ -833,10 +775,6 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
   color: var(--cream);
   background: var(--footer-bg);
 }
-
-/* Dark: 1px NEAR green line on top so the black footer separates from the page (inset
-   shadow, no layout change). */
-:root[data-theme="dark"] .site-footer { box-shadow: inset 0 round(calc(1px * var(--ui-scale)), 1px) 0 var(--green); }
 
 .site-footer-inner {
   display: flex;
@@ -1081,14 +1019,10 @@ main > section[class] { background: transparent; }
    ≤1279px: burger header (same panel as mobile). 1024–1279px keeps the 72px desktop header
    height and side margins, so the panel opens under it at 79px. */
 @media (max-width: 1279px) {
-  /* Logo + name left, pixel burger right; nav, actions and the theme toggle move into the panel. */
+  /* Logo + name left, pixel burger right; nav and actions move into the panel. */
   .site-header-inner { grid-template-columns: 1fr auto auto; gap: 10px; }
   .site-nav,
   .site-actions { display: none; }
-
-  /* Theme toggle in the bar, 10px left of the burger: same 48×48 pixel box and border. */
-  .header-theme-toggle { display: grid; width: 48px; height: 48px; border-width: 2px; }
-  .header-theme-toggle .theme-icon { width: 20px; height: 20px; }
 
   .menu-button {
     display: grid;
@@ -2464,8 +2398,6 @@ main > section[class] { background: transparent; }
     .button-primary:active { transform: translate(round(calc(6px * var(--ui-scale)), 1px), round(calc(6px * var(--ui-scale)), 1px)); box-shadow: none; }
     .mobile-menu-actions .button-primary:active,
     .site-actions .button-primary:active { transform: translate(round(calc(4px * var(--ui-scale)), 1px), round(calc(4px * var(--ui-scale)), 1px)); box-shadow: none; }
-    .site-actions .theme-toggle:hover,
-    .site-actions .theme-toggle:active,
     .button-secondary:active,
     .pet-mood:active { transform: translate(round(calc(2px * var(--ui-scale)), 1px), round(calc(2px * var(--ui-scale)), 1px)); box-shadow: none; }
 

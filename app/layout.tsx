@@ -8,7 +8,7 @@ import "./mint.css";
 import "./pet.css";
 import BackgroundSparkles from "../components/BackgroundSparkles";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/site";
-import { THEME_COLORS, themeInitScript } from "../lib/theme";
+import { THEME_COLOR } from "../lib/theme";
 import SiteFooter from "./site-footer";
 import SiteHeader from "./site-header";
 import Toaster from "./toaster";
@@ -48,17 +48,18 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    // data-theme is set by the inline script before hydration, hence suppressHydrationWarning.
+    // One theme, dark (task 093): fixed on <html>, with the page colour inline so the first paint is
+    // dark before any stylesheet arrives, whatever the system preference.
     // data-scroll-behavior: smooth anchor scrolling (hero-header.css) but instant jumps between routes.
     <html
       lang="en"
       className={`${pressStart.variable} ${spaceGrotesk.variable}`}
+      data-theme="dark"
       data-scroll-behavior="smooth"
-      suppressHydrationWarning
+      style={{ colorScheme: "dark", backgroundColor: THEME_COLOR }}
     >
       <head>
-        <meta name="theme-color" content={THEME_COLORS.light} suppressHydrationWarning />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <meta name="theme-color" content={THEME_COLOR} />
       </head>
       <body className="pixel-ui">
         <BackgroundSparkles />

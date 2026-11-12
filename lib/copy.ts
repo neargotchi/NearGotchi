@@ -193,7 +193,7 @@ export const header = {
   cta: { label: "hatch a gotchi", href: "/mint" },
   // … demo pet exists → /pet.
   petCta: { label: "my gotchi", href: "/pet" },
-  /** Square X button next to the theme toggle (app/social-x.tsx). */
+  /** Square X button in the header (app/social-x.tsx). */
   x: { label: "NEARGOTCHI on X", url: "https://x.com/neargotchiAI" },
 };
 
@@ -204,7 +204,7 @@ export type SocialLink = { label: string; url: string | null };
 
 export const footer = {
   disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value.",
-  // No cookies, no analytics: only functional localStorage (theme, demo pet, chat).
+  // No cookies, no analytics: only functional localStorage (demo pet, chat).
   privacy: isOnChain
     ? `no tracking. game state (hunger, energy, chat) lives only in this browser; ownership is on near ${NET}.`
     : "no tracking. your demo wallet and pets live only in this browser.",

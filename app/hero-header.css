@@ -3,8 +3,8 @@
    backgrounds in public/hero/ are used unchanged. Header switches to the burger at ≤1279px
    (same breakpoint as app/mobile-menu.tsx), the hero to the portrait scene at ≤768px. */
 :root {
-  --scene-color: #fffaf0;
-  --scene-ink: #141414;
+  --scene-color: #0a0a0a;
+  --scene-ink: #fffbed;
   /* Tasks 088–089: one accent (globals.css --accent), also for short accent text; sentences use --accent-copy. */
   --scene-accent: var(--accent);
   --scene-border: var(--accent);
@@ -14,19 +14,10 @@
   --ds: .8;
   --header-height: calc(clamp(72px, 7.8vh, 97px) * var(--ds));
   --page: var(--scene-color);
-  --surface: var(--scene-color);
-  --html-bg: var(--scene-color);
-}
-:root[data-theme='dark'] {
-  /* Sky of public/hero/dark.png. */
-  --scene-color: #0a0a0a;
-  --scene-ink: #fffbed;
-  --scene-accent: var(--accent);
-  --scene-border: var(--accent);
-  --page: var(--scene-color);
   --surface: #121212;
   --html-bg: var(--scene-color);
 }
+
 /* Anchor jumps land 24px under the bar (scroll-padding replaces globals.css scroll-margin). */
 html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 24px); }
 section[id] { scroll-margin-top: 0; }
@@ -123,18 +114,17 @@ body { background: var(--page); }
 /* Header actions share the CTA height; the icon controls are squares of that
    height with glyphs at the same scale. */
 .site-actions { --action-height: clamp(36px, calc(4.8vh * var(--ds)), calc(60px * var(--ds))); display: flex; gap: calc(clamp(8px, .6vw, 12px) * var(--ds)); }
-.site-actions :is(.button, .theme-toggle, .social-x) { height: var(--action-height); min-height: var(--action-height); }
+.site-actions :is(.button, .social-x) { height: var(--action-height); min-height: var(--action-height); }
 .site-actions .button { padding: 0 calc(clamp(12px, .8vw, 16px) * var(--ds)); font-size: clamp(8px, calc(.8vw * var(--ds)), calc(16px * var(--ds))); }
-.site-actions :is(.theme-toggle, .social-x) { width: var(--action-height); min-width: var(--action-height); padding: 0; }
-.site-actions :is(.theme-icon, .social-x svg) { width: calc(var(--action-height) * .44); height: calc(var(--action-height) * .44); }
-.theme-toggle, .menu-button {
+.site-actions :is.social-x { width: var(--action-height); min-width: var(--action-height); padding: 0; }
+.site-actions .social-x svg { width: calc(var(--action-height) * .44); height: calc(var(--action-height) * .44); }
+.menu-button {
   width: 44px;
   height: 44px;
   min-width: 44px;
   padding: 10px;
   color: var(--scene-ink);
 }
-.theme-icon { width: 22px; height: 22px; }
 .social-x {
   width: 44px;
   min-width: 44px;
@@ -148,7 +138,7 @@ body { background: var(--page); }
 }
 .social-x svg { width: 20px; height: 20px; }
 .social-x:hover { color: var(--scene-accent); }
-.header-theme-toggle, .header-social-x, .menu-button { display: none; }
+.header-social-x, .menu-button { display: none; }
 
 /* Wallet chip: secondary pixel button in the header font; the demo / testnet tag is a
    small accent pill, the connected account id keeps its case. */
@@ -179,7 +169,7 @@ body { background: var(--page); }
    motion don't. Reference: "hatch your gotchi" under meet the pets (task 074).
    Pixel frames with independent inner fills. No clipping of the actual interactive
    element, so keyboard focus remains visible. */
-.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) {
+.pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) {
   --frame-fill: var(--scene-color);
   --frame-line: var(--accent);
   --corner: 8px;
@@ -203,8 +193,8 @@ body { background: var(--page); }
   --frame-line: var(--accent-light);
   color: var(--on-accent);
 }
-.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::before,
-.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::after {
+.pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::before,
+.pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -226,7 +216,7 @@ body { background: var(--page); }
     0 var(--corner),var(--pixel-step) var(--corner),
     var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
 }
-.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::after {
+.pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::after {
   inset: 2px;
   z-index: -1;
   background: var(--frame-fill);
@@ -239,12 +229,12 @@ body { background: var(--page); }
 /* Motion of the reference: hover (real pointer, desktop) = 2px down-right + lighter fill;
    press = 1px down. No shadows, no pulse, no sparkles on buttons. */
 .pixel-ui .button-primary:hover { --frame-fill: var(--accent-hover); }
-.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab):is(:hover, :active) { box-shadow: none; }
+.pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab):is(:hover, :active) { box-shadow: none; }
 @media (prefers-reduced-motion: no-preference) {
   @media (min-width: 1024px) and (hover: hover) {
-    .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab, .pet-mood):hover { transform: translate(2px, 2px); }
+    .pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab, .pet-mood):hover { transform: translate(2px, 2px); }
   }
-  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab, .pet-mood):active { transform: translateY(1px); }
+  .pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab, .pet-mood):active { transform: translateY(1px); }
 }
 /* Disabled (aria-disabled links / disabled buttons): flat, dimmed, no motion. */
 .pixel-ui .button:is([aria-disabled="true"], :disabled) {
@@ -292,14 +282,13 @@ body { background: var(--page); }
   min-height: calc(100vh - var(--header-height));
   min-height: var(--hero-h);
   background-color: var(--scene-color);
-  background-image: url('/hero/light.png');
+  background-image: url('/hero/dark.png');
   background-repeat: no-repeat;
   background-size: auto var(--scene-h);
   background-position-x: center;
   background-position-y: var(--scene-y);
   color: var(--scene-ink);
 }
-:root[data-theme='dark'] .hero-shell > .hero { background-image: url('/hero/dark.png'); }
 .hero-content {
   box-sizing: border-box;
   width: min(1100px, calc(100% - 40px));
@@ -462,15 +451,15 @@ body { background: var(--page); }
 }
 
 /* ---------- Burger header (≤1279px) ----------
-   Nav, wallet and CTA move into the panel; theme toggle, X and burger stay in the bar. */
+   Nav, wallet and CTA move into the panel; X and burger stay in the bar. */
 @media (max-width: 1279px) {
   .site-header-inner {
-    grid-template-columns: minmax(0, 1fr) 44px 44px 44px;
+    grid-template-columns: minmax(0, 1fr) 44px 44px;
     gap: 10px;
   }
   .site-brand { font-size: clamp(14px, 1.5vw, 19px); }
   .site-nav, .site-actions { display: none; }
-  .header-theme-toggle, .header-social-x, .menu-button { display: grid; place-items: center; }
+  .header-social-x, .menu-button { display: grid; place-items: center; }
   .menu-button { margin: 0; position: static; padding: 0; }
   .menu-icon { background: currentColor; }
   .mobile-menu:not([hidden]) {
@@ -514,12 +503,10 @@ body { background: var(--page); }
     --cloud-top: .073;
     --cloud-bottom: .186;
     --horizon: .843;
-    background-image: url('/hero/lightmobile.png');
+    background-image: url('/hero/darkmobile.png');
   }
-  :root[data-theme='dark'] .hero-shell > .hero { background-image: url('/hero/darkmobile.png'); }
-  .site-header-inner { --tap: max(44px, calc(44px * var(--ds))); width: calc(100% - 24px); gap: 6px; grid-template-columns: minmax(0, 1fr) var(--tap) var(--tap) var(--tap); }
-  .header-theme-toggle, .header-social-x, .menu-button { width: var(--tap); min-width: var(--tap); height: var(--tap); min-height: var(--tap); }
-  .header-theme-toggle .theme-icon { width: calc(22px * var(--ds)); height: calc(22px * var(--ds)); }
+  .site-header-inner { --tap: max(44px, calc(44px * var(--ds))); width: calc(100% - 24px); gap: 6px; grid-template-columns: minmax(0, 1fr) var(--tap) var(--tap); }
+  .header-social-x, .menu-button { width: var(--tap); min-width: var(--tap); height: var(--tap); min-height: var(--tap); }
   .header-social-x svg { width: calc(20px * var(--ds)); height: calc(20px * var(--ds)); }
   .site-brand { font-size: max(9px, calc(clamp(10px, 3.4vw, 19px) * var(--ds))); gap: 4px; }
   .site-brand img { width: calc(36px * var(--ds)); height: calc(44px * var(--ds)); }
@@ -564,7 +551,7 @@ body { background: var(--page); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hero-scroll { animation: none; }
-  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) { transition: none; }
+  .pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) { transition: none; }
 }
 
 /* Restored from main (task 073): sparkles around the hero wordmark. */
@@ -579,7 +566,7 @@ body { background: var(--page); }
   .hero .hero-actions .button-primary { flex: 0 0 auto; }
 }
 /* Long account ids in the header chip: shorter cut so the square icon buttons never shrink. */
-.site-actions :is(.theme-toggle, .social-x) { flex: none; }
+.site-actions :is.social-x { flex: none; }
 .site-actions .wallet-account-id { max-width: 12ch; }
 .hero-sky-mobile { display: none; }
 @media (max-width: 768px) { .hero-sky-mobile { display: block; } }

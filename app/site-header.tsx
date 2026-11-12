@@ -6,7 +6,6 @@ import MobileMenu from "./mobile-menu";
 import PetCta from "./pet-cta";
 import SectionNav from "./section-nav";
 import SocialX from "./social-x";
-import ThemeToggle from "./theme-toggle";
 import WalletMenu from "./wallet-menu";
 import Wordmark from "./wordmark";
 
@@ -22,12 +21,10 @@ export default function SiteHeader() {
         </Link>
         <SectionNav className="site-nav" />
         <div className="site-actions">
-          <ThemeToggle />
           <SocialX />
           <WalletMenu />
           <PetCta variant="header" />
         </div>
-        <ThemeToggle className="header-theme-toggle" />
         <SocialX className="header-social-x" />
         <MobileMenu />
       </div>
