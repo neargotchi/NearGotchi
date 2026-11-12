@@ -505,7 +505,9 @@ body { background: var(--page); }
      (077). Floors: tap targets 40px, body copy 13px. */
   /* --ui-scale (globals.css: html font-size and its px lengths) .9 shrinks the rem/px sizes of
      the routes still styled there (/mint, /pet internals); body copy stays ≥ 14px. */
-  :root { --ds: .78; --ui-scale: .9; --header-height: max(52px, calc(64px * var(--ds))); }
+  /* Task 089: −10 % on phones: --ds .78 → .70; --ui-scale .9 → .84 (the rem-based /mint and /pet
+     internals; .84 keeps 1rem body copy ≥ 13px). Tap targets keep a 44px floor below. */
+  :root { --ds: .70; --ui-scale: .84; --header-height: max(52px, calc(64px * var(--ds))); }
   /* The copy spans the whole width here: only the stars around the egg stay. */
   .hero-sky { display: none; }
   .hero-shell > .hero {
@@ -516,7 +518,7 @@ body { background: var(--page); }
     background-image: url('/hero/lightmobile.png');
   }
   :root[data-theme='dark'] .hero-shell > .hero { background-image: url('/hero/darkmobile.png'); }
-  .site-header-inner { --tap: max(40px, calc(44px * var(--ds))); width: calc(100% - 24px); gap: 6px; grid-template-columns: minmax(0, 1fr) var(--tap) var(--tap) var(--tap); }
+  .site-header-inner { --tap: max(44px, calc(44px * var(--ds))); width: calc(100% - 24px); gap: 6px; grid-template-columns: minmax(0, 1fr) var(--tap) var(--tap) var(--tap); }
   .header-theme-toggle, .header-social-x, .menu-button { width: var(--tap); min-width: var(--tap); height: var(--tap); min-height: var(--tap); }
   .header-theme-toggle .theme-icon { width: calc(22px * var(--ds)); height: calc(22px * var(--ds)); }
   .header-social-x svg { width: calc(20px * var(--ds)); height: calc(20px * var(--ds)); }
@@ -541,7 +543,7 @@ body { background: var(--page); }
   .hero .hero-actions, .hero .hero-progress { width: calc(clamp(220px, 66vw, 340px) * var(--ds)); }
   .hero .hero-actions { flex-direction: column; gap: calc(12px * var(--ds)); margin: calc(18px * var(--ds)) 0 auto; }
   .hero .hero-progress { margin-top: 12px; }
-  .hero .button { width: 100%; flex: none; min-height: max(40px, calc(44px * var(--ds))); padding: calc(10px * var(--ds)) 12px; font-size: max(9px, calc(clamp(11px, 3.1vw, 16px) * var(--ds))); }
+  .hero .button { width: 100%; flex: none; min-height: max(44px, calc(44px * var(--ds))); padding: calc(10px * var(--ds)) 12px; font-size: max(9px, calc(clamp(11px, 3.1vw, 16px) * var(--ds))); }
 }
 @media (max-width: 380px) {
   .site-header-inner { width: calc(100% - 16px); }

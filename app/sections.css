@@ -558,7 +558,7 @@
   .hero-shell .section-head { align-items: center; }
   .hero-shell :is(.pets-heading, .section-head) > .mascot { justify-content: center; }
   .hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) { font-size: max(8px, calc(clamp(9px, 2.5vw, 13px) * var(--ds))); }
-  .hero-shell .pet-mood { min-height: max(40px, calc(44px * var(--ds))); }
+  .hero-shell .pet-mood { min-height: max(44px, calc(44px * var(--ds))); }
   .hero-shell .cta-marks { gap: 10px; }
   .cta-marks::before, .cta-marks::after { width: 12px; }
   /* Long labels ("try it: hatch your gotchi") fit one line at 390px and wrap below that. */
@@ -619,8 +619,8 @@ body > .notfound-shell > .notfound { min-height: 0; }
   .mascot-sprite, .hero-shell .mascot-sprite { height: calc(72px * var(--ds)); }
   .mascot-bubble { font-size: max(12px, calc(16px * var(--ds))); }
   .hero-shell .faq-item p { font-size: .9375rem; }
-  .mobile-menu nav a { min-height: max(40px, calc(48px * var(--ds))); padding: calc(14px * var(--ds)) 16px; font-size: max(9px, calc(12px * var(--ds))); }
-  .mobile-menu-actions .button { min-height: max(40px, calc(52px * var(--ds))); padding: calc(12px * var(--ds)); font-size: max(8px, calc(11px * var(--ds))); }
+  .mobile-menu nav a { min-height: max(44px, calc(48px * var(--ds))); padding: calc(14px * var(--ds)) 16px; font-size: max(9px, calc(12px * var(--ds))); }
+  .mobile-menu-actions .button { min-height: max(44px, calc(52px * var(--ds))); padding: calc(12px * var(--ds)); font-size: max(8px, calc(11px * var(--ds))); }
 }
 
 /* ---------- $NEARGotchi (app/coin-section.tsx, task 076): one card under the numbers ---------- */
