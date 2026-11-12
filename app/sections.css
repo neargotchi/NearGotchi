@@ -416,16 +416,22 @@
 /* ---------- Drop 1: tiers, items, backgrounds ---------- */
 .hero-shell .drop-actions { flex-direction: column; justify-content: center; margin-top: var(--content-gap); }
 .hero-shell .drop-subtitle { margin: var(--content-gap) 0 var(--heading-gap); }
-.hero-shell .drop-tiers { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); }
+/* Task 092: one fixed, small gap between the four tier cards (≈ 26px on desktop, 22px on phones). */
+.hero-shell .drop-tiers { gap: calc(32px * var(--ds)); }
 .hero-shell .drop-tier {
   container-type: inline-size;
   grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
-  column-gap: 6cqi;
+  /* Task 092: a % gap (of the card), not cqi — cqi on the card itself resolved against the whole
+     section (6cqi ≈ 73px at 1920), which squeezed the text column so "legendary" stuck out of the
+     frame and "60 per pet" wrapped. */
+  column-gap: 6%;
   padding: calc(clamp(12px, 1vw, 20px) * var(--ds));
 }
-.hero-shell .drop-tier-name { font-size: max(8px, 4.6cqi); }
-.hero-shell .drop-tier-count { font-size: max(12px, 5.6cqi); }
-.hero-shell .drop-tier-total { color: color-mix(in srgb, var(--scene-ink) 65%, transparent); font-size: max(12px, 5.4cqi); }
+/* Same size on all four cards; "legendary" (9 pixel glyphs = 9em) fits the text column at every
+   card width (the column is ≥ ~48 % of the card, the name ≤ 9 × 4.6 % = 41 %). */
+.hero-shell .drop-tier-name { font-size: max(8px, 4.6cqi); white-space: nowrap; }
+.hero-shell .drop-tier-count { font-size: max(12px, 5.6cqi); white-space: nowrap; }
+.hero-shell .drop-tier-total { color: color-mix(in srgb, var(--scene-ink) 65%, transparent); font-size: max(12px, 5.4cqi); white-space: nowrap; }
 /* 13 items: 7 + 6, both rows centred. */
 .hero-shell .drop-items { --cols: 7; --gap: calc(clamp(10px, 1vw, 20px) * var(--ds)); display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); }
 .hero-shell .drop-items > li { width: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols)); }
