@@ -588,24 +588,16 @@ body { background: var(--page); }
   .hero-title-host > .sparkles > .sparkle:is(:nth-child(1), :nth-child(6)) { display: none; }
 }
 
-/* Tasks 088–090: "$NEARGOTCHI" nav link (header bar and burger panel). A steady 2px underline in the
-   accent, no glow, no frame on hover; current (scrollspy) and keyboard focus keep the shared frame. */
-nav a.nav-glow {
-  text-decoration: underline;
-  text-decoration-color: var(--accent);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-}
-.site-header nav a.nav-glow:not(.is-current):hover:not(:focus-visible)::before,
-.site-header nav a.nav-glow:not(.is-current):hover:not(:focus-visible)::after { opacity: 0; }
+/* Tasks 088–091: "$NEARGOTCHI" nav link. Looks like every other nav link (no underline, no glow, same
+   current / hover frame); only its letters get the hero N's sweep (task 091).
 
-/* Task 090: the hero N's sweep on the label's letters. The base text stays the nav ink; a copy of
-   the label on top (::after, same text, transparent fill) shows only the band: a pixel-stepped
-   diagonal strip, green #01eba3 on its lower-left half and white on its upper-right half, exactly
-   the shape and split of .n-sweep-box > span (globals.css), clipped to the glyphs with
-   background-clip: text. Same timing as n-sweep: var(--sweep-cycle), 20 % = 12 steps across.
-   In light a hairline ink stroke keeps the white part of the band readable on the cream page.
-   Off with reduced motion, on touch / ≤768 px and in the burger panel. */
+   The sweep: a copy of the label on top (::after, same text, transparent fill) shows one band in
+   #01eba3 clipped to the glyphs (background-clip: text). The band is the N's shape: a pixel-stepped
+   45° diagonal (square steps, as in .n-sweep-box > span) — 8 rows of the line box, 12 units thick;
+   the whole band ≈ 35 % of the label = about 3 letters — so inside the band the letters are green, outside they keep the nav colour
+   (ink in light, white in dark). Motion = n-sweep: across in steps(12, end) during 20 % of the shared
+   --sweep-cycle (0.5 s of 2.5 s), then a 2 s rest. Nothing is drawn outside the letters.
+   Off with reduced motion, on touch / ≤768 px and in the burger panel (static link). */
 .nav-sweep { position: relative; display: inline-block; }
 @media (prefers-reduced-motion: no-preference) and (hover: hover) and (min-width: 769px) {
   .site-header .site-nav .nav-sweep::after {
@@ -615,18 +607,19 @@ nav a.nav-glow {
     inset: 0;
     pointer-events: none;
     color: transparent;
-    background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 8' preserveAspectRatio='none' shape-rendering='crispEdges'><defs><linearGradient id='g' x1='0' x2='13' gradientUnits='userSpaceOnUse'><stop offset='.5' stop-color='%2301eba3'/><stop offset='.5' stop-color='%23fff'/></linearGradient></defs><polygon fill='url(%23g)' points='13,0 13,1 12,1 12,2 11,2 11,3 10,3 10,4 9,4 9,5 8,5 8,6 7,6 7,7 6,7 6,8 0,8 0,7 1,7 1,6 2,6 2,5 3,5 3,4 4,4 4,3 5,3 5,2 6,2 6,1 7,1 7,0'/></svg>") no-repeat;
-    background-size: 26% 100%;
-    background-position: -36% 0;
+    background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 19 8' preserveAspectRatio='none' shape-rendering='crispEdges'><polygon fill='%2301eba3' points='19,0 19,1 18,1 18,2 17,2 17,3 16,3 16,4 15,4 15,5 14,5 14,6 13,6 13,7 12,7 12,8 0,8 0,7 1,7 1,6 2,6 2,5 3,5 3,4 4,4 4,3 5,3 5,2 6,2 6,1 7,1 7,0'/></svg>") no-repeat;
+    /* the band is 19:8 wide:tall at the full line height (1.6em) → 2.375 × 1.6em = 3.8em wide
+       (explicit: with preserveAspectRatio="none" the SVG has no ratio, "auto" would stretch it) */
+    background-size: 3.8em 100%;
+    background-position: -100em 0;
     -webkit-background-clip: text;
     background-clip: text;
     animation: nav-sweep var(--sweep-cycle) infinite;
   }
-  :root:not([data-theme='dark']) .site-header .site-nav .nav-sweep::after { -webkit-text-stroke: .5px var(--scene-ink); }
 }
-/* Same keyframe shape as n-sweep: the band (26 % of the label) goes from fully left of the text to fully
-   right in steps(12), then rests. Percent positions: −26/74 ≈ −36 % and 100/74 ≈ 136 %. */
+/* Same keyframe shape as n-sweep: the band goes from just left of the text (its width = 2.375 line
+   heights = 3.8em at line-height 1.6) to just right of it in steps(12), then rests out of sight. */
 @keyframes nav-sweep {
-  0% { background-position: -36% 0; animation-timing-function: steps(12, end); }
-  20%, 100% { background-position: 136% 0; }
+  0% { background-position: -3.8em 0; animation-timing-function: steps(12, end); }
+  20%, 100% { background-position: calc(100% + 3.8em) 0; }
 }
