@@ -690,3 +690,9 @@ body > .notfound-shell > .notfound { min-height: 0; }
   /* :root lifts it above the section CTA sizes (52px × --ds = 36px) defined earlier in this file. */
   :root .pixel-ui .button { min-height: 44px; }
 }
+
+/* Task 094: the tier card opens its sample NFT enlarged (app/drop-tiers.tsx). The whole card is the click
+   target; the thumbnail is the real button (keyboard focus, Enter / Space). */
+.hero-shell .drop-tier.is-clickable { cursor: pointer; }
+.hero-shell button.drop-tier-art { padding: 0; font: inherit; color: inherit; cursor: pointer; appearance: none; }
+.hero-shell .drop-tier.is-clickable:has(.drop-tier-art:focus-visible) { --frame-line: var(--accent-light); }

@@ -12,6 +12,8 @@ type NftLightboxProps = {
   /** The token shown, or null when closed. */
   token: Drop1Token | null;
   onClose: () => void;
+  /** Show "open {token}" → /nft/{id} (default). Drop 1's tier cards pass false (task 094). */
+  showLink?: boolean;
 };
 
 /**
@@ -20,7 +22,7 @@ type NftLightboxProps = {
  * inside), Esc / ✕ / a click on the backdrop close it, and focus returns to the thumbnail that opened it.
  * The pop-in is CSS only and skipped under reduced motion.
  */
-export default function NftLightbox({ token, onClose }: NftLightboxProps) {
+export default function NftLightbox({ token, onClose, showLink = true }: NftLightboxProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
 
@@ -70,9 +72,11 @@ export default function NftLightbox({ token, onClose }: NftLightboxProps) {
               {token.name}
             </h3>
           </div>
-          <Link className="button button-secondary nft-lightbox-link" href={`/nft/${token.tokenId}`}>
-            {fill(petGallery.lightbox.open, { token: token.name })}
-          </Link>
+          {showLink ? (
+            <Link className="button button-secondary nft-lightbox-link" href={`/nft/${token.tokenId}`}>
+              {fill(petGallery.lightbox.open, { token: token.name })}
+            </Link>
+          ) : null}
         </div>
       ) : null}
     </dialog>

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import DropProgress from "../components/DropProgress";
 import Mascot from "../components/Mascot";
+import DropTiers from "./drop-tiers";
 import { TierText } from "../components/TierBadge";
 import TitleSparkles from "../components/TitleSparkles";
 import { dropSection, fill, itemLabels, mascots } from "../lib/copy";
@@ -42,26 +43,18 @@ export default function DropSection() {
         </div>
 
         <h3 className="drop-subtitle">{dropSection.tiersTitle}</h3>
-        <ul className="drop-tiers">
-          {tiers.map((tier) => {
-            const sample = tierSample(SAMPLE_PET[tier], tier);
+        {/* task 094: a click on a tier card enlarges its sample NFT here (client wrapper, no /nft link) */}
+        <DropTiers
+          cards={tiers.map((tier) => {
             const perPet = tierCount(pets[0].id, tier);
-            return (
-              <li key={tier} className="drop-tier">
-                {sample ? (
-                  <Link className="drop-tier-art" href={`/nft/${sample.tokenId}`} aria-label={sample.name}>
-                    <Image src={sample.image} alt="" width={512} height={512} sizes="112px" />
-                  </Link>
-                ) : null}
-                <p className="drop-tier-name">
-                  <TierText tier={tier} />
-                </p>
-                <p className="drop-tier-count">{fill(dropSection.tierCount, { n: String(perPet) })}</p>
-                <p className="drop-tier-total">{fill(dropSection.tierTotal, { n: String(perPet * pets.length) })}</p>
-              </li>
-            );
+            return {
+              tier,
+              sample: tierSample(SAMPLE_PET[tier], tier) ?? null,
+              count: fill(dropSection.tierCount, { n: String(perPet) }),
+              total: fill(dropSection.tierTotal, { n: String(perPet * pets.length) }),
+            };
           })}
-        </ul>
+        />
 
         <h3 className="drop-subtitle">{dropSection.itemsTitle}</h3>
         <ul className="drop-items">
