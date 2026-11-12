@@ -25,3 +25,6 @@ AGENTS.md
 ipfs/
 .env*
 !.env.example
+
+# Local archives (handoff bundles etc.); never committed
+*.zip

@@ -1,12 +1,12 @@
 # /mint — plan (demo, frontend only)
 
-Status: 2026-11-06 (task 024). Reuses: `.pet-card` + locked cards, `.button-*`, `Sparkles` (burst), `Mascot`, theme tokens (light/dark), `--ui-scale`, ≤1279 burger / ≤1023 mobile rules, `prefers-reduced-motion` block. Nothing here is a real mint: no wallet, no network, no token.
+Status: 2026-11-06 (task 024). Reuses: `.pet-card`, `.button-*`, `Sparkles` (burst), `Mascot`, theme tokens (light/dark), `--ui-scale`, ≤1279 burger / ≤1023 mobile rules, `prefers-reduced-motion` block. Nothing here is a real mint: no wallet, no network, no token.
 
 ## 1. Files
 Add
 - `app/mint/page.tsx`: server page with metadata and the section shell (grid ON, like the hero). Renders `<MintFlow />`.
 - `app/mint/mint-flow.tsx`: client state machine `loading → existing | form → hatching → done`.
-- `app/mint/pet-picker.tsx`: radio-group cards (3 pets + 3 locked "soon" cards via `PETS_4_6_ENABLED` / `upcomingPetSlots`).
+- `app/mint/pet-picker.tsx`: radio-group cards (the 3 drop-1 pets).
 - `app/mint/hatch-stage.tsx`: hatch animation plus a live region.
 - `app/pet/page.tsx`: minimal stub so the redirect and the nav link never 404. It shows the pet (happy sprite), its name and "start over", or "no pet yet" plus a link to /mint. The full /pet page is a later task.
 
@@ -90,7 +90,7 @@ Selected card: `--green` card background with ink text (same in light and dark, 
 - h1 `hatch your gotchi` · sub `pick a pet. give it a name. watch it hatch.`
 - demo label `demo · no real mint, no wallet`
 - mascot (nightshade) `i hatched once. it was a lot.`
-- step 1 legend `1. pick your pet` · locked card `soon` (existing) · picked tag `picked`
+- step 1 legend `1. pick your pet` · picked tag `picked`
 - step 2 label `2. name it` · hint `2–12 characters. letters, numbers, spaces, - and _.` · placeholder = the pet's name
 - errors:
   - `too short. 2 characters at least.`
@@ -133,7 +133,6 @@ Selected card: `--green` card background with ink text (same in light and dark, 
 
 ## 7. Accessibility
 - Picker = `<fieldset>` + `<legend>` with native visually-hidden `<input type="radio" name="pet">` inside each `<label class="pet-card">`. Arrow keys work natively. The focus ring is the pink outline on the card.
-- Locked cards stay outside the radio inputs, keeping `aria-label="locked pet, soon"`.
 - Name `<input>`: `<label>`, `aria-describedby` for hint + error, `aria-invalid` on error. The error is shown on submit and on blur, not while typing.
 - The hatch stage is a `role="status"` live region. Focus goes to the stage heading and then to "go to {name}".
 - The existing-pet and confirm views move focus to their heading.
@@ -142,7 +141,7 @@ Selected card: `--green` card background with ink text (same in light and dark, 
 ## 8. Acceptance checklist
 - [ ] Header + burger "mint your pet" → /mint; "my pet" in nav → /pet (no `//pet`); the header fits at 1024/1280/1366/1440/1600/1920.
 - [ ] 1920 / 1280 / 375, light + dark: layout as in §3, no horizontal scroll, all copy as in §5, demo label visible above the fold.
-- [ ] Tab reaches the radio group; arrows change the pet; the selected card is green with "picked" and the happy sprite; locked cards can't be selected.
+- [ ] Tab reaches the radio group; arrows change the pet; the selected card is green with "picked" and the happy sprite.
 - [ ] Names: "Batman!!" → bad_chars message; "a" → too short; 13 chars → too long; empty → default name; "  Big  Boi " → "big boi".
 - [ ] Mint → wobble, shake, crack, split + flash, burst, happy pet, text, redirect to /pet at ~3.2s; double-click mints once.
 - [ ] Reduced motion: instant swap, same text, redirect at 1.5s; nothing moves.

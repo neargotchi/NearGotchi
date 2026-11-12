@@ -56,9 +56,6 @@ export const pets: PetProfile[] = [
   },
 ];
 
-/** PET 4–6: rendered only when PETS_4_6_ENABLED is true. Empty until names and copy are approved. */
-export const upcomingPets: PetProfile[] = [];
-
 export const petSpriteSrc = (pet: PetProfile, mood: Mood) =>
   `/pets/${pet.spriteFolder}/${mood}.png`;
 

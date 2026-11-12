@@ -121,3 +121,17 @@ The project still has the old GitHub repo connected (it auto-deployed pushes fro
 works: Vercel → Project → Settings → Git → **Disconnect**. Do not use "Switch Git Provider" and do not change the
 account's GitHub login connection. Disconnecting only stops automatic deploys; existing deployments and environment
 variables stay.
+
+## Publishing the repo (task 085)
+
+The public repo is the `neargotchi` remote. Push **only** the `main` branch, by name:
+
+```bash
+git log main --format='%an %ae' | sort | uniq -c   # must list only neargotchi <neargotchi@users.noreply.github.com>
+git push neargotchi main
+```
+
+Never `git push --all`, `--mirror` or `--tags` (and never push another branch) without checking it first: the local
+repo still holds refs with the old personal e-mail in their history (the local branch `dark-mode-020` and
+`origin/main`, the old private repo, whose push URL is disabled). Those refs stay local; history is not rewritten. If
+the author check above shows anything other than `neargotchi`, stop and do not push.

@@ -10,12 +10,10 @@ import TitleSparkles from "../components/TitleSparkles";
 import { fill, mascots, petGallery, petTraits } from "../lib/copy";
 import NftLightbox from "./nft-lightbox";
 import { tierSample, tiers, type Drop1Token } from "../lib/drop1";
-import { PETS_4_6_ENABLED } from "../lib/features";
 import {
   moods,
   petSpriteSrc,
   pets,
-  upcomingPets,
   type Mood,
   type PetProfile,
 } from "../lib/mocks";
@@ -106,7 +104,6 @@ export default function PetGallery() {
           {pets.map((pet) => (
             <PetCard key={pet.id} pet={pet} onEnlarge={setEnlarged} />
           ))}
-          {PETS_4_6_ENABLED ? upcomingPets.map((pet) => <PetCard key={pet.id} pet={pet} onEnlarge={setEnlarged} />) : null}
         </div>
         <NftLightbox token={enlarged} onClose={() => setEnlarged(null)} />
         <div className="section-cta">

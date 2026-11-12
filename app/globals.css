@@ -26,8 +26,6 @@
   --divider: #d7cfbf;
   --scrim: rgb(20 20 20 / 0.25);
   --locked-box: #c4c1ba;
-  --locked-shape: #8e8b85;
-  --locked-mark-dim: rgb(196 193 186 / 0.4);
   --sparkle-alt: var(--green-deep);
   --html-bg: var(--ink);
   --footer-bg: var(--ink);
@@ -54,8 +52,6 @@
   --divider: rgb(255 246 229 / 0.15);
   --scrim: rgb(0 0 0 / 0.5);
   --locked-box: #2a2b2d;
-  --locked-shape: #46474a;
-  --locked-mark-dim: rgb(42 43 45 / 0.4);
   --sparkle-alt: #fff;
   --html-bg: #000;
   --footer-bg: #000;
@@ -324,8 +320,7 @@ h1 {
   image-rendering: pixelated;
 }
 
-.pet-card h3,
-.pet-card .locked-title {
+.pet-card h3 {
   margin: round(calc(20px * var(--ui-scale)), 1px) 0 round(calc(12px * var(--ui-scale)), 1px);
   font-family: var(--font-pixel), monospace;
   font-size: 0.75rem;
@@ -364,29 +359,6 @@ h1 {
 
 .pet-mood.is-active { background: var(--green); }
 .pet-mood:focus-visible { outline: round(calc(3px * var(--ui-scale)), 1px) solid var(--pink); outline-offset: round(calc(3px * var(--ui-scale)), 1px); }
-
-.pet-card-locked { justify-content: flex-start; }
-
-.locked-sprite {
-  position: relative;
-  background: var(--locked-box);
-}
-
-.locked-mark {
-  display: grid;
-  width: round(calc(70px * var(--ui-scale)), 1px);
-  height: round(calc(88px * var(--ui-scale)), 1px);
-  place-items: center;
-  color: var(--locked-box);
-  background: var(--locked-shape);
-  clip-path: polygon(27% 0, 73% 0, 73% 9%, 84% 9%, 84% 20%, 94% 20%, 94% 58%, 84% 58%, 84% 70%, 73% 70%, 73% 100%, 27% 100%, 27% 70%, 16% 70%, 16% 58%, 6% 58%, 6% 20%, 16% 20%, 16% 9%, 27% 9%);
-  font-family: var(--font-pixel), monospace;
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
-.pet-card-locked h3,
-.pet-card-locked .locked-title { color: var(--text-muted); }
 
 .steps-section {
   position: relative;
@@ -2508,14 +2480,6 @@ main > section[class] { background: transparent; }
     33% { transform: translateY(-12px); }
     66% { transform: translateY(-6px); }
     100% { transform: translateY(0); }
-  }
-
-  /* Locked cards: the "?" blinks. */
-  .locked-mark { animation: locked-blink 1.6s steps(1, end) infinite; }
-
-  @keyframes locked-blink {
-    0% { color: var(--locked-box); }
-    50% { color: var(--locked-mark-dim); }
   }
 
   /* "burns." highlight pulses between the two NEAR greens. */
