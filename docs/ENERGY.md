@@ -29,6 +29,8 @@ Energy belongs to the **token**, not the account: sell or transfer the NFT and t
    passes one and Meteor's doesn't) and that `publicKey` is a **full-access** key of `accountId` on chain
    (`view_access_key`) → `Set-Cookie: ng_session=…; HttpOnly; SameSite=Lax; Secure; Max-Age=86400`.
 
+If sign-in fails, the banner shows a small secret-free code of the failing step under the message (task 082): `nonce: <status>`, `sign: <wallet error>` / `sign: no_signature_fields (<field>)` / `sign: unsupported`, or `verify: <status> <code>` with `bad_nonce`, `bad_public_key`, `bad_signature_format`, `bad_signature`, `not_full_access`, `rate_limited`, `bad_request`; wallet results are normalised first (`lib/sign-shapes.ts`: key as `ed25519:`/bare base58/object/bytes, signature as base64/base64url/bytes).
+
 **Read energy:** `GET /api/energy?token=ID` → session + `nft_token(ID).owner_id == session account` → balance.
 
 **Chat:** `POST /api/chat {…, tokenId}` → session + ownership → rate limits (10/min per account, 10/min per IP) →

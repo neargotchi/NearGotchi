@@ -405,4 +405,100 @@ await test("shared numbers match the client (pack price / size, chat cost, start
   assert.equal(rules.ENERGY_START, 100);
 });
 
+// ---------- task 082: NEP-413 vectors + wallet result shapes ----------
+console.log("NEP-413 vectors + wallet shapes (task 082)");
+const shapes = await import("../lib/sign-shapes.ts");
+const { KeyPair } = await import("@near-js/crypto");
+const { KeyPairSigner } = await import("@near-js/signers");
+// The reference wallet linked from NEP-413 (gagdiez/near-login server/tests/wallet.ts @1650e25): published test keys.
+const SPEC_ACCOUNT = "dev-1659223306990-29456453680390";
+const SPEC_FAK = KeyPair.fromString("ed25519:2NoJqvZkgsAwm7kigB4QbwiQtdeK7xdBNQvvZ82qeYgMvguuTuggFKjFfaAcHiuidHQEuUmSU2RAQcNCRutUJbzH");
+const SPEC_FCK = KeyPair.fromString("ed25519:3zsuvDCiwT11GKV99K72ozYoda1WSDEZ8cS227UohZCrBCR1Q6FiENsytAqUpUHxmvUPjRovg24mVM2puWn8Js76");
+const specNonce = Uint8Array.from({ length: 32 }, (_, i) => i);
+const nearJsSign = (pair, nonce, callbackUrl) =>
+  new KeyPairSigner(pair).signNep413Message(rules.SIGN_IN_MESSAGE, SPEC_ACCOUNT, rules.SIGN_IN_RECIPIENT, nonce, callbackUrl);
+
+await test("spec reference keys: the published public keys; near-js (canonical NEP-413 signer) → our verifier accepts", async () => {
+  assert.equal(SPEC_FAK.getPublicKey().toString(), "ed25519:DPzNzTL3jnPzhJ68HFNvEYN8qjD1WcLiXgoCF1iTRQbB", "full-access key1 from the spec reference");
+  assert.equal(SPEC_FCK.getPublicKey().toString(), "ed25519:BfsC1Mznbp8JmHTEV4cCHU2GZWj5ZaMkEphV3C1Bpfpk", "function-call key from the spec reference");
+  const signed = await nearJsSign(SPEC_FAK, specNonce, undefined);
+  const shaped = shapes.normalizeSignedMessage(signed, null);
+  assert.ok(shaped.ok, "near-js returns a PublicKey object + Uint8Array signature: normalised");
+  const check = (over = {}) => auth.verifySignedMessage({ publicKey: shaped.publicKey, signature: shaped.signature, message: rules.SIGN_IN_MESSAGE, nonce: specNonce, recipient: rules.SIGN_IN_RECIPIENT, ...over });
+  assert.equal(check(), true);
+  assert.equal(check({ recipient: "neargotchi.near" }), false, "recipient must match");
+  assert.equal(check({ message: rules.SIGN_IN_MESSAGE + " " }), false, "message must match");
+  assert.equal(check({ nonce: Uint8Array.from({ length: 32 }, (_, i) => 31 - i) }), false, "nonce must match");
+  // the deterministic ed25519 signature of this fixed payload: a regression vector for the payload layout
+  assert.equal(shaped.signature, Buffer.from(SPEC_FAK.sign(auth.nep413Hash(rules.SIGN_IN_MESSAGE, specNonce, rules.SIGN_IN_RECIPIENT, null)).signature).toString("base64"));
+});
+await test("callbackUrl (MyNearWallet style): accepted only when the client names the same url; never guessed", async () => {
+  const url = "https://neargochi.vercel.app/pet";
+  const shaped = shapes.normalizeSignedMessage(await nearJsSign(SPEC_FAK, specNonce, url), null);
+  const base = { publicKey: shaped.publicKey, signature: shaped.signature, message: rules.SIGN_IN_MESSAGE, nonce: specNonce, recipient: rules.SIGN_IN_RECIPIENT };
+  assert.equal(auth.verifySignedMessage(base), false);
+  assert.equal(auth.verifySignedMessage({ ...base, callbackUrl: url }), true);
+  assert.equal(auth.verifySignedMessage({ ...base, callbackUrl: url + "?x" }), false);
+});
+await test("cross-check: wallet-selector's own verifySignature accepts what our server-side code signs and verifies", async () => {
+  const { verifySignature } = await import("@near-wallet-selector/core");
+  const pair = generateKeyPairSync("ed25519");
+  const pub = `ed25519:${b58(Buffer.from(pair.publicKey.export({ format: "jwk" }).x, "base64url"))}`;
+  const sig = sign(null, auth.nep413Hash(rules.SIGN_IN_MESSAGE, specNonce, rules.SIGN_IN_RECIPIENT, null), pair.privateKey).toString("base64");
+  assert.equal(verifySignature({ publicKey: pub, signature: sig, message: rules.SIGN_IN_MESSAGE, nonce: Buffer.from(specNonce), recipient: rules.SIGN_IN_RECIPIENT }), true);
+  assert.equal(auth.verifySignedMessage({ publicKey: pub, signature: sig, message: rules.SIGN_IN_MESSAGE, nonce: specNonce, recipient: rules.SIGN_IN_RECIPIENT }), true);
+});
+await test("full sign-in with the spec keys: full-access key → session; the account's function-call key → not_full_access", async () => {
+  const d = deps();
+  keys.set(`${SPEC_ACCOUNT}|${SPEC_FAK.getPublicKey().toString()}`, "FullAccess");
+  keys.set(`${SPEC_ACCOUNT}|${SPEC_FCK.getPublicKey().toString()}`, { FunctionCall: { allowance: null, receiver_id: CONTRACT, method_names: [] } });
+  const attempt = async (pair) => {
+    const nonce = (await S.handleNonce("ip-spec", d)).body.nonce;
+    const shaped = shapes.normalizeSignedMessage(await nearJsSign(pair, Buffer.from(nonce, "base64"), undefined), null);
+    return S.handleVerify({ accountId: SPEC_ACCOUNT, publicKey: shaped.publicKey, signature: shaped.signature, nonce }, "ip-spec", d);
+  };
+  const full = await attempt(SPEC_FAK);
+  assert.deepEqual([full.status, full.body.account], [200, SPEC_ACCOUNT]);
+  const fc = await attempt(SPEC_FCK);
+  assert.deepEqual([fc.status, fc.body.error], [401, "not_full_access"], "a valid signature by a function-call key is refused");
+});
+await test("wallet result shapes → one form (publicKey ed25519:<b58>, signature base64); missing fields are named", async () => {
+  const pk = SPEC_FAK.getPublicKey();
+  const pkString = pk.toString();
+  const pkBytes = pk.data;
+  const sigBytes = SPEC_FAK.sign(Buffer.alloc(32, 7)).signature;
+  const sig64 = Buffer.from(sigBytes).toString("base64");
+  const n = (r, active = null) => shapes.normalizeSignedMessage(r, active);
+  const want = { ok: true, accountId: "a.near", publicKey: pkString, signature: sig64 };
+  assert.deepEqual(n({ accountId: "a.near", publicKey: pkString, signature: sig64 }), want, "standard (MyNearWallet / Meteor docs)");
+  assert.deepEqual(n({ accountId: "a.near", publicKey: pkString.slice(8), signature: sig64 }), want, "bare base58 key: prefix added");
+  assert.deepEqual(n({ accountId: "a.near", publicKey: pk, signature: sigBytes }), want, "PublicKey object + Uint8Array (near-js)");
+  assert.deepEqual(n({ accountId: "a.near", publicKey: { keyType: 0, data: pkBytes }, signature: Array.from(sigBytes) }), want, "{data} key + number[] signature");
+  assert.deepEqual(n({ accountId: "a.near", publicKey: { type: "Buffer", data: Array.from(pkBytes) }, signature: { type: "Buffer", data: Array.from(sigBytes) } }), want, "Buffer-as-JSON");
+  assert.deepEqual(n({ accountId: "a.near", publicKey: pkString, signature: { ...Array.from(sigBytes) } }), want, "index object (structured clone of a Uint8Array)");
+  assert.deepEqual(n({ accountId: "a.near", publicKey: pkString, signature: Buffer.from(sigBytes).toString("base64url") }), want, "base64url without padding");
+  assert.deepEqual(n({ publicKey: pkString, signature: sig64 }, "a.near"), want, "no accountId → the selector's active account");
+  assert.deepEqual(n({ accountId: "b.near", publicKey: pkString, signature: sig64 }, "a.near").accountId, "b.near", "the wallet's account wins");
+  assert.deepEqual(n(undefined), { ok: false, missing: ["accountId", "publicKey", "signature"] });
+  assert.deepEqual(n({ accountId: "a.near", publicKey: "ed25519:not-a-key!", signature: sig64 }), { ok: false, missing: ["publicKey"] });
+  assert.deepEqual(n({ accountId: "a.near", publicKey: pkString, signature: sig64.slice(0, 80) }), { ok: false, missing: ["signature"] }, "63 bytes");
+  assert.deepEqual(n({ accountId: "a.near", publicKey: { toString: () => "[object Object]" }, signature: sig64 }), { ok: false, missing: ["publicKey"] });
+});
+await test("diagnostic text never carries keys / signatures / nonces and stays short", async () => {
+  const leaky = `Couldn't sign message owner: key ed25519:DPzNzTL3jnPzhJ68HFNvEYN8qjD1WcLiXgoCF1iTRQbB nonce ${Buffer.alloc(32, 1).toString("base64")} rejected`;
+  const shown = shapes.safeDetail(new Error(leaky));
+  assert.ok(!/DPzNzTL3|AQEBAQEB/.test(shown), shown);
+  assert.ok(shown.length <= 80);
+  assert.equal(shapes.safeDetail("User rejected the request"), "User rejected the request");
+});
+await test("server says which part is malformed: bad_public_key / bad_signature_format (400) vs bad_signature (401)", async () => {
+  const d = deps();
+  const nonce1 = (await S.handleNonce("ip-shape", d)).body.nonce;
+  assert.equal((await S.handleVerify({ accountId: ME, publicKey: "DPzNzTL3jnPzhJ68HFNvEYN8qjD1WcLiXgoCF1iTRQbB", signature: "x".repeat(88), nonce: nonce1 }, "ip-shape", d)).body.error, "bad_public_key");
+  const nonce2 = (await S.handleNonce("ip-shape", d)).body.nonce;
+  assert.equal((await S.handleVerify({ accountId: ME, publicKey: PUB, signature: "abc", nonce: nonce2 }, "ip-shape", d)).body.error, "bad_signature_format");
+  const nonce3 = (await S.handleNonce("ip-shape", d)).body.nonce;
+  assert.equal((await S.handleVerify({ accountId: ME, publicKey: PUB, signature: Buffer.alloc(64).toString("base64"), nonce: nonce3 }, "ip-shape", d)).body.error, "bad_signature");
+});
+
 console.log(`${passed} checks passed (rpc calls: ${rpcCalls})`);

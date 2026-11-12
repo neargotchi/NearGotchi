@@ -11,7 +11,7 @@ import { CHAIN, DROP1_CONTRACT, TREASURY_ACCOUNT, rpc as chainRpc, type Chain } 
 import { LIMITS, askModels, parseRequest } from "./chat-ai";
 import { CHAT_COST, ENERGY_START, PACK_ENERGY, PACK_PRICE_YOCTO, SIGN_IN_MESSAGE, SIGN_IN_RECIPIENT } from "./energy-rules";
 import { StoreError, getEnergyStore, type EnergyStore } from "./energy-store";
-import { SESSION_TTL_SEC, newNonce, readSession, signSession, verifySignedMessage } from "./near-auth";
+import { SESSION_TTL_SEC, decodeSignature, newNonce, parsePublicKey, readSession, signSession, verifySignedMessage } from "./near-auth";
 
 export const RULES = {
   /** chat messages per minute, per account and per IP */
@@ -79,6 +79,8 @@ export type ErrorCode =
   | "unauthorized"
   | "bad_nonce"
   | "bad_signature"
+  | "bad_public_key"
+  | "bad_signature_format"
   | "not_full_access"
   | "not_owner"
   | "pending"
@@ -187,7 +189,12 @@ export function handleVerify(body: unknown, ip: string, deps: ServerDeps = defau
     }
     // single use: consumed before anything else, so a replayed signature finds no nonce
     if ((await deps.store!.consume(`ng:nonce:${nonce}`)) !== "1") return fail(401, "bad_nonce");
+    // task 082: say which part is malformed (shape) before saying the signature doesn't match (crypto)
+    if (!parsePublicKey(publicKey)) return fail(400, "bad_public_key");
+    if (!decodeSignature(signature)) return fail(400, "bad_signature_format");
     const nonceBytes = Buffer.from(nonce, "base64");
+    // NEP-413 payload exactly as issued: same message, same recipient, same nonce; callbackUrl absent or the one the
+    // client says it passed (MyNearWallet's module forwards it, Meteor's doesn't). Nothing else is tried.
     if (!verifySignedMessage({ publicKey, signature, message: SIGN_IN_MESSAGE, nonce: nonceBytes, recipient: SIGN_IN_RECIPIENT, callbackUrl })) {
       return fail(401, "bad_signature");
     }

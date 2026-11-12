@@ -3,6 +3,7 @@
 // Demo / testnet builds never call any of this.
 
 import { isMainnet } from "./chain";
+import { normalizeSignedMessage, safeDetail } from "./sign-shapes";
 
 /** One build = one chain: only mainnet uses the server ledger. */
 export const usesLedger = isMainnet;
@@ -28,48 +29,68 @@ export async function sessionAccount(): Promise<string | null | "unavailable"> {
   }
 }
 
-export type SignInResult = { ok: true; account: string } | { ok: false; reason: "cancelled" | "unsupported" | "failed" | "unavailable" };
+/**
+ * `detail` (task 082): a short, secret-free code of the step that failed, shown small under the message — e.g.
+ * "nonce: 503", "sign: no_signature_fields (publicKey)", "sign: <wallet error>", "verify: 401 bad_signature".
+ * Never a key, signature or nonce.
+ */
+export type SignInResult = { ok: true; account: string } | { ok: false; reason: "cancelled" | "unsupported" | "failed" | "unavailable"; detail: string };
 
 const fromBase64 = (text: string) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
 
 /**
  * Sign in: a nonce from the server → the wallet signs it (NEP-413 signMessage: no transaction, no cost) → the
  * server checks the signature and the account's full-access key → HttpOnly session cookie (24 h).
- * Needs a user click (the wallet opens a popup).
+ * Needs a user click (the wallet opens a popup). Wallet result shapes are normalised first (lib/sign-shapes.ts).
  */
 export async function signIn(): Promise<SignInResult> {
+  const fail = (reason: "cancelled" | "unsupported" | "failed" | "unavailable", detail: string): SignInResult => ({ ok: false, reason, detail });
+  let nonceResponse: Response;
   try {
-    const nonceResponse = await fetch("/api/auth/nonce", { cache: "no-store" });
-    if (!nonceResponse.ok) return { ok: false, reason: nonceResponse.status === 503 ? "unavailable" : "failed" };
-    const issued = await json<{ nonce: string; message: string; recipient: string }>(nonceResponse);
-    if (!issued?.nonce) return { ok: false, reason: "failed" };
+    nonceResponse = await fetch("/api/auth/nonce", { cache: "no-store" });
+  } catch {
+    return fail("failed", "nonce: network");
+  }
+  const issued = await json<{ nonce?: string; message?: string; recipient?: string; error?: string }>(nonceResponse);
+  if (!nonceResponse.ok) return fail(nonceResponse.status === 503 ? "unavailable" : "failed", `nonce: ${nonceResponse.status}${issued?.error ? ` ${issued.error}` : ""}`);
+  if (!issued?.nonce || !issued.message || !issued.recipient) return fail("failed", "nonce: bad_answer");
+
+  let signedRaw: unknown;
+  let activeAccount: string | null = null;
+  const callbackUrl = window.location.href;
+  try {
     const { getNear } = await import("./near");
     const { selector } = await getNear();
+    activeAccount = selector.store.getState().accounts.find((a) => a.active)?.accountId ?? null;
     const wallet = await selector.wallet();
-    if (typeof wallet.signMessage !== "function") return { ok: false, reason: "unsupported" };
-    const callbackUrl = window.location.href;
-    let signed: { accountId?: string; publicKey?: string; signature?: string } | void;
-    try {
-      signed = await wallet.signMessage({
-        message: issued.message,
-        recipient: issued.recipient,
-        nonce: fromBase64(issued.nonce) as unknown as Buffer,
-        callbackUrl,
-      });
-    } catch (error) {
-      return { ok: false, reason: /reject|denied|cancel|closed|declin|not supported/i.test(String((error as Error)?.message ?? error)) ? "cancelled" : "failed" };
-    }
-    if (!signed?.accountId || !signed.publicKey || !signed.signature) return { ok: false, reason: "failed" };
-    const verify = await fetch("/api/auth/verify", {
+    if (typeof wallet.signMessage !== "function") return fail("unsupported", `sign: unsupported (${safeDetail(wallet.id)})`);
+    signedRaw = await wallet.signMessage({
+      message: issued.message,
+      recipient: issued.recipient,
+      nonce: fromBase64(issued.nonce) as unknown as Buffer,
+      callbackUrl,
+    });
+  } catch (error) {
+    const text = safeDetail(error);
+    return fail(/reject|denied|cancel|closed|declin|not supported/i.test(text) ? "cancelled" : "failed", `sign: ${text || "error"}`);
+  }
+  const signed = normalizeSignedMessage(signedRaw, activeAccount);
+  if (!signed.ok) return fail("failed", `sign: no_signature_fields (${signed.missing.join(", ")})`);
+
+  let verify: Response;
+  try {
+    verify = await fetch("/api/auth/verify", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ accountId: signed.accountId, publicKey: signed.publicKey, signature: signed.signature, nonce: issued.nonce, callbackUrl }),
     });
-    const data = await json<{ account?: unknown }>(verify);
-    return verify.ok && typeof data?.account === "string" ? { ok: true, account: data.account } : { ok: false, reason: verify.status === 503 ? "unavailable" : "failed" };
   } catch {
-    return { ok: false, reason: "failed" };
+    return fail("failed", "verify: network");
   }
+  const data = await json<{ account?: unknown; error?: unknown }>(verify);
+  if (verify.ok && typeof data?.account === "string") return { ok: true, account: data.account };
+  const code = typeof data?.error === "string" ? data.error.replace(/[^a-z_]/g, "").slice(0, 30) : "";
+  return fail(verify.status === 503 ? "unavailable" : "failed", `verify: ${verify.status}${code ? ` ${code}` : ""}`);
 }
 
 export async function signOut(): Promise<void> {

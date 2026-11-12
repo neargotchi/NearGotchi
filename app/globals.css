@@ -1675,6 +1675,7 @@ main > section[class] { background: transparent; }
 .energy-signin-title { margin: 0; font-weight: 700; }
 .energy-signin-body, .energy-signin-note { margin: 0; font-size: 1rem; line-height: 1.45; }
 .energy-signin-note { color: var(--text-muted); }
+.energy-signin-detail { margin: 0; font-size: 0.8rem; line-height: 1.4; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
 .mint-ack { display: flex; align-items: flex-start; gap: 10px; font-size: 1rem; font-weight: 600; line-height: 1.4; cursor: pointer; }
 .mint-ack input { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--ink); }
 

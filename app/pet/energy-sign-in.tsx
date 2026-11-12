@@ -10,15 +10,19 @@ import { signIn } from "../../lib/energy-client";
  */
 export default function EnergySignIn({ onSignedIn, unavailable = false }: { onSignedIn: () => void; unavailable?: boolean }) {
   const [state, setState] = useState<"idle" | "busy" | "cancelled" | "failed" | "unavailable">(unavailable ? "unavailable" : "idle");
+  /** task 082: which step failed, e.g. "verify: 401 bad_signature" (no keys, signatures or nonces) */
+  const [detail, setDetail] = useState<string | null>(null);
 
   const run = async () => {
     setState("busy");
+    setDetail(null);
     const result = await signIn();
     if (result.ok) {
       setState("idle");
       onSignedIn();
       return;
     }
+    setDetail(result.detail);
     setState(result.reason === "cancelled" ? "cancelled" : result.reason === "unavailable" ? "unavailable" : "failed");
   };
 
@@ -39,6 +43,7 @@ export default function EnergySignIn({ onSignedIn, unavailable = false }: { onSi
           {note}
         </p>
       ) : null}
+      {detail && state !== "busy" ? <p className="energy-signin-detail">({detail})</p> : null}
     </section>
   );
 }
