@@ -587,9 +587,10 @@ body { background: var(--page); }
   .hero-title-host > .sparkles > .sparkle:is(:nth-child(1), :nth-child(6)) { display: none; }
 }
 
-/* Task 088: "$NEARGOTCHI" nav link (header bar and burger panel): always underlined, the text
-   glows softly in the accent. No layout change (text-shadow only); off with reduced motion and on
-   touch / narrow screens (task 088 point 9), where only the underline stays. */
+/* Task 088/089: "$NEARGOTCHI" nav link (header bar and burger panel). Only the TEXT animates: its
+   colour pulses softly to the accent with a tight 2px text glow — no background, ring or blurred
+   shape behind it. A thin solid 2px underline in the accent stays. Its current / hover frame is the
+   same as every other nav link. No motion with reduced motion, on touch and ≤768 px (burger). */
 nav a.nav-glow {
   text-decoration: underline;
   text-decoration-color: var(--accent);
@@ -598,9 +599,14 @@ nav a.nav-glow {
   animation: nav-glow 2.6s ease-in-out infinite;
 }
 @keyframes nav-glow {
-  0%, 100% { text-shadow: 0 0 0 transparent; }
-  50% { text-shadow: 0 0 6px var(--accent), 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent); }
+  0%, 100% { color: inherit; text-shadow: none; }
+  50% { color: var(--accent); text-shadow: 0 0 2px var(--accent); }
 }
+/* Hover adds no frame on this link (the text already moves); current (scrollspy) and keyboard
+   focus keep the shared frame, so only one framed link shows at a time from the page state. */
+.site-header nav a.nav-glow:not(.is-current):hover:not(:focus-visible)::before,
+.site-header nav a.nav-glow:not(.is-current):hover:not(:focus-visible)::after { opacity: 0; }
 @media (prefers-reduced-motion: reduce), (hover: none), (max-width: 768px) {
   nav a.nav-glow { animation: none; text-shadow: none; }
 }
+
