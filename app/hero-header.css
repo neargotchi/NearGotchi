@@ -610,3 +610,21 @@ body { background: var(--page); }
     font-size: max(9px, calc(clamp(10px, 2.9vw, 15px) * var(--ds)));
   }
 }
+
+/* Task 088: "$NEARGOTCHI" nav link (header bar and burger panel): always underlined, the text
+   glows softly in the accent. No layout change (text-shadow only); off with reduced motion and on
+   touch / narrow screens (task 088 point 9), where only the underline stays. */
+nav a.nav-glow {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  animation: nav-glow 2.6s ease-in-out infinite;
+}
+@keyframes nav-glow {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: 0 0 6px var(--accent), 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent); }
+}
+@media (prefers-reduced-motion: reduce), (hover: none), (max-width: 768px) {
+  nav a.nav-glow { animation: none; text-shadow: none; }
+}

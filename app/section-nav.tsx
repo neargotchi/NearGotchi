@@ -68,11 +68,12 @@ export default function SectionNav({ className }: { className?: string }) {
       <ul>
         {header.nav.map((link) => {
           const isCurrent = link.href === `#${active}`;
+          const classes = [isCurrent ? "is-current" : "", "highlight" in link && link.highlight ? "nav-glow" : ""].filter(Boolean).join(" ");
           return (
             <li key={link.href}>
               <a
                 href={navHref(link.href)}
-                className={isCurrent ? "is-current" : undefined}
+                className={classes || undefined}
                 aria-current={isCurrent ? "location" : undefined}
               >
                 {link.label}

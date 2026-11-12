@@ -104,7 +104,6 @@ export const tokenomics = {
 export const coin = {
   header: "$NEARGotchi",
   body: "the community coin of the neargotchi crew. born on NEAR, made by the fans, for the fans. every gotchi has a friend in it. join the herd.",
-  disclaimer: "memecoin. no promise of value. not financial advice.",
   cta: { label: "open on nearly.trade", url: "https://nearly.trade/neargotchi.nearlytrade.near" },
   /** Screen readers only, after the external link label. */
   newTab: "(opens in a new tab)",
@@ -176,6 +175,8 @@ export const header = {
     { label: "your gotchi", href: "#your-gotchi" },
     { label: "drop 1", href: "#drop-1" },
     { label: "tokenomics", href: "#tokenomics" },
+    // Task 088: the coin section gets its own link, underlined with a soft glow (hero-header.css .nav-glow).
+    { label: "$NEARGotchi", href: "#coin", highlight: true },
     { label: "faq", href: "#faq" },
   ],
   /** Demo wallet (app/wallet-menu.tsx, lib/wallet.ts): one fake account per browser, nothing is signed. */
