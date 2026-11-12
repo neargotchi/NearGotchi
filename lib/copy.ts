@@ -1,4 +1,4 @@
-// Public copy for landing sections, from docs/neargotchi-copy-v1.md. Keep text verbatim.
+// Public copy for landing sections (approved by the owner). Keep text verbatim.
 // NEXT_PUBLIC_CHAIN=testnet swaps the few "demo" strings that would be untrue with a real wallet and a real mint.
 
 import { NET, isMainnet, isOnChain } from "./chain";
@@ -181,7 +181,7 @@ export const footer = {
     { label: "drop 1 contract (near mainnet)", account: "drop1.neargochi-dev.near" },
     { label: "$NEARGotchi token", account: "neargotchi.nearlytrade.near" },
   ],
-  // URLs not approved yet (copy v1 §7 has [URL]); null links are not rendered.
+  // URLs not approved yet; null links are not rendered.
   socials: [
     { label: "X", url: null },
     { label: "telegram", url: null },

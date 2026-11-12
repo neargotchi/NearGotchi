@@ -12,7 +12,7 @@ Add
 
 Change
 - `lib/mocks.ts`: `DemoPet` type, name rules, store functions (§2).
-- `lib/copy.ts` + `docs/neargotchi-copy-v1.md` (APLIKACJA section): `mint` copy and nav item (§5).
+- `lib/copy.ts`: `mint` copy and nav item (§5).
 - `app/site-header.tsx`, `app/mobile-menu.tsx`: nav hrefs that start with "/" are used as-is. Today every href renders as `/${href}`, so `/pet` would become `//pet`.
 - `app/globals.css`: `.mint-*` block, `.pet-card.is-selected`, hatch keyframes (inside the reduced-motion block), header breakpoints (see the warning below).
 - Header "mint your pet" CTAs (header, burger panel, hero) already point to `/mint`. No change, just verify.
@@ -85,7 +85,7 @@ Selected card: `--green` card background with ink text (same in light and dark, 
 - The "go to {name}" button is shown from 2000ms in case the redirect is slow or blocked.
 - Reduced motion: the egg is swapped for the happy pet instantly (no shake, crack or burst), the same live text plays, and the redirect happens after 1500ms.
 
-## 5. New copy (lowercase, copy v1 tone) → `lib/copy.ts` `mint`, `header.nav`, copy v1
+## 5. New copy (lowercase, site tone) → `lib/copy.ts` `mint`, `header.nav`
 - meta title `mint — NEARGOTCHI` · meta description `pick a gotchi, name it, watch it hatch. demo, no real mint.`
 - h1 `hatch your gotchi` · sub `pick a pet. give it a name. watch it hatch.`
 - demo label `demo · no real mint, no wallet`

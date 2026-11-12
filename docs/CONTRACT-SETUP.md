@@ -1,6 +1,6 @@
 # Contract setup — drop 1 NFT on NEAR testnet (task 057)
 
-Code: `contracts/drop1` (Rust, near-sdk 5.30.1 + near-contract-standards 5.30.1). Plan: docs/PLAN-CONTRACT-NFT.md.
+Code: `contracts/drop1` (Rust, near-sdk 5.30.1 + near-contract-standards 5.30.1). Mainnet deploy record and runbook: docs/MAINNET-RUNBOOK.md.
 
 ## Testnet ng67 (current code: 50 % team / 50 % holder rewards, task 067)
 | role | account |

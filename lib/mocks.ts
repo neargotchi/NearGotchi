@@ -22,7 +22,7 @@ export type PetProfile = {
   mouth: [number, number];
 };
 
-/** Approved pets (copy v1; pet2/pet3 renamed to "near dragon" / "near kat" by the owner, 2026-11-08). */
+/** Approved pets (pet2/pet3 renamed to "near dragon" / "near kat" by the owner, 2026-11-08). */
 export const pets: PetProfile[] = [
   {
     id: "pet1",

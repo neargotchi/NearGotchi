@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 /** The one place for the public URL (switch to https://neargotchi.com later). */
 export const SITE_URL = "https://neargochi.vercel.app";
 export const SITE_NAME = "NEARGOTCHI";
-/** Default meta description (copy v1 META). */
+/** Default meta description. */
 export const SITE_DESCRIPTION = "hatch one of 300 pixel pets. feed it, play with it, talk to it. on near.";
 
 type ShareImage = { url: string; width: number; height: number; alt: string };

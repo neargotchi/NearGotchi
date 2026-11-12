@@ -1,4 +1,4 @@
-// Chain switch (docs/PLAN-CONTRACT-NFT.md §9). NEXT_PUBLIC_CHAIN=demo (default) keeps the localStorage mock;
+// Chain switch (docs/DEPLOY.md, docs/MAINNET-RUNBOOK.md). NEXT_PUBLIC_CHAIN=demo (default) keeps the localStorage mock;
 // =testnet / =mainnet talk to the drop 1 contract through a real wallet. Public config only, no secrets.
 
 /** One build = one chain. Unknown values fall back to demo (never to mainnet by accident). */

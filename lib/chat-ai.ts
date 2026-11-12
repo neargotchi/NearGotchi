@@ -29,7 +29,7 @@ export const LIMITS = {
 export const petTypes = ["pet1", "pet2", "pet3"] as const;
 export type PetType = (typeof petTypes)[number];
 
-/** Character per pet (copy v1 / docs/DEVLOG.md §5). */
+/** Character per pet (docs/DEVLOG.md §5). */
 const PERSONAS: Record<PetType, { species: string; character: string }> = {
   pet1: {
     species: "corgi",
