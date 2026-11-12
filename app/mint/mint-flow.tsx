@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import DropProgress from "../../components/DropProgress";
-import { fill, mintPage } from "../../lib/copy";
+import { FAIR_HATCH_ID, fill, mintPage } from "../../lib/copy";
 import { isMainnet, isOnChain } from "../../lib/chain";
 import {
   DROP1_TOTAL,
@@ -330,6 +331,11 @@ export default function MintFlow() {
               </p>
             ) : null}
             <p className="mint-hint">{isOnChain ? mintPage.chain.readyHint : mintPage.readyHint}</p>
+            {isOnChain ? (
+              <p className="mint-hint mint-draw">
+                {mintPage.chain.draw.text} <Link href={`/#${FAIR_HATCH_ID}`}>{mintPage.chain.draw.link}</Link>
+              </p>
+            ) : null}
           </div>
         ) : null}
 

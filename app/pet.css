@@ -265,3 +265,13 @@
   --pixel-step: 3px;
 }
 .pet-shell .game-modal-close svg { display: block; width: 16px; height: 16px; }
+
+/* Task 087: "energy = near ai credits…" above the chat and at the energy pack (on-chain builds). */
+.pet-ai-line {
+  margin: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.625rem;
+  line-height: 1.6;
+  color: var(--scene-accent, var(--text));
+}
+.pet-chat > .pet-ai-line { margin: round(calc(4px * var(--ui-scale)), 1px) 0 round(calc(10px * var(--ui-scale)), 1px); }

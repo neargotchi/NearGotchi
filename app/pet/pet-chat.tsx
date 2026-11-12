@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { askNearAi, nearAiEnabled } from "../../lib/chat-client";
+import { isOnChain } from "../../lib/chain";
 import { fill, petPage } from "../../lib/copy";
 import {
   PET_RULES,
@@ -134,6 +135,7 @@ export default function PetChat({ name, onShop, onPet, onReply, onSignedOut }: P
         </h2>
         <p className="pet-chat-note">{aiOn === null ? petPage.chat.note : aiOn ? petPage.chat.noteAi : petPage.chat.noteMock}</p>
       </div>
+      {isOnChain ? <p className="pet-ai-line">{petPage.chat.credits}</p> : null}
       <div ref={logRef} className="pet-chat-log" role="log" aria-live="polite" aria-labelledby="pet-chat-title" tabIndex={0}>
         {messages.length === 0 && !typing ? <p className="pet-chat-empty">{petPage.chat.empty}</p> : null}
         {messages.map((message) =>

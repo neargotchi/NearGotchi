@@ -1,7 +1,7 @@
 // Public copy for landing sections (approved by the owner). Keep text verbatim.
 // NEXT_PUBLIC_CHAIN=testnet swaps the few "demo" strings that would be untrue with a real wallet and a real mint.
 
-import { NET, isMainnet, isOnChain } from "./chain";
+import { DROP1_CONTRACT, EXPLORER_URL, NET, isMainnet, isOnChain } from "./chain";
 
 export type HowItWorksStep = {
   number: number;
@@ -16,6 +16,8 @@ export const hero = {
   subtitle: "your ai companion on near",
   lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "demo now, near next."),
   learnMore: "learn more",
+  /** Badge under the subtitle (task 087), on-chain builds only: their chat runs on near ai. Text, no logo. */
+  poweredBy: "powered by near ai",
   /** Chevron under the buttons → #pets (label for screen readers only). */
   scroll: "explore the pets",
 };
@@ -110,7 +112,13 @@ export const coin = {
   addressLabel: "token address",
 };
 
-export const faq = {
+/** One FAQ entry. `id` = anchor on the home page; `link` is appended to the answer. */
+export type FaqItem = { question: string; answer: string; id?: string; link?: { label: string; href: string } };
+
+/** Anchor of "is the hatch fair?" (linked from /mint, task 087). */
+export const FAIR_HATCH_ID = "fair-hatch";
+
+export const faq: { header: string; items: FaqItem[] } = {
   header: "faq",
   items: [
     {
@@ -122,8 +130,15 @@ export const faq = {
       answer: "drop 1 is 300 pets: 100 of each. every hatch is random: pet, background, starter accessory and rarity. 2 near per hatch.",
     },
     {
+      id: FAIR_HATCH_ID,
+      question: "is the hatch fair?",
+      answer: "you can check it yourself. you pay, the contract stores a ticket, and a later block draws your gotchi from the pool that is left, using the chain's random seed. you can't pick it and neither can we. every hatch is a public transaction on nearblocks. the pictures and metadata are pinned by content hash (ipfs cid) and each token's media hash is on chain. two honest limits: the contract has not been audited, and near's random seed comes from block producers, so no on-chain randomness is perfect.",
+      // mainnet only, address from env (NEXT_PUBLIC_DROP1_CONTRACT)
+      link: isMainnet && DROP1_CONTRACT ? { label: "verify on nearblocks", href: `${EXPLORER_URL}/address/${DROP1_CONTRACT}` } : undefined,
+    },
+    {
       question: "why does my pet need tokens?",
-      answer: "talking runs on near ai. energy is the fuel: only chatting spends it, and an energy pack refills it. no energy, no words.",
+      answer: "talking runs on near ai cloud. energy is the fuel: only chatting spends it, and an energy pack refills it. no energy, no words.",
     },
     {
       question: "what if i don't feed it?",
@@ -195,6 +210,7 @@ export const footer = {
     ? `no tracking. game state (hunger, energy, chat) lives only in this browser; ownership is on near ${NET}.`
     : "no tracking. your demo wallet and pets live only in this browser.",
   copyright: "© 2026 neargotchi",
+  builtOn: "built on near: nft contract + near ai cloud",
   /** listed addresses (task 080): text only, no claims. Links go to the mainnet explorer. */
   addresses: [
     { label: "drop 1 contract (near mainnet)", account: "drop1.neargochi-dev.near" },
@@ -258,6 +274,8 @@ export const mintPage = {
     warningTitle: "unaudited contract. real funds.",
     warning: "this hatch spends 2 real near. the contract has not been audited and the mint cannot be undone. you get one random gotchi and nothing more is promised. only spend what you can afford to lose.",
     ackLabel: "i understand: unaudited contract, real near, no refunds.",
+    /** under the hatch button (task 087); `link` goes to the faq answer */
+    draw: { text: "how the draw works: the contract draws after payment, nobody picks.", link: "details in the faq" },
     errors: {
       paused: "hatching is paused right now. try again soon.",
       no_funds: isMainnet ? "not enough near. you need 2 near plus a little gas." : "not enough testnet near. you need 2 near plus a little gas.",
@@ -503,6 +521,10 @@ export const petPage = {
     pack: {
       title: "energy pack",
       body: "fuel for talking. each message uses 4 energy.",
+      /** on-chain builds (task 087): what energy is */
+      ai: "energy = near ai credits. the chat runs on near ai cloud.",
+      /** mainnet only: the pack is paid in real near */
+      aiFunds: "energy packs help pay for the near ai credits behind the chat.",
       buy: "buy energy",
       alt: "energy pack",
     },
@@ -548,6 +570,8 @@ export const petPage = {
     note: isOnChain ? "powered by near ai" : "demo · near ai soon",
     noteAi: "powered by near ai",
     noteMock: "demo mode (mock answers)",
+    /** on-chain builds (task 087), above the chat log */
+    credits: "energy = near ai credits. the chat runs on near ai cloud.",
     thinking: "{name} is thinking…",
     aiError: "the signal dropped. nothing was spent, try again.",
     /** mainnet (task 081): the site's daily near ai budget is used up; nothing was spent */

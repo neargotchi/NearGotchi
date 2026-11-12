@@ -671,3 +671,6 @@ body > .notfound-shell > .notfound { min-height: 0; }
   .hero-shell .coin-card .button { width: 100%; max-width: 360px; padding-inline: 16px; font-size: clamp(10px, 2.5vw, 14px); white-space: normal; }
   .hero-shell :is(.coin-fine, .coin-address) { font-size: clamp(8px, 2.1vw, 11px); }
 }
+
+/* Task 087: link inside an FAQ answer ("verify on nearblocks", mainnet only). */
+.hero-shell .faq-item p a { color: var(--scene-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

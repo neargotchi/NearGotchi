@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { fill, petPage, snackLabels } from "../../lib/copy";
-import { isOnChain } from "../../lib/chain";
+import { isMainnet, isOnChain } from "../../lib/chain";
 import { toast } from "../../lib/toast";
 import { levelOf, type DemoPet } from "../../lib/mocks";
 import { ENERGY_PACK, NEAR_PRICES, buyItem, getShop, subscribeShop, type BuyResult, type ItemId, type ShopItem } from "../../lib/shop";
@@ -201,6 +201,8 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
             <li>{fill(petPage.shop.energy, { n: String(ENERGY_PACK.energy) })}</li>
           </ul>
           <p className="snack-stock">{petPage.shop.pack.body}</p>
+          {isOnChain ? <p className="pet-ai-line">{petPage.shop.pack.ai}</p> : null}
+          {isMainnet ? <p className="pet-ai-line">{petPage.shop.pack.aiFunds}</p> : null}
           <button
             type="button"
             className="button button-primary snack-buy"

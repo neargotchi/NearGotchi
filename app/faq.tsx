@@ -19,9 +19,19 @@ export default function Faq() {
           {faq.items.map((item, index) => (
             // name="faq": one answer open at a time (native exclusive accordion; app/faq-motion.tsx
             // closes the others in browsers without it). Clicking the open one closes it.
-            <details key={item.question} className="faq-item" name="faq" open={index === 0}>
+            <details key={item.question} id={item.id} className="faq-item" name="faq" open={index === 0}>
               <summary>{item.question}</summary>
-              <p>{item.answer}</p>
+              <p>
+                {item.answer}
+                {item.link ? (
+                  <>
+                    {" "}
+                    <a href={item.link.href} rel="noopener noreferrer" target="_blank">
+                      {item.link.label}
+                    </a>
+                  </>
+                ) : null}
+              </p>
             </details>
           ))}
         </div>

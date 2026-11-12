@@ -24,6 +24,20 @@ export default function FaqMotion() {
     return () => items.forEach((details) => details.removeEventListener("toggle", onToggle));
   }, []);
 
+  // A link to one answer (/#fair-hatch, from /mint) opens it and scrolls to it.
+  useEffect(() => {
+    const openFromHash = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      const target = id ? document.getElementById(id) : null;
+      if (!(target instanceof HTMLDetailsElement) || !target.classList.contains("faq-item")) return;
+      target.open = true;
+      target.scrollIntoView({ block: "start" });
+    };
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, []);
+
   useEffect(() => {
     if (CSS.supports("selector(::details-content)")) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

@@ -20,6 +20,7 @@ export default function SiteFooter() {
         </div>
         <div className="site-footer-meta">
           <p>{footer.copyright}</p>
+          <p>{footer.builtOn}</p>
           {socials.map((link) => (
             <p key={link.label}>
               <a href={link.url!} rel="noopener noreferrer" target="_blank">

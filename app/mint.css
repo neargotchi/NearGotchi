@@ -143,3 +143,6 @@
   background: #001b13;
   line-height: 1;
 }
+
+/* Task 087: "how the draw works" line under the hatch button; the faq link in scene accent. */
+.mint-draw a { color: var(--scene-accent, inherit); text-decoration: underline; text-underline-offset: 3px; }
