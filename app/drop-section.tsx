@@ -23,6 +23,7 @@ export default function DropSection() {
 
   return (
     <section id="drop-1" className="wardrobe-section drop-section" aria-labelledby="drop-title">
+      <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <div className="section-head">
           <h2 id="drop-title" className="steps-title section-title-host">
@@ -35,6 +36,7 @@ export default function DropSection() {
         <div className="drop-actions">
           <Link className="button button-primary" href="/mint">
             {dropSection.cta}
+            <span className="launch-arrow" aria-hidden="true" />
           </Link>
           <DropProgress />
         </div>

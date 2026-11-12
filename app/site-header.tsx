@@ -1,12 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { header, navHref } from "../lib/copy";
-import Sparkles from "../components/Sparkles";
+import { header } from "../lib/copy";
 import MobileMenu from "./mobile-menu";
 import PetCta from "./pet-cta";
+import SectionNav from "./section-nav";
+import SocialX from "./social-x";
 import ThemeToggle from "./theme-toggle";
 import WalletMenu from "./wallet-menu";
+import Wordmark from "./wordmark";
 
 export default function SiteHeader() {
   return (
@@ -14,35 +16,19 @@ export default function SiteHeader() {
       <div className="site-header-inner">
         <Link className="site-brand" href="/">
           <Image src="/logo-transparent.png" alt="" width={40} height={40} />
-          <span className="site-brand-name">{header.brand}</span>
+          <span className="site-brand-name">
+            <Wordmark text={header.brand} />
+          </span>
         </Link>
-        <nav className="site-nav" aria-label="sections">
-          <ul>
-            {header.nav.map((link) => (
-              <li key={link.href}>
-                <a href={navHref(link.href)}>{link.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <SectionNav className="site-nav" />
         <div className="site-actions">
-          <WalletMenu />
           <ThemeToggle />
-          <PetCta variant="header">
-            <Sparkles
-              count={4}
-              colors={["var(--green)", "var(--sparkle-alt)"]}
-              area={[
-                { x: [-8, 20], y: [-45, -15] },
-                { x: [80, 100], y: [100, 125] },
-              ]}
-              seed="header-mint"
-              size={9}
-              mode="burst"
-            />
-          </PetCta>
+          <SocialX />
+          <WalletMenu />
+          <PetCta variant="header" />
         </div>
         <ThemeToggle className="header-theme-toggle" />
+        <SocialX className="header-social-x" />
         <MobileMenu />
       </div>
     </header>

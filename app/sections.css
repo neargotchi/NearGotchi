@@ -1,0 +1,673 @@
+/* GUI redesign: every landing section under the hero (references: refsekcja1.png "meet the pets",
+   "how gotchi works"; drop 1, your gotchi, the numbers and faq follow them). Loaded after
+   hero-header.css and reuses its scene tokens and design scale (--ds). Backgrounds stay the plain
+   page colour. Scoped to .hero-shell (the landing <main>), so /mint and /pet are unchanged. */
+:root {
+  --card-fill: #fffefa;
+  --lcd-line: #d8e4c3;
+  --lcd-mark: #1f6b52;
+  --tier-legendary-line: #a8740a;
+  /* Signal marks drawn around the hero egg: left pair "›", right pair "‹". */
+  --marks-left: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 3 11 23' shape-rendering='crispEdges'><path d='M3 3.5h3v2.2H3zM5.2 5.2h3v2.2h-3zM7.4 6.9h3v2.2h-3zM0 12.4h8.5v2.2H0zM3 23.3h3v2.2H3zM5.2 21.6h3v2.2h-3zM7.4 19.9h3v2.2h-3z'/></svg>");
+  --marks-right: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='97 3 11 23' shape-rendering='crispEdges'><path d='M102 3.5h3v2.2h-3zM99.8 5.2h3v2.2h-3zM97.6 6.9h3v2.2h-3zM99.5 12.4h8.5v2.2h-8.5zM102 23.3h3v2.2h-3zM99.8 21.6h3v2.2h-3zM97.6 19.9h3v2.2h-3z'/></svg>");
+}
+:root {
+  /* Spacing system (task 074), one set for every landing section:
+     --section-space   content ↔ section divider, the same on both sides of every divider
+     --section-bubble  extra room above each title for the mascot and its speech bubble
+     --content-gap     inside a section: subtitle → cards → CTA (and drop 1 sub-blocks) */
+  --section-space: calc(clamp(52px, 4.15vw, 106px) * var(--ds));
+  --section-bubble: calc(clamp(90px, 5.7vw, 140px) * var(--ds));
+  --content-gap: calc(clamp(40px, 3.75vw, 96px) * var(--ds));
+  --heading-gap: calc(var(--content-gap) * .4);
+}
+:root[data-theme='dark'] {
+  --card-fill: #031c17;
+  --tier-legendary-line: #ffd43b;
+}
+
+/* ---------- Section shell: same spacing, divider and content width everywhere ---------- */
+.hero-shell > :is(.pets-section, .steps-section, .wardrobe-section, .tokenomics-section, .coin-section, .faq-section) {
+  padding: calc(var(--section-space) + var(--section-bubble)) 0 var(--section-space);
+  border-top-color: var(--scene-border);
+  color: var(--scene-ink);
+}
+/* Content spans 79 % of the screen, as the card row on the references (type inside cards
+   follows the card width); 900px keeps four tier thumbnails per pet card. */
+@media (min-width: 1024px) {
+  .hero-shell .pets-section .pets-content { width: min(calc(100% - 48px), calc(2000px * var(--ds))); }
+  .hero-shell .pets-section .pets-list-drop,
+  .hero-shell > :is(.steps-section, .wardrobe-section, .tokenomics-section, .coin-section, .faq-section) > .pets-content {
+    width: min(calc(100% - 48px), max(calc(79vw * var(--ds)), 900px));
+  }
+}
+
+/* ---------- Heading: marks · title · mascot (feet on the title line), subtitle below ---------- */
+.hero-shell .pets-heading { justify-items: center; text-align: center; }
+.hero-shell .section-head { justify-content: center; align-items: flex-end; text-align: center; }
+.hero-shell :is(.pets-heading, .section-head) > h2 {
+  color: var(--scene-ink);
+  font-size: clamp(24px, calc(2.6vw * var(--ds)), calc(64px * var(--ds)));
+  line-height: 1.2;
+  letter-spacing: -.045em;
+}
+.hero-shell .pets-heading > h2 { text-transform: uppercase; }
+.hero-shell :is(.pets-heading, .section-head) > h2::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: calc(100% + .45em);
+  width: .55em;
+  height: 1.15em;
+  translate: 0 -50%;
+  background: var(--scene-accent);
+  -webkit-mask: var(--marks-left) center / contain no-repeat;
+  mask: var(--marks-left) center / contain no-repeat;
+}
+.hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) {
+  max-width: 100%;
+  color: var(--scene-accent);
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(8px, calc(.68vw * var(--ds)), calc(16px * var(--ds)));
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: .13em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: normal;
+  text-wrap: balance;
+}
+.hero-shell .section-sub { margin: var(--heading-gap) 0 0; }
+.hero-shell .mascot-sprite { height: calc(clamp(72px, 5.6vw, 128px) * var(--ds)); }
+@media (min-width: 1024px) {
+  .hero-shell .pets-heading { grid-template-columns: 1fr auto 1fr; column-gap: calc(clamp(20px, 2vw, 44px) * var(--ds)); }
+  .hero-shell .section-head { gap: calc(clamp(20px, 2vw, 44px) * var(--ds)); }
+  .hero-shell .mascot-bubble { font-size: clamp(13px, calc(.9vw * var(--ds)), calc(20px * var(--ds))); }
+  .hero-shell .pets-heading > h2 { grid-column: 2; }
+  /* Feet on the title's bottom line, overflowing upward only (never onto the subtitle). */
+  .hero-shell .pets-heading > .mascot { grid-column: 3; justify-self: start; align-self: end; margin-block: -34px 0; }
+  .hero-shell .section-head > .mascot { align-self: flex-end; margin-block: -34px 0; }
+  .hero-shell .pets-heading > p { grid-column: 1 / -1; margin-top: var(--heading-gap); }
+}
+
+/* ---------- Speech bubbles (components/Mascot.tsx), one style on every route (task 075) ----------
+   Card frame and colours, stepped pixel corners and a stepped pixel tail. The bubble box has no
+   border or background; ::before draws the line shape (box + tail) and ::after the fill shape
+   2px inside it, both as one clip-path polygon each, so tail and box are one outline.
+   Desktop: tail under the bottom-right edge, pointing down at the pet; ≤1023px: tail on the
+   left edge, pointing at the pet beside it. */
+.mascot-bubble {
+  --c: 6px;           /* corner */
+  --s: 2px;           /* corner step */
+  --tw: 24px;         /* tail width at its base */
+  --tx: 4px;          /* tail narrows by this per step (each side) */
+  --ty1: 4px;         /* tail step lengths: first, second; the third is the rest of --th */
+  --ty2: 4px;
+  --th: 12px;         /* tail length */
+  --tr: 14px;         /* tail offset from the right edge */
+  isolation: isolate;
+  border: 0;
+  color: var(--scene-ink);
+  background: none;
+  box-shadow: none;
+}
+.mascot-bubble::before,
+.mascot-bubble::after {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: 0 0 calc(-1 * var(--th)) 0;
+  right: 0;
+  bottom: calc(-1 * var(--th));
+  width: auto;
+  height: auto;
+  background: var(--scene-accent);
+  clip-path: polygon(
+    var(--c) 0, calc(100% - var(--c)) 0, calc(100% - var(--c)) var(--s), calc(100% - var(--s)) var(--s),
+    calc(100% - var(--s)) var(--c), 100% var(--c),
+    100% calc(100% - var(--th) - var(--c)), calc(100% - var(--s)) calc(100% - var(--th) - var(--c)),
+    calc(100% - var(--s)) calc(100% - var(--th) - var(--s)), calc(100% - var(--c)) calc(100% - var(--th) - var(--s)),
+    calc(100% - var(--c)) calc(100% - var(--th)),
+    calc(100% - var(--tr)) calc(100% - var(--th)),
+    calc(100% - var(--tr)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tx)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - 2 * var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - 2 * var(--tx)) 100%,
+    calc(100% - var(--tr) - var(--tw) + 2 * var(--tx)) 100%,
+    calc(100% - var(--tr) - var(--tw) + 2 * var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - var(--tw) + var(--tx)) calc(100% - var(--th) + var(--ty1) + var(--ty2)),
+    calc(100% - var(--tr) - var(--tw) + var(--tx)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tw)) calc(100% - var(--th) + var(--ty1)),
+    calc(100% - var(--tr) - var(--tw)) calc(100% - var(--th)),
+    var(--c) calc(100% - var(--th)), var(--c) calc(100% - var(--th) - var(--s)),
+    var(--s) calc(100% - var(--th) - var(--s)), var(--s) calc(100% - var(--th) - var(--c)),
+    0 calc(100% - var(--th) - var(--c)), 0 var(--c), var(--s) var(--c), var(--s) var(--s), var(--c) var(--s));
+}
+/* Fill: 2px inside the line everywhere, so its first tail step is 2px longer and its tip
+   2px shorter (widths 20/12/4 inside the line's 24/16/8). */
+.mascot-bubble::after {
+  --c: 4px;
+  --tw: 20px;
+  --tr: 14px;
+  --ty1: 6px;
+  z-index: -1;
+  inset: 2px 2px calc(2px - var(--th)) 2px;
+  right: 2px;
+  bottom: calc(2px - var(--th));
+  background: var(--card-fill);
+}
+@media (max-width: 1023px) {
+  .mascot-bubble { --tw: 20px; --tx: 4px; --ty1: 4px; --ty2: 4px; --th: 12px; }
+  .mascot-bubble::before,
+  .mascot-bubble::after {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: calc(-1 * var(--th));
+    width: auto;
+    height: auto;
+    clip-path: polygon(
+      calc(var(--th) + var(--c)) 0, calc(100% - var(--c)) 0, calc(100% - var(--c)) var(--s), calc(100% - var(--s)) var(--s),
+      calc(100% - var(--s)) var(--c), 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--s)) calc(100% - var(--c)),
+      calc(100% - var(--s)) calc(100% - var(--s)), calc(100% - var(--c)) calc(100% - var(--s)), calc(100% - var(--c)) 100%,
+      calc(var(--th) + var(--c)) 100%, calc(var(--th) + var(--c)) calc(100% - var(--s)),
+      calc(var(--th) + var(--s)) calc(100% - var(--s)), calc(var(--th) + var(--s)) calc(100% - var(--c)),
+      var(--th) calc(100% - var(--c)),
+      var(--th) calc(50% + var(--tw) / 2),
+      calc(var(--th) - var(--ty1)) calc(50% + var(--tw) / 2),
+      calc(var(--th) - var(--ty1)) calc(50% + var(--tw) / 2 - var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% + var(--tw) / 2 - var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% + var(--tw) / 2 - 2 * var(--tx)),
+      0px calc(50% + var(--tw) / 2 - 2 * var(--tx)),
+      0px calc(50% - var(--tw) / 2 + 2 * var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% - var(--tw) / 2 + 2 * var(--tx)),
+      calc(var(--th) - var(--ty1) - var(--ty2)) calc(50% - var(--tw) / 2 + var(--tx)),
+      calc(var(--th) - var(--ty1)) calc(50% - var(--tw) / 2 + var(--tx)),
+      calc(var(--th) - var(--ty1)) calc(50% - var(--tw) / 2),
+      var(--th) calc(50% - var(--tw) / 2),
+      var(--th) var(--c), calc(var(--th) + var(--s)) var(--c), calc(var(--th) + var(--s)) var(--s), calc(var(--th) + var(--c)) var(--s));
+  }
+  .mascot-bubble::after { --tw: 16px; --ty1: 6px; top: 2px; right: 2px; bottom: 2px; left: calc(2px - var(--th)); }
+}
+
+/* ---------- Pixel frames: stepped corners drawn by ::before (line) and ::after (fill) ---------- */
+/* Frame defaults through :where(), so the per-element overrides below stay one class strong. */
+.hero-shell :where(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card) {
+  --frame-line: var(--scene-accent);
+  --frame-fill: var(--card-fill);
+  --frame-width: 3px;
+  --corner: 14px;
+  --pixel-step: 4px;
+}
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card) {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--scene-ink);
+}
+.hero-shell :is(.pet-mood, .item-card) { --frame-width: 2px; --corner: 8px; --pixel-step: 3px; }
+.hero-shell .pet-mood { --frame-line: var(--scene-ink); }
+.hero-shell .pet-mood.is-active { --frame-line: #a2ffe0; --frame-fill: var(--scene-button); color: #001b13; }
+.hero-shell .drop-bg { --frame-line: var(--tier-line, var(--scene-ink)); --frame-width: 2px; --corner: 6px; --pixel-step: 2px; }
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::before,
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--frame-line);
+  clip-path: polygon(var(--corner) 0,calc(100% - var(--corner)) 0,
+    calc(100% - var(--corner)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--corner),100% var(--corner),
+    100% calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) 100%,var(--corner) 100%,
+    var(--corner) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--corner)),0 calc(100% - var(--corner)),
+    0 var(--corner),var(--pixel-step) var(--corner),
+    var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
+}
+.hero-shell :is(.pet-card.is-drop, .pet-mood, .step-card, .gotchi-tile, .drop-tier, .item-card, .drop-bg, .stat-card, .faq-item, .coin-card)::after {
+  inset: var(--frame-width);
+  z-index: -1;
+  background: var(--frame-fill);
+}
+/* Faint second line inside the large frames, as on the references. */
+.hero-shell :is(.pet-card.is-drop, .step-card, .gotchi-tile, .drop-tier, .stat-card, .faq-item, .coin-card)::after {
+  box-shadow: inset 0 0 0 3px var(--frame-fill), inset 0 0 0 4px color-mix(in srgb, var(--frame-line) 30%, transparent);
+}
+
+/* ---------- LCD boxes: pet on a ground shadow between two pairs of signal marks ---------- */
+.hero-shell .pet-card.is-drop .pet-sprite-wrap,
+.hero-shell .step-sprite-wrap,
+.hero-shell .item-sprite-wrap {
+  position: relative;
+  border: 0;
+  background: var(--lcd);
+  box-shadow: inset 0 0 0 2px var(--lcd-line);
+  clip-path: polygon(8px 0,calc(100% - 8px) 0,calc(100% - 8px) 3px,calc(100% - 3px) 3px,
+    calc(100% - 3px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 3px) calc(100% - 8px),
+    calc(100% - 3px) calc(100% - 3px),calc(100% - 8px) calc(100% - 3px),calc(100% - 8px) 100%,
+    8px 100%,8px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 8px),0 calc(100% - 8px),
+    0 8px,3px 8px,3px 3px,8px 3px);
+}
+.hero-shell .pet-card.is-drop .pet-sprite-wrap,
+.hero-shell .step-sprite-wrap { display: block; height: auto; }
+.hero-shell .pet-card.is-drop .pet-sprite-wrap { aspect-ratio: 2.15; }
+.hero-shell .step-sprite-wrap { aspect-ratio: 1.55; }
+.hero-shell :is(.pet-sprite-wrap, .step-sprite-wrap)::before,
+.hero-shell :is(.pet-sprite-wrap, .step-sprite-wrap)::after { content: ''; position: absolute; pointer-events: none; }
+.hero-shell :is(.pet-sprite-wrap, .step-sprite-wrap)::before {
+  inset: 34% 15% 38%;
+  background: var(--lcd-mark);
+  -webkit-mask: var(--marks-left) left center / auto 100% no-repeat, var(--marks-right) right center / auto 100% no-repeat;
+  mask: var(--marks-left) left center / auto 100% no-repeat, var(--marks-right) right center / auto 100% no-repeat;
+}
+.hero-shell .step-sprite-wrap::before { inset: 32% 10% 38%; }
+.hero-shell :is(.pet-sprite-wrap, .step-sprite-wrap)::after {
+  left: 28%;
+  right: 28%;
+  bottom: 6%;
+  height: 11%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lcd-mark) 45%, transparent);
+}
+/* Pet sprites are 489×431 with the feet on the bottom edge: the bottom sits on the shadow.
+   The egg (logo-transparent.png) has 10 % of empty canvas under it, so it sits lower. */
+.hero-shell .pet-card.is-drop .pet-sprite,
+.hero-shell .step-sprite {
+  position: absolute;
+  z-index: 1;
+  inset: auto 0 11%;
+  width: auto;
+  max-width: 100%;
+  height: 82%;
+  margin-inline: auto;
+}
+.hero-shell .step-sprite[src*="logo-transparent"] { bottom: 3%; }
+
+/* ---------- Meet the pets: cards (type in cqi, the card is a size container) ---------- */
+.hero-shell .pets-list-drop { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
+.hero-shell .pet-card.is-drop {
+  padding: calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(18px, 1.5vw, 30px) * var(--ds));
+}
+.hero-shell .pet-mood { min-height: max(36px, 10.5cqi); font-size: max(10px, 3.6cqi); }
+.hero-shell .pet-card h3 {
+  margin: calc(clamp(14px, 1.1vw, 22px) * var(--ds)) 0 calc(clamp(6px, .5vw, 10px) * var(--ds));
+  font-size: max(16px, 6.2cqi);
+  letter-spacing: -.03em;
+}
+.hero-shell .pet-card.is-drop > p { min-height: 2.9em; margin-bottom: 3.6cqi; font-size: max(13px, 4.1cqi); }
+.hero-shell .pet-card-traits { gap: 2.2cqi; margin-bottom: 4.4cqi; }
+.hero-shell .pet-card-traits li {
+  padding: 1.4cqi 2.9cqi;
+  border: 0;
+  color: #17251c;
+  background: var(--lcd);
+  font-size: max(7px, 2.3cqi);
+  clip-path: polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),
+    calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px);
+}
+.hero-shell .pet-moods { gap: 2.6cqi 3cqi; }
+/* Tier row: four per row as on the reference (2×2 only on very narrow cards); thumbnail and
+   badge outlined in the tier colour. */
+.hero-shell .pet-tier-row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3.4cqi; margin-top: 5cqi; }
+@container (max-width: 260px) {
+  .hero-shell .pet-tier-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* One column per button: a wide badge ("legendary") must not stretch its thumbnail. */
+.hero-shell .pet-tier-link { grid-template-columns: minmax(0, 1fr); }
+.hero-shell :is(.pet-tier-link, .drop-tier, .drop-bg) { --tier-line: var(--scene-ink); }
+.hero-shell :is(.pet-tier-link, .drop-tier):has(.is-rare), .hero-shell .drop-bg.is-rare { --tier-line: var(--tier-rare); }
+.hero-shell :is(.pet-tier-link, .drop-tier):has(.is-epic), .hero-shell .drop-bg.is-epic { --tier-line: var(--tier-epic); }
+.hero-shell :is(.pet-tier-link, .drop-tier):has(.is-legendary), .hero-shell .drop-bg.is-legendary { --tier-line: var(--tier-legendary-line); }
+.hero-shell :is(.pet-tier-art, .drop-tier-art) { overflow: hidden; border: 2px solid var(--tier-line); border-radius: 4px; }
+.hero-shell .pet-tier-link .tier-badge {
+  max-width: 100%;
+  padding: 1.1cqi 1.2cqi;
+  border-color: var(--tier-line);
+  background: var(--card-fill);
+  box-shadow: none;
+  font-size: max(6px, 1.9cqi);
+  letter-spacing: -.04em;
+}
+
+/* ---------- How gotchi works: four step cards ---------- */
+.hero-shell .steps-list { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
+.hero-shell .step-card {
+  container-type: inline-size;
+  padding: calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(14px, 1.2vw, 24px) * var(--ds)) calc(clamp(20px, 1.8vw, 36px) * var(--ds));
+}
+.hero-shell .step-heading { gap: 4cqi; margin: 5.5cqi 0 4cqi; font-size: max(15px, 7cqi); letter-spacing: -.03em; }
+.hero-shell .step-number {
+  flex: none;
+  width: 2.5em;
+  height: 2.2em;
+  border: 0;
+  color: #001b13;
+  background: var(--scene-button);
+  box-shadow: inset 0 0 0 2px #a2ffe0;
+  font-size: .7em;
+  clip-path: polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 2px,100% 2px,100% calc(100% - 2px),
+    calc(100% - 3px) calc(100% - 2px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 2px),
+    0 calc(100% - 2px),0 2px,3px 2px);
+}
+.hero-shell .step-card p { max-width: none; font-size: max(13px, 4.7cqi); line-height: 1.5; }
+
+/* ---------- Meet your gotchi: four tab tiles ---------- */
+.hero-shell .gotchi-tiles { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
+.hero-shell .gotchi-tile-tab {
+  margin: 3cqi 0 0 3cqi;
+  padding: 1.4cqi 3cqi;
+  border: 0;
+  color: #001b13;
+  background: var(--scene-button);
+  box-shadow: inset 0 0 0 2px #a2ffe0;
+  font-size: max(9px, 1.9cqi);
+  clip-path: polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),
+    calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+}
+.hero-shell .gotchi-preview { border-bottom: 2px dashed color-mix(in srgb, var(--scene-accent) 35%, transparent); }
+.hero-shell .gotchi-tile-body { padding: 3.6cqi 4.4cqi 4.4cqi; font-size: max(13px, 2.6cqi); }
+/* Previews (task 074): the /pet components they reuse still carry the old black frames and
+   shadows; inside the tiles they get the landing's look (scene colours, pixel corners, LCD
+   tags). Styling only: same components, same sample data. */
+.hero-shell .gotchi-preview { color: var(--scene-ink); }
+.hero-shell .gotchi-preview :is(.pet-stats, .simon-device, .snack-card, .pet-chat) {
+  border: 0;
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: inset 0 0 0 2px var(--scene-accent);
+  clip-path: polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
+    calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+.hero-shell .gotchi-preview :is(.pet-chat-log, .gotchi-input, .pet-msg.is-pet) {
+  border-color: color-mix(in srgb, var(--scene-accent) 60%, transparent);
+  color: var(--scene-ink);
+  background: var(--card-fill);
+}
+.hero-shell .gotchi-preview .pet-msg.is-you { border-color: #a2ffe0; color: #001b13; background: var(--scene-button); }
+.hero-shell .gotchi-preview :is(.pet-traits li, .snack-cost, .pet-chat-note) {
+  border: 0;
+  color: #17251c;
+  background: var(--lcd);
+  clip-path: polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),
+    calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px);
+}
+.hero-shell .gotchi-preview .tier-badge { border-color: var(--tier-line, var(--scene-ink)); background: var(--card-fill); box-shadow: none; }
+.hero-shell .gotchi-preview .token-art { border-color: var(--scene-ink); }
+.hero-shell .gotchi-preview .pet-stats span { border-color: color-mix(in srgb, var(--scene-accent) 70%, transparent); background-color: var(--card-fill); }
+.hero-shell .gotchi-preview .pet-stats span.is-on { border-color: var(--scene-accent); background-color: var(--scene-button); }
+.hero-shell .gotchi-preview .snack-art { border-color: var(--scene-accent); }
+.hero-shell .gotchi-preview .catch-screen { border-color: var(--scene-button); }
+
+/* ---------- Drop 1: tiers, items, backgrounds ---------- */
+.hero-shell .drop-actions { flex-direction: column; justify-content: center; margin-top: var(--content-gap); }
+.hero-shell .drop-subtitle { margin: var(--content-gap) 0 var(--heading-gap); }
+.hero-shell .drop-tiers { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); }
+.hero-shell .drop-tier {
+  container-type: inline-size;
+  grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+  column-gap: 6cqi;
+  padding: calc(clamp(12px, 1vw, 20px) * var(--ds));
+}
+.hero-shell .drop-tier-name { font-size: max(8px, 4.6cqi); }
+.hero-shell .drop-tier-count { font-size: max(12px, 5.6cqi); }
+.hero-shell .drop-tier-total { color: color-mix(in srgb, var(--scene-ink) 65%, transparent); font-size: max(12px, 5.4cqi); }
+/* 13 items: 7 + 6, both rows centred. */
+.hero-shell .drop-items { --cols: 7; --gap: calc(clamp(10px, 1vw, 20px) * var(--ds)); display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); }
+.hero-shell .drop-items > li { width: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols)); }
+.hero-shell .item-card { padding: 8px; }
+.hero-shell .drop-backgrounds { justify-content: center; }
+.hero-shell .drop-bg { padding: calc(10px * var(--ds)) calc(14px * var(--ds)); }
+
+/* Drop counter (hero and drop 1): the LCD strip redrawn in scene colours. */
+.hero-shell .drop-progress {
+  border-color: var(--scene-border);
+  color: var(--scene-ink);
+  background: var(--scene-color);
+  box-shadow: none;
+}
+.hero-shell .drop-progress-bar > span { background: color-mix(in srgb, var(--scene-accent) 22%, transparent); }
+.hero-shell .drop-progress-bar > .is-on { background: var(--scene-accent); }
+
+/* ---------- The numbers ---------- */
+.hero-shell .stat-list { gap: calc(clamp(16px, 1.8vw, 36px) * var(--ds)); margin-top: var(--content-gap); }
+.hero-shell .stat-card { padding: calc(clamp(18px, 1.6vw, 32px) * var(--ds)) calc(clamp(18px, 1.6vw, 32px) * var(--ds)) calc(clamp(22px, 1.9vw, 38px) * var(--ds)); }
+.hero-shell .stat-card dt {
+  color: var(--scene-accent);
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(8px, calc(.62vw * var(--ds)), calc(14px * var(--ds)));
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.hero-shell .stat-note { margin-top: var(--heading-gap); color: color-mix(in srgb, var(--scene-ink) 65%, transparent); text-align: center; }
+.hero-shell .tokenomics-closing {
+  margin-top: var(--content-gap);
+  font-size: clamp(24px, calc(2.6vw * var(--ds)), calc(64px * var(--ds)));
+  letter-spacing: -.045em;
+  text-align: center;
+}
+.hero-shell .tokenomics-closing strong {
+  display: inline-block;
+  padding: .14em .26em .16em;
+  line-height: 1.1;
+  color: #001b13;
+  background: var(--scene-button);
+  box-shadow: inset 0 0 0 3px #a2ffe0;
+  clip-path: polygon(8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,
+    calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,
+    8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px),
+    0 8px,4px 8px,4px 4px,8px 4px);
+}
+
+/* ---------- FAQ: framed bars; the open one gets a dashed divider instead of the LCD header ---------- */
+.hero-shell .faq-list {
+  width: min(100%, calc(1100px * var(--ds)));
+  max-width: none;
+  gap: calc(clamp(12px, 1.1vw, 22px) * var(--ds));
+  margin: var(--content-gap) auto 0;
+}
+.hero-shell .faq-item { --corner: 12px; }
+.hero-shell .faq-item[open] { --frame-line: #a2ffe0; }
+:root:not([data-theme='dark']) .hero-shell .faq-item[open] { --frame-line: var(--scene-border); }
+.hero-shell .faq-item summary {
+  padding: calc(clamp(18px, 1.5vw, 30px) * var(--ds)) calc(clamp(20px, 1.7vw, 34px) * var(--ds));
+  color: var(--scene-ink);
+  font-size: clamp(11px, calc(.85vw * var(--ds)), calc(18px * var(--ds)));
+}
+.hero-shell .faq-item summary::after { color: var(--scene-accent); }
+.hero-shell .faq-item[open] summary {
+  margin: 0 6px;
+  padding-inline: calc(clamp(20px, 1.7vw, 34px) * var(--ds) - 6px);
+  border-bottom: 2px dashed color-mix(in srgb, var(--scene-accent) 40%, transparent);
+  color: var(--scene-accent);
+  background: none;
+}
+.hero-shell .faq-item p {
+  padding: calc(clamp(16px, 1.3vw, 26px) * var(--ds)) calc(clamp(20px, 1.7vw, 34px) * var(--ds)) calc(clamp(20px, 1.6vw, 32px) * var(--ds));
+  font-size: clamp(14px, calc(1vw * var(--ds)), calc(20px * var(--ds)));
+}
+.hero-shell .faq-item summary:focus-visible { outline: 3px solid var(--scene-accent); outline-offset: 4px; }
+
+/* ---------- CTAs between two pairs of signal marks ---------- */
+.hero-shell .cta-marks {
+  width: auto;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: calc(clamp(16px, 1.6vw, 32px) * var(--ds));
+  margin-top: var(--content-gap);
+}
+.cta-marks::before, .cta-marks::after {
+  content: '';
+  flex: none;
+  width: calc(clamp(16px, 1.25vw, 28px) * var(--ds));
+  height: calc(clamp(36px, 2.7vw, 60px) * var(--ds));
+  background: var(--scene-accent);
+  -webkit-mask: var(--marks-left) center / contain no-repeat;
+  mask: var(--marks-left) center / contain no-repeat;
+}
+.cta-marks::after { -webkit-mask-image: var(--marks-right); mask-image: var(--marks-right); }
+/* Large CTA size (the reference "hatch your gotchi"): section CTAs, drop 1, the 404 page. */
+:is(.hero-shell :is(.cta-marks, .drop-actions), .notfound-content) .button {
+  --corner: 12px;
+  --pixel-step: 4px;
+  min-height: calc(clamp(52px, 3.8vw, 80px) * var(--ds));
+  padding: 0 calc(clamp(28px, 2.2vw, 48px) * var(--ds));
+  font-size: clamp(11px, calc(1.2vw * var(--ds)), calc(24px * var(--ds)));
+}
+.pixel-ui :is(.hero-shell :is(.cta-marks, .drop-actions), .notfound-content) .button::after { inset: 3px; }
+.pixel-ui :is(.hero-shell :is(.cta-marks, .drop-actions), .notfound-content) .button-primary::after { inset: 4px 3px 1px 4px; }
+
+/* Footer in the scene palette (was ink / black): card fill, mint divider, scene text. */
+.site-footer,
+:root[data-theme='dark'] .site-footer {
+  color: var(--scene-ink);
+  background: var(--card-fill);
+  box-shadow: inset 0 2px 0 var(--scene-border);
+}
+.site-footer-legal p { color: color-mix(in srgb, var(--scene-ink) 72%, transparent); }
+.site-footer a { color: var(--scene-accent); }
+/* Footer row on the header's grid (task 075): same side margins as .site-header-inner, so the
+   disclaimer lines up under the logo and © under the CTA on every route. */
+@media (min-width: 1024px) {
+  .site-footer-inner { width: calc(100% - clamp(32px, 6vw, 280px)); align-items: center; }
+  .site-footer-meta { justify-content: flex-end; text-align: right; }
+}
+
+/* ---------- Tablets + phones (globals.css stacks the grids) ---------- */
+@media (max-width: 1023px) {
+  /* The mascot sits under the title here, so no bubble room above it. */
+  :root { --section-space: 46px; --section-bubble: 0px; --content-gap: 32px; }
+  .hero-shell :is(.pets-heading, .section-head) > h2 { justify-self: center; font-size: calc(clamp(22px, 6.4vw, 40px) * var(--ds)); }
+  .hero-shell :is(.pets-heading, .section-head) > h2::before { display: none; }
+  .hero-shell .section-head { align-items: center; }
+  .hero-shell :is(.pets-heading, .section-head) > .mascot { justify-content: center; }
+  .hero-shell :is(.pets-heading > p, .section-sub, .drop-subtitle) { font-size: max(8px, calc(clamp(9px, 2.5vw, 13px) * var(--ds))); }
+  .hero-shell .pet-mood { min-height: max(40px, calc(44px * var(--ds))); }
+  .hero-shell .cta-marks { gap: 10px; }
+  .cta-marks::before, .cta-marks::after { width: 12px; }
+  /* Long labels ("try it: hatch your gotchi") fit one line at 390px and wrap below that. */
+  .hero-shell :is(.cta-marks, .drop-actions) .button {
+    flex: 1;
+    width: auto;
+    max-width: 420px;
+    padding-inline: 16px;
+    font-size: max(8px, calc(clamp(10px, 2.8vw, 16px) * var(--ds)));
+    line-height: 1.4;
+    white-space: normal;
+    text-align: center;
+  }
+  .hero-shell .drop-actions { align-items: stretch; }
+  .hero-shell .drop-actions .button { max-width: none; }
+  .hero-shell .faq-item summary { font-size: max(9px, calc(13px * var(--ds))); }
+  .hero-shell .faq-item p { font-size: 1.0625rem; }
+  .hero-shell .drop-items { --cols: 3; }
+  /* globals.css sizes the values for this padding ("33% stakers /" on one line). */
+  .hero-shell .stat-card { padding: 16px 12px 18px; }
+}
+@media (min-width: 600px) and (max-width: 1023px) {
+  .hero-shell .drop-items { --cols: 5; }
+}
+
+/* ---------- Footer: a bit taller than the header bar (task 075: ~80px at 1920) ---------- */
+.site-footer { padding: calc(clamp(18px, 1.45vw, 36px) * var(--ds)) 0; }
+.site-footer p { font-size: clamp(12px, calc(.75vw * var(--ds)), calc(16px * var(--ds))); line-height: 1.45; }
+@media (max-width: 1023px) {
+  .site-footer { padding: 18px 0 10px; }
+  /* Stacked, left-aligned on the header's side margin (disclaimer, then ©). */
+  .site-footer-inner { width: calc(100% - 24px); align-items: flex-start; gap: 4px; text-align: left; }
+  .site-footer-meta { justify-content: flex-start; }
+  .site-footer p { font-size: 0.8125rem; line-height: 1.4; }
+  /* Links keep their 44px tap height; the copyright line beside them doesn't need it. */
+  .site-footer-meta { align-items: center; }
+}
+
+/* ---------- 404: the page fills the screen, the (shorter) footer sits on the bottom edge ---------- */
+body:has(> .notfound-shell) { display: flex; flex-direction: column; min-height: 100svh; }
+body > .notfound-shell { display: grid; flex: 1 0 auto; }
+body > .notfound-shell > .notfound { min-height: 0; }
+
+/* ---------- Drop 1 items + backgrounds on phones/tablets (task 075) ----------
+   A fixed grid of equal columns (the flex rows let long labels widen their card), equal card
+   heights, the last row starts on the left; backgrounds as two equal columns. */
+@media (max-width: 1023px) {
+  .hero-shell .drop-items { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-auto-rows: 1fr; justify-content: stretch; align-items: stretch; }
+  .hero-shell .drop-items > .item-card { width: auto; min-width: 0; }
+  .hero-shell .drop-items > .item-card * { min-width: 0; overflow-wrap: anywhere; }
+  .hero-shell .drop-backgrounds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .hero-shell .drop-backgrounds > .drop-bg { min-width: 0; justify-content: center; text-align: center; }
+}
+
+@media (max-width: 380px) { .site-footer-inner { width: calc(100% - 16px); } }
+/* Phones (task 075): mascots and section sprites ~12 % smaller, as the rest of the phone UI. */
+@media (max-width: 768px) {
+  .mascot-sprite, .hero-shell .mascot-sprite { height: calc(72px * var(--ds)); }
+  .mascot-bubble { font-size: max(12px, calc(16px * var(--ds))); }
+  .hero-shell .faq-item p { font-size: .9375rem; }
+  .mobile-menu nav a { min-height: max(40px, calc(48px * var(--ds))); padding: calc(14px * var(--ds)) 16px; font-size: max(9px, calc(12px * var(--ds))); }
+  .mobile-menu-actions .button { min-height: max(40px, calc(52px * var(--ds))); padding: calc(12px * var(--ds)); font-size: max(8px, calc(11px * var(--ds))); }
+}
+
+/* ---------- $NEARGotchi (app/coin-section.tsx, task 076): one card under the numbers ---------- */
+.coin-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-top: 2px solid var(--scene-border);
+}
+.hero-shell .coin-section .section-head { justify-content: center; }
+/* Pixel title like .faq-title / .tokenomics-title (size comes from the shared section h2 rule). */
+.coin-title { margin: 0; font-family: var(--font-pixel), monospace; font-weight: 400; line-height: 1.3; letter-spacing: -.055em; }
+.hero-shell .coin-card {
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--heading-gap) * .8);
+  width: min(100%, calc(820px * var(--ds)));
+  margin: var(--content-gap) auto 0;
+  padding: calc(clamp(24px, 2.2vw, 48px) * var(--ds)) calc(clamp(20px, 2.6vw, 56px) * var(--ds));
+  text-align: center;
+}
+.hero-shell .coin-text {
+  max-width: 46ch;
+  margin: 0;
+  font-size: clamp(15px, calc(1.15vw * var(--ds)), calc(22px * var(--ds)));
+  font-weight: 500;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+.hero-shell :is(.coin-fine, .coin-address) {
+  margin: 0;
+  color: color-mix(in srgb, var(--scene-ink) 65%, transparent);
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(8px, calc(.6vw * var(--ds)), calc(13px * var(--ds)));
+  line-height: 1.7;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.hero-shell .coin-card .button {
+  --corner: 12px;
+  --pixel-step: 4px;
+  min-height: calc(clamp(48px, 3.4vw, 72px) * var(--ds));
+  margin-top: calc(var(--heading-gap) * .6);
+  padding: 0 calc(clamp(24px, 2vw, 44px) * var(--ds));
+  font-size: clamp(11px, calc(1vw * var(--ds)), calc(20px * var(--ds)));
+}
+.pixel-ui .hero-shell .coin-card .button::after { inset: 3px; }
+.pixel-ui .hero-shell .coin-card .button-primary::after { inset: 4px 3px 1px 4px; }
+/* The address keeps its case and is one click to select (no copy-button component yet). */
+.hero-shell .coin-address-id { text-transform: none; color: var(--scene-ink); user-select: all; overflow-wrap: anywhere; }
+@media (max-width: 1023px) {
+  .hero-shell .coin-card .button { width: 100%; max-width: 360px; padding-inline: 16px; font-size: clamp(10px, 2.5vw, 14px); white-space: normal; }
+  .hero-shell :is(.coin-fine, .coin-address) { font-size: clamp(8px, 2.1vw, 11px); }
+}

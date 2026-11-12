@@ -1,0 +1,586 @@
+/* GUI redesign: header + hero (reference: newheader.png / newheadermobile.png).
+   Loaded after globals.css (app/layout.tsx) and reuses its component classes; the four scene
+   backgrounds in public/hero/ are used unchanged. Header switches to the burger at ≤1279px
+   (same breakpoint as app/mobile-menu.tsx), the hero to the portrait scene at ≤768px. */
+:root {
+  --scene-color: #fffaf0;
+  --scene-ink: #151b17;
+  --scene-accent: #007f62;
+  --scene-border: #00b88b;
+  --scene-button: #00e6ae;
+  /* Desktop design scale (>768px): header, hero and section sizes are multiplied by it.
+     .8 = the look approved at 80% browser zoom on a 2560×1323 screen. Font minimums stay put. */
+  --ds: .8;
+  --header-height: calc(clamp(72px, 7.8vh, 97px) * var(--ds));
+  --page: var(--scene-color);
+  --surface: var(--scene-color);
+  --html-bg: var(--scene-color);
+}
+:root[data-theme='dark'] {
+  /* Sky of public/hero/dark.png. */
+  --scene-color: #001311;
+  --scene-ink: #fffbed;
+  --scene-accent: #00efbd;
+  --scene-border: #00bc8f;
+  --page: var(--scene-color);
+  --surface: #04140f;
+  --html-bg: var(--scene-color);
+}
+/* Anchor jumps land 24px under the bar (scroll-padding replaces globals.css scroll-margin). */
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 24px); }
+section[id] { scroll-margin-top: 0; }
+body { background: var(--page); }
+/* .bg-sparkles (page-wide twinkles, components/BackgroundSparkles.tsx) stay on as on main. */
+
+/* ---------- Header bar ---------- */
+.site-header {
+  height: var(--header-height);
+  border-top: 0;
+  border-bottom: 0;
+  background: transparent;
+  color: var(--scene-ink);
+  box-shadow: none;
+  isolation: isolate;
+}
+/* Shape the background layers, not the header itself: the dropdowns and focus
+   indicators must remain free to extend outside the navigation bar. */
+.site-header::before, .site-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+  background: var(--scene-border);
+  clip-path: polygon(0 0,100% 0,100% calc(100% - 18px),
+    calc(100% - 4px) calc(100% - 18px),calc(100% - 4px) calc(100% - 14px),
+    calc(100% - 8px) calc(100% - 14px),calc(100% - 8px) calc(100% - 10px),
+    calc(100% - 12px) calc(100% - 10px),calc(100% - 12px) calc(100% - 6px),
+    calc(100% - 18px) calc(100% - 6px),calc(100% - 18px) calc(100% - 2px),
+    calc(100% - 24px) calc(100% - 2px),calc(100% - 24px) 100%,
+    24px 100%,24px calc(100% - 2px),18px calc(100% - 2px),
+    18px calc(100% - 6px),12px calc(100% - 6px),12px calc(100% - 10px),
+    8px calc(100% - 10px),8px calc(100% - 14px),4px calc(100% - 14px),
+    4px calc(100% - 18px),0 calc(100% - 18px));
+}
+.site-header::after {
+  inset: 0 0 2px;
+  z-index: -1;
+  background: var(--scene-color);
+}
+/* Seven section links + wallet + CTA: side margins, gaps and type are sized so the bar
+   fits on one line from 1280px up (narrower is the burger header). */
+.site-header-inner {
+  width: calc(100% - clamp(32px, 6vw, 280px));
+  height: 100%;
+  grid-template-columns: auto 1fr auto;
+  gap: clamp(16px, 1.5vw, 48px);
+}
+.site-brand { gap: 10px; min-width: 0; font-size: clamp(12px, calc(1.1vw * var(--ds)), calc(26px * var(--ds))); }
+.site-brand-name { text-transform: uppercase; white-space: nowrap; letter-spacing: -.045em; }
+.site-brand img { width: calc(clamp(40px, 2.88vw, 60px) * var(--ds)); height: calc(clamp(40px, 2.88vw, 60px) * var(--ds)); object-fit: contain; }
+.site-nav { display: block; justify-self: center; }
+.site-nav ul { gap: 0; align-items: center; }
+.site-header .site-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(44px * var(--ds));
+  margin: 0;
+  padding: calc(10px * var(--ds)) calc(clamp(6px, .5vw, 14px) * var(--ds));
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(8px, calc(.66vw * var(--ds)), calc(13px * var(--ds)));
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+/* Section links: the current one (app/section-nav.tsx) and hover get a pixel frame
+   with a stable footprint, so nothing shifts while scrolling. */
+.site-header nav a { position: relative; isolation: isolate; }
+.site-header nav a::before, .site-header nav a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--scene-accent);
+  clip-path: polygon(10px 0,calc(100% - 10px) 0,
+    100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,
+    10px 100%,0 calc(100% - 10px),0 10px);
+}
+.site-header nav a::after {
+  inset: 2px;
+  z-index: -1;
+  background: var(--scene-color);
+  clip-path: polygon(9px 0,calc(100% - 9px) 0,
+    100% 9px,100% calc(100% - 9px),calc(100% - 9px) 100%,
+    9px 100%,0 calc(100% - 9px),0 9px);
+}
+.site-header nav a:is(.is-current, :hover, :focus-visible) { color: var(--scene-accent); }
+.site-header nav a:is(.is-current, :hover, :focus-visible)::before,
+.site-header nav a:is(.is-current, :hover, :focus-visible)::after { opacity: 1; }
+
+/* Header actions share the CTA height; the icon controls are squares of that
+   height with glyphs at the same scale. */
+.site-actions { --action-height: clamp(36px, calc(4.8vh * var(--ds)), calc(60px * var(--ds))); display: flex; gap: calc(clamp(8px, .6vw, 12px) * var(--ds)); }
+.site-actions :is(.button, .theme-toggle, .social-x) { height: var(--action-height); min-height: var(--action-height); }
+.site-actions .button { padding: 0 calc(clamp(12px, .8vw, 16px) * var(--ds)); font-size: clamp(8px, calc(.8vw * var(--ds)), calc(16px * var(--ds))); }
+.site-actions :is(.theme-toggle, .social-x) { width: var(--action-height); min-width: var(--action-height); padding: 0; }
+.site-actions :is(.theme-icon, .social-x svg) { width: calc(var(--action-height) * .44); height: calc(var(--action-height) * .44); }
+.theme-toggle, .menu-button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 10px;
+  color: var(--scene-ink);
+}
+.theme-icon { width: 22px; height: 22px; }
+.social-x {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 10px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: var(--scene-ink);
+  text-decoration: none;
+}
+.social-x svg { width: 20px; height: 20px; }
+.social-x:hover { color: var(--scene-accent); }
+.header-theme-toggle, .header-social-x, .menu-button { display: none; }
+
+/* Wallet chip: secondary pixel button in the header font; the demo / testnet tag is a
+   small accent pill, the connected account id keeps its case. */
+.site-header .wallet-chip { font-family: var(--font-pixel), monospace; text-transform: uppercase; }
+.site-actions .wallet-chip { font-size: clamp(7px, calc(.56vw * var(--ds)), calc(12px * var(--ds))); }
+.site-header .wallet-chip .wallet-account { text-transform: none; }
+/* Implicit accounts are 64 hex chars: cut long ids (the chip's aria-label keeps the full one). */
+.button .wallet-account-id { max-width: 16ch; margin: 0; overflow: hidden; font: inherit; white-space: nowrap; text-overflow: ellipsis; }
+.site-header .wallet-tag {
+  margin-left: 8px;
+  padding: 3px 4px;
+  border: 0;
+  background: var(--scene-accent);
+  color: var(--scene-color);
+  font-size: 6px;
+  line-height: 1;
+}
+.site-header .wallet-panel {
+  border: 2px solid var(--scene-border);
+  background: var(--scene-color);
+  color: var(--scene-ink);
+  box-shadow: none;
+}
+
+/* ---------- Pixel buttons: the one button style of the site ----------
+   <body class="pixel-ui"> (app/layout.tsx), so every .button (primary / secondary), the theme
+   toggle, X, burger, lightbox-close buttons and the /pet tabs on every route get it (mood chips share the motion); sizes vary per context, the look and the
+   motion don't. Reference: "hatch your gotchi" under meet the pets (task 074).
+   Pixel frames with independent inner fills. No clipping of the actual interactive
+   element, so keyboard focus remains visible. */
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) {
+  --frame-fill: var(--scene-color);
+  --frame-line: var(--scene-accent);
+  --corner: 8px;
+  --pixel-step: 3px;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--scene-ink);
+  box-shadow: none;
+  animation: none;
+  text-transform: uppercase;
+  transition: transform 140ms;
+}
+/* Close buttons keep their corner placement (globals.css): lightbox and game modal (task 075:
+   the shared position: relative had dropped the game's close button out of its corner). */
+.pixel-ui :is(.nft-lightbox-close, .game-modal-close) { position: absolute; }
+.pixel-ui .button-primary {
+  --frame-fill: #00ecb1;
+  --frame-line: #a2ffe0;
+  color: #001b13;
+}
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::before,
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--frame-line);
+  clip-path: polygon(var(--corner) 0,calc(100% - var(--corner)) 0,
+    calc(100% - var(--corner)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--corner),100% var(--corner),
+    100% calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) 100%,var(--corner) 100%,
+    var(--corner) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--corner)),0 calc(100% - var(--corner)),
+    0 var(--corner),var(--pixel-step) var(--corner),
+    var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
+}
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab)::after {
+  inset: 2px;
+  z-index: -1;
+  background: var(--frame-fill);
+}
+/* Highlight along the upper and left edges, as on the reference device UI. */
+.pixel-ui .button-primary::after {
+  inset: 3px 2px 1px 3px;
+  box-shadow: inset -2px -2px 0 #00c494;
+}
+/* Motion of the reference: hover (real pointer, desktop) = 2px down-right + lighter fill;
+   press = 1px down. No shadows, no pulse, no sparkles on buttons. */
+.pixel-ui .button-primary:hover { --frame-fill: #17f8be; }
+.pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab):is(:hover, :active) { box-shadow: none; }
+@media (prefers-reduced-motion: no-preference) {
+  @media (min-width: 1024px) and (hover: hover) {
+    .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab, .pet-mood):hover { transform: translate(2px, 2px); }
+  }
+  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab, .pet-mood):active { transform: translateY(1px); }
+}
+/* Disabled (aria-disabled links / disabled buttons): flat, dimmed, no motion. */
+.pixel-ui .button:is([aria-disabled="true"], :disabled) {
+  --frame-fill: var(--scene-color);
+  --frame-line: color-mix(in srgb, var(--scene-ink) 35%, transparent);
+  color: color-mix(in srgb, var(--scene-ink) 55%, transparent);
+  cursor: not-allowed;
+  transform: none;
+}
+.menu-button[aria-expanded="true"] { --frame-fill: var(--scene-button); color: #001b13; }
+.pixel-ui .cta-labels { margin: 0; }
+.pixel-ui .cta-label { margin: 0; font: inherit; }
+.button .launch-arrow {
+  display: inline-block;
+  width: .85em;
+  height: .85em;
+  flex: none;
+  margin: 0 0 0 .65em;
+  font: inherit;
+  background: currentColor;
+  clip-path: polygon(20% 0,100% 0,100% 80%,75% 80%,75% 43%,
+    18% 100%,0 82%,57% 25%,20% 25%);
+}
+.pixel-ui :is(a, button):focus-visible {
+  outline: 3px solid var(--scene-accent);
+  outline-offset: 5px;
+}
+
+/* ---------- Hero scene ----------
+   The scene is scaled to cover the whole viewport (the least zoom without empty
+   sides), then placed so the top clouds start 32px below the navigation bar.
+   It moves up under the bar only when the grid would otherwise drop below
+   72px. Measured on the artwork: clouds start at 6.8 % (desktop) / 7.3 %
+   (mobile) of its height, the horizon at 83 % / 84.3 %. */
+.hero-shell > .hero {
+  --hero-h: calc(100dvh - var(--header-height));
+  --scene-ratio: .5628;
+  --cloud-top: .068;
+  --horizon: .83;
+  --scene-h: max(100dvh, var(--scene-ratio) * 100vw);
+  --scene-y: min(max(-1 * var(--header-height), 32px - var(--cloud-top) * var(--scene-h)),
+    var(--hero-h) - 72px - var(--horizon) * var(--scene-h));
+  /* Visible grid below the horizon; the scroll cue sits on this line. */
+  --grid-zone: calc(var(--hero-h) - var(--scene-y) - var(--horizon) * var(--scene-h));
+  min-height: calc(100vh - var(--header-height));
+  min-height: var(--hero-h);
+  background-color: var(--scene-color);
+  background-image: url('/hero/light.png');
+  background-repeat: no-repeat;
+  background-size: auto var(--scene-h);
+  background-position-x: center;
+  background-position-y: var(--scene-y);
+  color: var(--scene-ink);
+}
+:root[data-theme='dark'] .hero-shell > .hero { background-image: url('/hero/dark.png'); }
+.hero-content {
+  box-sizing: border-box;
+  width: min(1100px, calc(100% - 40px));
+  min-height: inherit;
+  padding: 0 0 calc(var(--grid-zone) + 56px * var(--ds));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+}
+/* Free space splits 2:1 above the title and below the buttons, as in the
+   reference; the scroll cue is anchored to the horizon instead. */
+.hero-content::before, .hero-content::after { content: ''; flex: 2 1 0; min-height: 24px; }
+.hero-content::after { flex-grow: 1; min-height: 8px; }
+.hero #hero-title {
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(28px, calc(3.81vw * var(--ds)), calc(100px * var(--ds)));
+  line-height: 1.25;
+  font-weight: 400;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+  text-shadow: none;
+}
+/* Press Start 2P draws T and I one font pixel narrower, offset right, which
+   opened a gap in NEAR-GO TCHI. Pull them back by that pixel (1/8 em). */
+.glyph-narrow { margin-left: -.125em; }
+.hero-subtitle {
+  margin: calc(16px * var(--ds)) 0 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(9px, calc(1.07vw * var(--ds)), calc(24px * var(--ds)));
+  line-height: 1.6;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--scene-accent);
+  text-wrap: balance;
+}
+.hero .device-wrap {
+  display: grid;
+  place-items: center;
+  flex: none;
+  /* globals.css moves the device above the copy below 1024 px. */
+  order: 0;
+  width: calc(clamp(233px, 34.4vh, 465px) * var(--ds));
+  max-width: 90%;
+  margin: 12px 0 -8px;
+  transform: none;
+  isolation: isolate;
+}
+/* Signal marks and ground shadow from the reference, drawn around the untouched
+   artwork. The egg spans 15-85 % across and 6-90 % down the listed image. */
+.hero .device-wrap::before, .hero .device-wrap::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+.hero .device-wrap::before {
+  top: 24%;
+  left: -4%;
+  width: 108%;
+  height: 30%;
+  background: var(--scene-accent);
+  -webkit-mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 108 30' preserveAspectRatio='none' shape-rendering='crispEdges'><path d='M3 3.5h3v2.2H3zM5.2 5.2h3v2.2h-3zM7.4 6.9h3v2.2h-3zM0 12.4h8.5v2.2H0zM3 23.3h3v2.2H3zM5.2 21.6h3v2.2h-3zM7.4 19.9h3v2.2h-3zM102 3.5h3v2.2h-3zM99.8 5.2h3v2.2h-3zM97.6 6.9h3v2.2h-3zM99.5 12.4h8.5v2.2h-8.5zM102 23.3h3v2.2h-3zM99.8 21.6h3v2.2h-3zM97.6 19.9h3v2.2h-3z'/></svg>") 0 0 / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 108 30' preserveAspectRatio='none' shape-rendering='crispEdges'><path d='M3 3.5h3v2.2H3zM5.2 5.2h3v2.2h-3zM7.4 6.9h3v2.2h-3zM0 12.4h8.5v2.2H0zM3 23.3h3v2.2H3zM5.2 21.6h3v2.2h-3zM7.4 19.9h3v2.2h-3zM102 3.5h3v2.2h-3zM99.8 5.2h3v2.2h-3zM97.6 6.9h3v2.2h-3zM99.5 12.4h8.5v2.2h-8.5zM102 23.3h3v2.2h-3zM99.8 21.6h3v2.2h-3zM97.6 19.9h3v2.2h-3z'/></svg>") 0 0 / 100% 100% no-repeat;
+}
+.hero .device-wrap::after {
+  z-index: -1;
+  top: 85%;
+  left: 1.5%;
+  width: 97%;
+  height: 7.4%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--scene-accent) 22%, transparent);
+}
+.hero .device-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: none;
+}
+.hero .hero-lede {
+  width: min(100%, 760px);
+  max-width: 42ch;
+  margin: calc(12px * var(--ds)) 0 0;
+  font-family: var(--font-sans), sans-serif;
+  font-size: clamp(14px, calc(1.35vw * var(--ds)), calc(27px * var(--ds)));
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+.hero .hero-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: calc(28px * var(--ds));
+  width: min(100%, calc(35.34vw * var(--ds)), calc(725px * var(--ds)));
+  margin: calc(28px * var(--ds)) 0 0;
+}
+.hero .button {
+  flex: 1;
+  min-width: 0;
+  min-height: clamp(40px, calc(6.05vh * var(--ds)), calc(71px * var(--ds)));
+  padding: calc(16px * var(--ds)) calc(20px * var(--ds));
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(10px, calc(1.07vw * var(--ds)), calc(22px * var(--ds)));
+  line-height: 1.5;
+  --corner: 12px;
+  --pixel-step: 4px;
+}
+.hero .button::after { inset: 3px; }
+.hero .button-primary::after { inset: 4px 3px 1px 4px; }
+/* Drop counter: the strip from globals.css redrawn in scene colours, as wide as the buttons. */
+.hero .hero-progress {
+  width: min(100%, calc(35.34vw * var(--ds)), calc(725px * var(--ds)));
+  margin: calc(20px * var(--ds)) 0 0;
+  border-color: var(--scene-border);
+  color: var(--scene-ink);
+  background: var(--scene-color);
+  box-shadow: none;
+}
+.hero .drop-progress-bar > span { background: color-mix(in srgb, var(--scene-accent) 22%, transparent); }
+.hero .drop-progress-bar > .is-on { background: var(--scene-accent); }
+.hero .drop-progress-label { white-space: normal; text-wrap: balance; }
+.hero-scroll {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--grid-zone) + 6px);
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--scene-accent);
+  text-decoration: none;
+  animation: scroll-cue 1.8s ease-in-out infinite;
+}
+.hero-scroll span::before, .hero-scroll span::after {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-right: 4px solid currentColor;
+  border-bottom: 4px solid currentColor;
+  transform: rotate(45deg);
+  margin-top: -6px;
+}
+@keyframes scroll-cue { 50% { transform: translateY(5px); } }
+.pets-section { border-top-color: var(--scene-border); }
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .hero .hero-actions, .hero .hero-progress { width: min(100%, calc(670px * var(--ds))); }
+}
+
+/* ---------- Burger header (≤1279px) ----------
+   Nav, wallet and CTA move into the panel; theme toggle, X and burger stay in the bar. */
+@media (max-width: 1279px) {
+  .site-header-inner {
+    grid-template-columns: minmax(0, 1fr) 44px 44px 44px;
+    gap: 10px;
+  }
+  .site-brand { font-size: clamp(14px, 1.5vw, 19px); }
+  .site-nav, .site-actions { display: none; }
+  .header-theme-toggle, .header-social-x, .menu-button { display: grid; place-items: center; }
+  .menu-button { margin: 0; position: static; padding: 0; }
+  .menu-icon { background: currentColor; }
+  .mobile-menu:not([hidden]) {
+    top: calc(var(--header-height) - 2px);
+    max-height: calc(100dvh - var(--header-height));
+    padding: 8px clamp(20px, 5vw, 72px) 24px;
+    border: 0;
+    border-bottom: 2px solid var(--scene-border);
+    background: var(--scene-color);
+    box-shadow: none;
+    color: var(--scene-ink);
+  }
+  .mobile-menu-backdrop { inset: var(--header-height) 0 0; }
+  .mobile-menu li { border-bottom-color: color-mix(in srgb, var(--scene-border) 35%, transparent); }
+  .mobile-menu nav a {
+    min-height: 48px;
+    padding: 14px 18px;
+    font-family: var(--font-pixel), monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  .mobile-menu-actions { gap: 16px; margin-top: 20px; }
+  .mobile-menu-actions .button { min-height: 52px; padding: 12px; font-size: 11px; }
+  .mobile-menu .wallet-tag { border: 0; }
+}
+
+/* ---------- Phones + portrait tablets (≤768px) ---------- */
+@media (max-width: 768px) {
+  /* Phones: ONE multiplier (task 077). --ds scales every ds-based size of the site and the phone
+     sizes below are written as "base × --ds" (base = the 073 phone size); 1 → .88 (075) → .78
+     (077). Floors: tap targets 40px, body copy 13px. */
+  /* --ui-scale (globals.css: html font-size and its px lengths) .9 shrinks the rem/px sizes of
+     the routes still styled there (/mint, /pet internals); body copy stays ≥ 14px. */
+  :root { --ds: .78; --ui-scale: .9; --header-height: max(52px, calc(64px * var(--ds))); }
+  /* The copy spans the whole width here: only the stars around the egg stay. */
+  .hero-sky { display: none; }
+  .hero-shell > .hero {
+    --scene-ratio: 1.7768;
+    --cloud-top: .073;
+    --cloud-bottom: .186;
+    --horizon: .843;
+    background-image: url('/hero/lightmobile.png');
+  }
+  :root[data-theme='dark'] .hero-shell > .hero { background-image: url('/hero/darkmobile.png'); }
+  .site-header-inner { --tap: max(40px, calc(44px * var(--ds))); width: calc(100% - 24px); gap: 6px; grid-template-columns: minmax(0, 1fr) var(--tap) var(--tap) var(--tap); }
+  .header-theme-toggle, .header-social-x, .menu-button { width: var(--tap); min-width: var(--tap); height: var(--tap); min-height: var(--tap); }
+  .header-theme-toggle .theme-icon { width: calc(22px * var(--ds)); height: calc(22px * var(--ds)); }
+  .header-social-x svg { width: calc(20px * var(--ds)); height: calc(20px * var(--ds)); }
+  .site-brand { font-size: max(9px, calc(clamp(10px, 3.4vw, 19px) * var(--ds))); gap: 4px; }
+  .site-brand img { width: calc(36px * var(--ds)); height: calc(44px * var(--ds)); }
+  .menu-icon, .menu-icon::before, .menu-icon::after { width: calc(22px * var(--ds)); height: 3px; }
+  /* Proportions measured from newheadermobile.png at 390 px. Title and subtitle
+     sit just under the top clouds (they end at 18.6 % of the artwork); on short
+     screens that gap gives way before anything else. Spare height opens above
+     the device and above the scroll cue, where the small clouds and the hills are. */
+  .hero-content { width: calc(100% - 32px); height: var(--hero-h); padding-bottom: calc(var(--grid-zone) + 46px); }
+  .hero-content > * { flex-shrink: 0; }
+  .hero-content::before {
+    flex: 0 1 calc(var(--scene-y) + var(--cloud-bottom) * var(--scene-h) + 12px);
+    min-height: 16px;
+  }
+  .hero-content::after { flex: 0 0 8px; }
+  .hero #hero-title { font-size: calc(clamp(24px, 8.2vw, 56px) * var(--ds)); line-height: 1.2; }
+  .hero-subtitle { font-size: max(8px, calc(clamp(9px, 2.8vw, 16px) * var(--ds))); letter-spacing: .2em; margin: calc(10px * var(--ds)) 0; }
+  .hero .device-wrap { width: calc(clamp(130px, min(48vw, 22.5dvh), 300px) * var(--ds)); max-width: 100%; margin: auto 0 -8px; }
+  .hero .hero-lede { font-size: max(13px, calc(clamp(14px, 3.7vw, 20px) * var(--ds))); max-width: 32ch; margin-top: calc(10px * var(--ds)); }
+  .hero .hero-actions, .hero .hero-progress { width: calc(clamp(220px, 66vw, 340px) * var(--ds)); }
+  .hero .hero-actions { flex-direction: column; gap: calc(12px * var(--ds)); margin: calc(18px * var(--ds)) 0 auto; }
+  .hero .hero-progress { margin-top: 12px; }
+  .hero .button { width: 100%; flex: none; min-height: max(40px, calc(44px * var(--ds))); padding: calc(10px * var(--ds)) 12px; font-size: max(9px, calc(clamp(11px, 3.1vw, 16px) * var(--ds))); }
+}
+@media (max-width: 380px) {
+  .site-header-inner { width: calc(100% - 16px); }
+  .site-brand { font-size: 10px; gap: 0; }
+  .site-brand img { width: 30px; }
+}
+/* Portrait tablets: the top clouds sit under the bar, so centre the content. */
+@media (min-width: 600px) and (max-width: 768px) {
+  .hero-content::before, .hero-content::after { flex: 1 1 0; }
+  .hero .device-wrap { margin-top: 0; }
+  .hero .hero-actions { margin-bottom: 0; }
+}
+@media (max-width: 768px) and (max-height: 620px) {
+  .hero .device-wrap { width: clamp(120px, 38vw, 200px); }
+  .hero .hero-actions { gap: 10px; margin-top: 14px; }
+  /* No room above the scroll cue; the counter is also in the drop 1 section. */
+  .hero .hero-progress { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero-scroll { animation: none; }
+  .pixel-ui :is(.button, .theme-toggle, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) { transition: none; }
+}
+
+/* Restored from main (task 073): sparkles around the hero wordmark. */
+.hero-title-host { position: relative; display: inline-block; }
+@media (max-width: 1023px) {
+  .hero-title-host .sparkle { width: 15px !important; height: 15px !important; }
+}
+
+/* Task 073: the CTA reads "hatch a gotchi" (user decision), longer than "launch app": the
+   primary button takes its label's width, "learn more" the rest of the row. */
+@media (min-width: 1024px) {
+  .hero .hero-actions .button-primary { flex: 0 0 auto; }
+}
+/* Long account ids in the header chip: shorter cut so the square icon buttons never shrink. */
+.site-actions :is(.theme-toggle, .social-x) { flex: none; }
+.site-actions .wallet-account-id { max-width: 12ch; }
+.hero-sky-mobile { display: none; }
+@media (max-width: 768px) { .hero-sky-mobile { display: block; } }
+/* Phones: the title spans the width, so its two side sparkles (zones 1 and 6) would sit on N and I. */
+@media (max-width: 768px) {
+  .hero-title-host > .sparkles > .sparkle:is(:nth-child(1), :nth-child(6)) { display: none; }
+}

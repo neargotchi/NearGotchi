@@ -9,6 +9,7 @@ import TierBadge from "../components/TierBadge";
 import TitleSparkles from "../components/TitleSparkles";
 import { fill, mascots, petGallery, petTraits } from "../lib/copy";
 import NftLightbox from "./nft-lightbox";
+import Wordmark from "./wordmark";
 import { tierSample, tiers, type Drop1Token } from "../lib/drop1";
 import {
   moods,
@@ -91,10 +92,11 @@ export default function PetGallery() {
   const [enlarged, setEnlarged] = useState<Drop1Token | null>(null);
   return (
     <section id="pets" className="pets-section" aria-labelledby="pets-title">
+      <div className="pets-grid" aria-hidden="true" />
       <div className="pets-content">
         <header className="pets-heading">
           <h2 id="pets-title" className="section-title-host">
-            {petGallery.header}
+            <Wordmark text={petGallery.header} />
             <TitleSparkles seed="title-pets" belowRight />
           </h2>
           <p>{petGallery.sub}</p>
@@ -106,9 +108,10 @@ export default function PetGallery() {
           ))}
         </div>
         <NftLightbox token={enlarged} onClose={() => setEnlarged(null)} />
-        <div className="section-cta">
+        <div className="section-cta cta-marks">
           <Link className="button button-primary" href="/mint">
             {petGallery.cta}
+            <span className="launch-arrow" aria-hidden="true" />
           </Link>
         </div>
       </div>

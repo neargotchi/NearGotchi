@@ -13,7 +13,11 @@ export type HowItWorksStep = {
 
 /** Hero (app/page.tsx). Demo now, near next: no live near ai promise, no dressing up. */
 export const hero = {
+  subtitle: "your ai companion on near",
   lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "demo now, near next."),
+  learnMore: "learn more",
+  /** Chevron under the buttons → #pets (label for screen readers only). */
+  scroll: "explore the pets",
 };
 
 export const howItWorks = {
@@ -94,6 +98,18 @@ export const tokenomics = {
   closing: { lead: "every hatch ", accent: "pays holders." },
 };
 
+/** $NEARGotchi coin (app/coin-section.tsx), under the numbers; no nav entry. No prices, no numbers, no promises. */
+export const coin = {
+  header: "$NEARGotchi",
+  body: "the community coin of the neargotchi crew. born on NEAR, made by the fans, for the fans. every gotchi has a friend in it. join the herd.",
+  disclaimer: "memecoin. no promise of value. not financial advice.",
+  cta: { label: "open on nearly.trade", url: "https://nearly.trade/neargotchi.nearlytrade.near" },
+  /** Screen readers only, after the external link label. */
+  newTab: "(opens in a new tab)",
+  address: "neargotchi.nearlytrade.near",
+  addressLabel: "token address",
+};
+
 export const faq = {
   header: "faq",
   items: [
@@ -139,6 +155,7 @@ export const notFound = {
 export const header = {
   brand: "neargotchi",
   nav: [
+    { label: "home", href: "#home" },
     { label: "pets", href: "#pets" },
     { label: "how it works", href: "#how-it-works" },
     { label: "your gotchi", href: "#your-gotchi" },
@@ -162,6 +179,8 @@ export const header = {
   cta: { label: "hatch a gotchi", href: "/mint" },
   // … demo pet exists → /pet.
   petCta: { label: "my gotchi", href: "/pet" },
+  /** Square X button next to the theme toggle (app/social-x.tsx). */
+  x: { label: "NEARGOTCHI on X", url: "https://x.com/neargotchiAI" },
 };
 
 /** Section anchors ("#pets") live on the home page; route hrefs ("/pet") are used as-is. */
@@ -358,7 +377,7 @@ export const petPage = {
     blocked: {
       hungry: "{name} is too hungry to play.",
     },
-    close: "close game",
+    close: "close",
     feedFirst: "feed it first",
     /** Cards under catch the snack (games in tasks 050–051). */
     /** Hide & seek (app/pet/games/hide-seek.tsx, lib/hideseek-game.ts). */

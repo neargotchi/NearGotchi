@@ -4,7 +4,9 @@ import Image from "next/image";
 import { useEffect, useEffectEvent, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 
 import { fill, petPage } from "../../../lib/copy";
+import GameClose from "./game-close";
 import { useGameModal } from "./use-game-modal";
+import { drawSprite, useCrispCanvas } from "./use-crisp-canvas";
 import { snackIds, type SnackId } from "../../../lib/shop";
 import { snackPixels } from "../snack-sprites";
 
@@ -12,7 +14,7 @@ type Phase = "idle" | "run" | "paused" | "over";
 
 const copy = petPage.games.snack;
 
-/** Logical LCD: 128×96 "pixels", scaled up by CSS with image-rendering: pixelated (fixed 4:3 box, no CLS). */
+/** Logical LCD: 128×96 "pixels" (fixed 4:3 box, no CLS); drawn at screen resolution by useCrispCanvas. */
 const W = 128;
 const H = 96;
 const GROUND = H - 3;
@@ -141,6 +143,7 @@ export default function CatchSnack({
     if (!ctx) return;
     const g = game.current;
     ctx.clearRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = false;
     // ground: a dotted pixel line
     ctx.fillStyle = LCD_SHADOW;
     for (let x = 0; x < W; x += 2) ctx.fillRect(x, GROUND + 1, 1, 1);
@@ -150,8 +153,7 @@ export default function CatchSnack({
     if (pet && pet.complete && pet.naturalWidth) {
       const petW = Math.round((PET_H * sprites.width) / sprites.height);
       const hop = performance.now() < g.hopUntil ? 2 : 0;
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(pet, Math.round(g.petX - petW / 2), GROUND - PET_H - hop, petW, PET_H);
+      drawSprite(ctx, pet, Math.round(g.petX - petW / 2), GROUND - PET_H - hop, petW, PET_H);
     } else {
       ctx.fillStyle = LCD_INK;
       ctx.fillRect(Math.round(g.petX - 8), GROUND - 12, 16, 12);
@@ -167,6 +169,7 @@ export default function CatchSnack({
     assets.current.pet = img;
     draw();
   });
+  useCrispCanvas(canvasRef, W, H, () => draw());
   useEffect(() => {
     init();
     const pending = frame;
@@ -363,9 +366,7 @@ export default function CatchSnack({
   return (
     <div className={modal ? "simon catch is-modal" : "simon catch"} role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-label={modal ? copy.title : undefined}>
       {modal ? (
-        <button type="button" className="game-modal-close button button-secondary" aria-label={petPage.games.close} onClick={close}>
-          <span aria-hidden="true">×</span>
-        </button>
+        <GameClose onClick={close} />
       ) : null}
       <div ref={deviceRef} className="simon-device" tabIndex={-1}>
         <div className="catch-screen">

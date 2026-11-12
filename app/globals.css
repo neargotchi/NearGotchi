@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  /* Wide-screen UI scale: 1 up to 2199px (approved sizes), 1.2 from 2200px, 1.35 from 3000px.
+  /* Wide-screen UI scale: 1 up to 2999px (approved sizes), 1.1 from 3000px (was 1.2 / 1.35 from
+     2200 / 3000px; lowered to the look approved at 80% browser zoom on a 2560px screen).
      Every px length below is multiplied by it (integers rounded to whole pixels); rem text
      scales through the root font size. */
   --ui-scale: 1;
@@ -74,9 +75,11 @@ body { overscroll-behavior: none; }
 html { overflow-x: hidden; overflow-x: clip; }
 body { min-height: 100vh; overflow-x: clip; }
 
-/* Mobile menu open (app/mobile-menu.tsx): page behind the panel can't scroll. */
-html.menu-open,
-html.menu-open body { overflow: hidden; }
+/* Mobile menu open (app/mobile-menu.tsx): page behind the panel can't scroll. Only the root
+   (viewport) scroller is locked: overflow on <body> as well made body its own scroll container,
+   so the sticky header (and the burger panel inside it) jumped back to the top of the page
+   when the menu was opened after scrolling (task 077). */
+html.menu-open { overflow: hidden; }
 
 /* Page scrollbar hidden visually; scrolling (wheel, touch, keys, anchors) still works.
    Only the root scroller is affected, inner scroll areas keep their bars. */
@@ -84,8 +87,7 @@ html { scrollbar-width: none; }
 html::-webkit-scrollbar,
 body::-webkit-scrollbar { display: none; }
 
-@media (min-width: 2200px) { :root { --ui-scale: 1.2; } }
-@media (min-width: 3000px) { :root { --ui-scale: 1.35; } }
+@media (min-width: 3000px) { :root { --ui-scale: 1.1; } }
 
 body {
   margin: 0;
@@ -872,8 +874,8 @@ section[id] { scroll-margin-top: round(calc(79px * var(--ui-scale)), 1px); }
 }
 
 /* Sections paint over the fixed layer in DOM order; let it show through their cream.
-   Grid alternates per section (own .hero-grid / .pets-grid layer): on in hero, how it works,
-   tokenomics and 404; off in pets, wardrobe and faq. */
+   Every landing section and the 404 have the grid (own .pets-grid layer; task 074: no longer
+   alternating). */
 main > section[class] { background: transparent; }
 
 .sparkle {
@@ -1404,12 +1406,6 @@ main > section[class] { background: transparent; }
 .button .cta-labels { display: inline-grid; margin: 0; font: inherit; }
 .button .cta-label { grid-area: 1 / 1; margin: 0; font: inherit; text-align: center; }
 .button .cta-label.is-off { visibility: hidden; }
-
-/* "burns." sparkles around the CTA: desktop only (mobile buttons have no motion since task 019);
-   the green pulse itself runs everywhere (a colour change, not movement). */
-@media (max-width: 1023px) {
-  .cta-sparkles { display: none; }
-}
 
 /* "mint {name}" under the mood buttons of the home pet cards → /mint?pet=… */
 .pet-mint-link {
@@ -2483,8 +2479,7 @@ main > section[class] { background: transparent; }
   }
 
   /* "burns." highlight pulses between the two NEAR greens. */
-  .burns,
-  .cta-burn { animation: burns-pulse 2.4s steps(1, end) infinite; }
+  .burns { animation: burns-pulse 2.4s steps(1, end) infinite; }
 
   /* Shared sparkles: loop twinkles forever; burst plays once on click (mascot) here and on
      hover (mint, desktop only) in the button block above. */

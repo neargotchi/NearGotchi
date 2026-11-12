@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { header, navHref } from "../lib/copy";
 import PetCta from "./pet-cta";
+import SectionNav from "./section-nav";
 import WalletMenu from "./wallet-menu";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -20,14 +20,16 @@ export default function MobileMenu() {
 
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false);
-    if (returnFocus) buttonRef.current?.focus();
+    if (returnFocus) buttonRef.current?.focus({ preventScroll: true });
   }, []);
 
   useEffect(() => {
     if (!open) return;
 
     const panel = panelRef.current;
-    panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    // preventScroll: the panel sits in the sticky header, inside the scroll-padding zone, so a plain
+    // focus() scrolled the page up by that padding on every open (task 077).
+    panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus({ preventScroll: true });
 
     // Lock the page behind the panel (globals.css: html.menu-open); anchor jumps from the menu
     // links still work because overflow: hidden only blocks user scrolling.
@@ -47,13 +49,13 @@ export default function MobileMenu() {
       const current = document.activeElement as HTMLElement | null;
       if (!current || !items.includes(current)) {
         event.preventDefault();
-        first.focus();
+        first.focus({ preventScroll: true });
       } else if (event.shiftKey && current === first) {
         event.preventDefault();
-        last.focus();
+        last.focus({ preventScroll: true });
       } else if (!event.shiftKey && current === last) {
         event.preventDefault();
-        first.focus();
+        first.focus({ preventScroll: true });
       }
     };
 
@@ -102,15 +104,7 @@ export default function MobileMenu() {
           if ((event.target as HTMLElement).closest("a")) close(false);
         }}
       >
-        <nav aria-label="sections">
-          <ul>
-            {header.nav.map((link) => (
-              <li key={link.href}>
-                <a href={navHref(link.href)}>{link.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <SectionNav />
         <div className="mobile-menu-actions">
           <WalletMenu variant="burger" />
           <PetCta variant="burger" />

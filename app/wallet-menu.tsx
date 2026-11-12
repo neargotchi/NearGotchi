@@ -91,7 +91,7 @@ export default function WalletMenu({ variant = "header" }: { variant?: "header" 
           </span>
           <span className={connected ? "cta-label wallet-account" : "cta-label wallet-account is-off"}>
             <span className="wallet-dot" aria-hidden="true" />
-            {accountId}
+            <span className="wallet-account-id">{accountId}</span>
             <span className={open ? "wallet-caret is-open" : "wallet-caret"} aria-hidden="true" />
           </span>
         </span>

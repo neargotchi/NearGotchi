@@ -70,7 +70,7 @@ One `<section class="mint-section">` under the header. Grid ON, sparkles page-wi
       hatch stage 100% wide, egg clamp(160px, 30svh, 260px)
 existing pet (all sizes): the form is replaced by one card (happy sprite, name, species) + [go to your pet] [start over]
 ```
-Selected card: `--green` card background with ink text (same in light and dark, like the active mood button), a pixel "✓ picked" tag in the name row, and the happy sprite. Unselected: normal sprite. Locked cards are not inputs, have no hover, and use the existing `.pet-card-locked` style.
+Selected card: `--green` card background with ink text (same in light and dark, like the active mood button), a pixel "✓ picked" tag in the name row, and the happy sprite. Unselected: normal sprite.
 
 ## 4. Hatch storyboard (total 3.2s; transform/opacity only, `steps()`, no rotation)
 | t (ms) | frame | CSS |
