@@ -16,8 +16,6 @@ export const hero = {
   subtitle: "your ai companion on near",
   lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "demo now, near next."),
   learnMore: "learn more",
-  /** Badge under the subtitle (task 087), on-chain builds only: their chat runs on near ai. Text, no logo. */
-  poweredBy: "powered by near ai",
   /** Chevron under the buttons → #pets (label for screen readers only). */
   scroll: "explore the pets",
 };

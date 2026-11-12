@@ -587,30 +587,6 @@ body { background: var(--page); }
   .hero-title-host > .sparkles > .sparkle:is(:nth-child(1), :nth-child(6)) { display: none; }
 }
 
-/* Task 087: "powered by near ai" badge under the subtitle (on-chain builds). Text only, no logo:
-   an LCD-style tag in scene colours with a pixel shadow, readable on desktop and phones. */
-.hero-ai-badge {
-  margin: calc(18px * var(--ds)) 0 0;
-  padding: calc(10px * var(--ds)) calc(16px * var(--ds));
-  border: 3px solid var(--scene-border);
-  color: #17251c;
-  background: var(--lcd);
-  box-shadow: calc(5px * var(--ds)) calc(5px * var(--ds)) 0 var(--accent);
-  font-family: var(--font-pixel), monospace;
-  font-size: clamp(10px, calc(.9vw * var(--ds)), calc(19px * var(--ds)));
-  line-height: 1.4;
-  letter-spacing: .06em;
-}
-@media (max-width: 768px) {
-  .hero-ai-badge {
-    margin: calc(4px * var(--ds)) 0 calc(6px * var(--ds));
-    padding: 6px 10px;
-    border-width: 2px;
-    box-shadow: 3px 3px 0 var(--accent);
-    font-size: max(9px, calc(clamp(10px, 2.9vw, 15px) * var(--ds)));
-  }
-}
-
 /* Task 088: "$NEARGOTCHI" nav link (header bar and burger panel): always underlined, the text
    glows softly in the accent. No layout change (text-shadow only); off with reduced motion and on
    touch / narrow screens (task 088 point 9), where only the underline stays. */

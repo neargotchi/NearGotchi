@@ -5,7 +5,6 @@ import PetCta from "./pet-cta";
 import type { Metadata } from "next";
 import { SITE_DESCRIPTION, SITE_NAME, pageMeta } from "../lib/site";
 import { hero } from "../lib/copy";
-import { isOnChain } from "../lib/chain";
 import Faq from "./faq";
 import HowItWorks from "./how-it-works";
 import PetGallery from "./pet-gallery";
@@ -85,7 +84,6 @@ export default function Home() {
             </span>
           </h1>
           <p className="hero-subtitle">{hero.subtitle}</p>
-          {isOnChain ? <p className="hero-ai-badge">{hero.poweredBy}</p> : null}
 
           <div className="device-wrap">
             <Image
