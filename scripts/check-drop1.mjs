@@ -506,6 +506,33 @@ await test("shop (task 059): energy pack = +50 energy only (capped, no stock); s
   assert.equal(shop.NEAR_PRICES.energy, "0.5");
   await assert.rejects(shop.buyItem("nobody", "cookie"), (e) => e.code === "no_pet");
 });
+await test("payment check (task 080): amount >= price from Transfer deposits, signer, treasury, success, block not older than the purchase", async () => {
+  const yocto = (near) => (BigInt(Math.round(near * 1000)) * 10n ** 21n).toString();
+  const tx = (over = {}) => ({
+    status: { SuccessValue: "" },
+    transaction: { signer_id: "buyer.near", receiver_id: "team.near", actions: [{ Transfer: { deposit: yocto(0.05) } }] },
+    ...over,
+  });
+  const pays = (t, item = "cookie", blockMs, since) => shop.paysFor(t, "buyer.near", "team.near", item, blockMs, since);
+  assert.equal(shop.transferredYocto([{ Transfer: { deposit: "5" } }, { Transfer: { deposit: "7" } }, { FunctionCall: { deposit: "100" } }, null]), 12n);
+  assert.equal(shop.transferredYocto(undefined), 0n);
+  assert.equal(pays(tx()), true, "exact price");
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ Transfer: { deposit: yocto(0.06) } }] } })), true, "overpay is fine");
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ Transfer: { deposit: yocto(0.049) } }] } })), false, "underpay");
+  // the old check matched a substring of the actions JSON: 0.005 NEAR digits inside an unrelated number must not count
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ FunctionCall: { gas: yocto(0.05), deposit: "0" } }] } })), false, "no Transfer = no payment");
+  assert.equal(pays(tx(), "energy"), false, "0.05 does not pay the 0.5 energy pack");
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, signer_id: "other.near" } })), false, "someone else's payment");
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, receiver_id: "team.testnet" } })), false, "wrong receiver");
+  assert.equal(shop.paysFor(tx(), "buyer.near", "", "cookie"), false, "empty treasury never matches");
+  assert.equal(pays(tx({ status: { Failure: { ActionError: {} } } })), false, "failed tx");
+  assert.equal(pays(tx({ status: "Started" })), false, "not finished");
+  const since = Date.parse("2026-11-12T16:00:00Z");
+  assert.equal(pays(tx(), "cookie", since + 30_000, since), true, "block after the purchase started");
+  assert.equal(pays(tx(), "cookie", since - 5 * 60_000, since), true, "within clock skew");
+  assert.equal(pays(tx(), "cookie", since - 60 * 60_000, since), false, "an hour-old payment can't be replayed");
+  assert.equal(pays(tx(), "cookie", undefined, since), false, "block time unknown while required");
+});
 
 console.log("games");
 const games = await import("../lib/games.ts");
@@ -806,6 +833,11 @@ await test("mainnet: contract + treasury only from env, mainnet rpc; missing env
   assert.equal(bare.contract, "");
   assert.equal(bare.treasury, "");
   assert.match(bare.error, /NEXT_PUBLIC_DROP1_CONTRACT/);
+  // task 080: real NEAR never goes to a testnet name
+  assert.match(chainIn({ NEXT_PUBLIC_CHAIN: "mainnet", NEXT_PUBLIC_DROP1_CONTRACT: "drop1.neargochi-dev.near", NEXT_PUBLIC_TREASURY: "neargotchi-team-ng57.testnet" }).error, /\.testnet/);
+  assert.match(chainIn({ NEXT_PUBLIC_CHAIN: "mainnet", NEXT_PUBLIC_DROP1_CONTRACT: "neargotchi-drop1-ng67.testnet", NEXT_PUBLIC_TREASURY: "neargotchiai.near" }).error, /\.testnet/);
+  const prod = chainIn({ NEXT_PUBLIC_CHAIN: "mainnet", NEXT_PUBLIC_DROP1_CONTRACT: "drop1.neargochi-dev.near", NEXT_PUBLIC_TREASURY: "neargotchiai.near" });
+  assert.deepEqual([prod.contract, prod.treasury, prod.error], ["drop1.neargochi-dev.near", "neargotchiai.near", null]);
 });
 
 console.log("rpc failover");

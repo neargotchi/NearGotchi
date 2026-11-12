@@ -42,9 +42,17 @@ export const EXPLORER_URL = isMainnet ? "https://nearblocks.io" : "https://testn
  */
 export const STORAGE_NS = isOnChain ? `:${CHAIN}:${DROP1_CONTRACT}` : "";
 
-/** A mainnet build without both accounts is misconfigured: the UI refuses to sign anything. */
-export const CONFIG_ERROR: string | null =
-  isMainnet && (!DROP1_CONTRACT || !TREASURY_ACCOUNT) ? "mainnet build needs NEXT_PUBLIC_DROP1_CONTRACT and NEXT_PUBLIC_TREASURY" : null;
+/**
+ * A mainnet build without both accounts, or with a testnet account in either, is misconfigured: the UI refuses to
+ * sign anything (task 080: real NEAR must never go to a `.testnet` name).
+ */
+export const CONFIG_ERROR: string | null = !isMainnet
+  ? null
+  : !DROP1_CONTRACT || !TREASURY_ACCOUNT
+    ? "mainnet build needs NEXT_PUBLIC_DROP1_CONTRACT and NEXT_PUBLIC_TREASURY"
+    : /\.testnet$/.test(DROP1_CONTRACT) || /\.testnet$/.test(TREASURY_ACCOUNT)
+      ? "mainnet build points at a .testnet account (NEXT_PUBLIC_DROP1_CONTRACT / NEXT_PUBLIC_TREASURY)"
+      : null;
 
 /** 2 NEAR in yoctoNEAR (contract PRICE) and 100 Tgas (plan: mint measured at 6–12 Tgas, the rest is refunded). */
 export const MINT_DEPOSIT = "2000000000000000000000000";

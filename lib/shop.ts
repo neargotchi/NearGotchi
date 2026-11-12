@@ -1,10 +1,12 @@
 // Shop (docs/DEVLOG.md §1 table, step 5; task 059). Snacks fill ONLY hunger; the energy pack fills ONLY
 // energy (energy is spent only by chatting). Stock lives in localStorage per account and restocks on read.
-// Payment: demo = $NEARGotchi from the demo wallet; NEXT_PUBLIC_CHAIN=testnet = a real testnet NEAR transfer to the
-// team treasury, and the effect is applied only after the transaction is confirmed (popup wallets: right away;
-// redirect wallets: resumePurchase() on return). Async on purpose: the UI only calls the functions below.
+// Payment: demo = $NEARGotchi from the demo wallet; NEXT_PUBLIC_CHAIN=testnet / mainnet = a NEAR transfer (test NEAR /
+// real NEAR) to the team treasury, and the effect is applied only after the transaction is confirmed (popup wallets:
+// right away; redirect wallets: resumePurchase() on return, task 080: amount ≥ price, block not older than the purchase).
+// The effect itself (hunger / energy) is browser state, like the whole pet: the payment is checked, the game is not.
+// Async on purpose: the UI only calls the functions below.
 
-import { STORAGE_NS, TREASURY_ACCOUNT, isOnChain, nearToYocto, txStatus, type TxOutcome } from "./chain";
+import { STORAGE_NS, TREASURY_ACCOUNT, isOnChain, nearToYocto, rpc, txStatus, type TxOutcome } from "./chain";
 import { baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
 import { WalletError, connectedAccountId, spend } from "./wallet";
 
@@ -27,7 +29,7 @@ export type Snack = {
 
 const MIN = 60000;
 
-/** Testnet NEAR prices (one place, task 059). Small amounts of worthless testnet NEAR. */
+/** NEAR prices (one place, task 059): test NEAR on testnet, **real NEAR on mainnet** (paid to the team treasury). */
 export const NEAR_PRICES = { cookie: "0.05", berries: "0.1", noodles: "0.2", candy: "0.3", energy: "0.5" } as const;
 
 /** The energy pack: +50 energy, no limit. Demo price in $NEARGotchi. */
@@ -155,7 +157,38 @@ export async function getShop(): Promise<ShopItem[]> {
 const PENDING_KEY = `neargotchi-pending-buy${STORAGE_NS}`;
 const USED_KEY = `neargotchi-used-tx${STORAGE_NS}`;
 
-type Pending = { item: ItemId; petId: string; owner: string };
+/** createdAt (ms) = when the wallet was opened; the paying transaction must not be older (task 080). */
+type Pending = { item: ItemId; petId: string; owner: string; createdAt?: number; hash?: string };
+
+/** A purchase whose chain check failed for network reasons is retried on later /pet loads for this long. */
+const PENDING_RETRY_MS = 60 * MIN;
+
+/** Clock skew allowed between this device and the chain when matching a transaction to a pending purchase. */
+const PAY_SKEW_MS = 10 * MIN;
+
+/** Sum of the Transfer deposits in a transaction's actions, yoctoNEAR (RPC `tx` shape: [{"Transfer":{"deposit":"…"}}]). */
+export function transferredYocto(actions: unknown[] | undefined): bigint {
+  let sum = BigInt(0);
+  for (const action of actions ?? []) {
+    const deposit = (action as { Transfer?: { deposit?: unknown } } | null)?.Transfer?.deposit;
+    if (typeof deposit === "string" && /^\d+$/.test(deposit)) sum += BigInt(deposit);
+  }
+  return sum;
+}
+
+/**
+ * Pure (task 080): does a finished transaction pay for `item`? Successful, signed by `owner`, sent to `treasury`
+ * (never empty), transfers at least the item's price (overpaying is accepted), and — when both times are known — is
+ * in a block not older than the purchase (minus clock skew), so an old payment can't be replayed in another browser.
+ */
+export function paysFor(tx: TxOutcome, owner: string, treasury: string, item: ItemId, blockMs?: number, pendingSince?: number): boolean {
+  const status = typeof tx.status === "object" ? tx.status : null;
+  if (!status || status.Failure !== undefined || !treasury) return false;
+  if (tx.transaction?.signer_id !== owner || tx.transaction?.receiver_id !== treasury) return false;
+  if (transferredYocto(tx.transaction?.actions) < BigInt(nearToYocto(NEAR_PRICES[item]))) return false;
+  if (pendingSince !== undefined && !(typeof blockMs === "number" && Number.isFinite(blockMs) && blockMs >= pendingSince - PAY_SKEW_MS)) return false;
+  return true;
+}
 
 const clamp = (value: number) => Math.round(Math.min(100, Math.max(0, value)) * 100) / 100;
 const readJson = <T,>(key: string, fallback: T): T => {
@@ -205,7 +238,7 @@ async function payNear(owner: string, item: ItemId, petId: string): Promise<"pai
   const { getNear } = await import("./near");
   const { actionCreators } = await import("@near-wallet-selector/core");
   const { selector } = await getNear();
-  writeJson(PENDING_KEY, { item, petId, owner } satisfies Pending);
+  writeJson(PENDING_KEY, { item, petId, owner, createdAt: Date.now() } satisfies Pending);
   try {
     const wallet = await selector.wallet();
     // Redirect wallets leave the page here; resumePurchase() finishes it on return.
@@ -261,15 +294,17 @@ export async function buyItem(petId: string, itemId: ItemId): Promise<{ pet: Dem
 }
 
 /**
- * Testnet, on /pet after a redirect wallet returns with ?transactionHashes=: verifies the transfer (signer,
- * treasury receiver, exact amount, not used before), then applies the purchase that was pending. null = nothing to do.
+ * On chain, on /pet after a redirect wallet returns with ?transactionHashes=: verifies the transfer (`paysFor`: signer,
+ * treasury receiver, amount ≥ price, block not older than the purchase; not used before in this browser), then applies
+ * the purchase that was pending. null = nothing to do. If the chain can't be read, the purchase stays pending with
+ * its hash and the next /pet load (within an hour) checks it again, so a paid item is not lost to a network error.
  */
 export async function resumePurchase(): Promise<{ pet: DemoPet; result: BuyResult; item: ItemId } | null> {
   if (!isOnChain || typeof window === "undefined") return null;
   const params = new URLSearchParams(window.location.search);
-  const hash = params.get("transactionHashes")?.split(",").pop();
-  const failed = params.get("errorCode") || params.get("errorMessage");
   const pending = readJson<Pending | null>(PENDING_KEY, null);
+  const hash = params.get("transactionHashes")?.split(",").pop() || pending?.hash;
+  const failed = params.get("errorCode") || params.get("errorMessage");
   if (!pending || (!hash && !failed)) return null;
   writeJson(PENDING_KEY, null);
   const owner = connectedAccountId();
@@ -282,15 +317,17 @@ export async function resumePurchase(): Promise<{ pet: DemoPet; result: BuyResul
   if (used.includes(hash)) return null;
   try {
     const tx = await txStatus(hash, owner);
-    const deposit = JSON.stringify(tx.transaction?.actions ?? []);
-    const ok =
-      typeof tx.status === "object" &&
-      !tx.status.Failure &&
-      tx.transaction?.signer_id === owner &&
-      tx.transaction?.receiver_id === TREASURY_ACCOUNT &&
-      deposit.includes(nearToYocto(NEAR_PRICES[pending.item]));
-    if (!ok) return keep("failed");
+    let blockMs: number | undefined;
+    if (pending.createdAt !== undefined) {
+      const blockHash = (tx as { transaction_outcome?: { block_hash?: string } }).transaction_outcome?.block_hash;
+      const block = blockHash ? await rpc<{ header?: { timestamp_nanosec?: string } }>("block", { block_id: blockHash }) : null;
+      const ns = block?.header?.timestamp_nanosec;
+      blockMs = ns && /^\d+$/.test(ns) ? Number(BigInt(ns) / BigInt(1000000)) : undefined;
+    }
+    if (!paysFor(tx, owner, TREASURY_ACCOUNT, pending.item, blockMs, pending.createdAt)) return keep("failed");
   } catch {
+    // chain unreadable right now: keep it (with the hash, the URL is cleaned) and retry on the next /pet load
+    if (Date.now() - (pending.createdAt ?? 0) < PENDING_RETRY_MS) writeJson(PENDING_KEY, { ...pending, hash });
     return keep("failed");
   }
   writeJson(USED_KEY, [...used, hash].slice(-50));
