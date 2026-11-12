@@ -12,6 +12,7 @@ import {
   getPet,
   getPets,
   isPersistent,
+  mirrorEnergy,
   moodOf,
   setActivePet,
   simulatePet,
@@ -29,6 +30,8 @@ import { ENERGY_PACK, NEAR_PRICES, resumePurchase, type BuyResult, type ItemId }
 import TabFeed from "./tab-feed";
 import TabGames from "./tab-games";
 import TabStats from "./tab-stats";
+import EnergySignIn from "./energy-sign-in";
+import { fetchEnergy, retryPendingClaims, sessionAccount, usesLedger } from "../../lib/energy-client";
 
 const SAVE_EVERY_MS = 15000;
 
@@ -44,6 +47,9 @@ const urlFor = (pet: DemoPet, tab: PetTab) => `/pet?id=${encodeURIComponent(petR
  */
 export default function PetView() {
   const { ready: walletReady, account } = useWallet();
+  /** Mainnet (task 081): is this browser signed in (NEP-413 session) as the connected account? null = checking. */
+  const [signedIn, setSignedIn] = useState<boolean | null>(usesLedger ? null : true);
+  const [ledgerDown, setLedgerDown] = useState(false);
   const [ready, setReady] = useState(false);
   const [pet, setPet] = useState<DemoPet | null>(null);
   const [pets, setPets] = useState<DemoPet[]>([]);
@@ -119,6 +125,46 @@ export default function PetView() {
       window.removeEventListener("pagehide", onHide);
     };
   }, []);
+
+  // Mainnet (task 081): is there a session for the connected account? (the HttpOnly cookie is checked by the server)
+  const accountId = account?.accountId ?? null;
+  useEffect(() => {
+    if (!usesLedger || !accountId) return;
+    let live = true;
+    sessionAccount().then((who) => {
+      if (!live) return;
+      setLedgerDown(who === "unavailable");
+      setSignedIn(who === accountId);
+    });
+    return () => {
+      live = false;
+    };
+  }, [accountId]);
+
+  // Mainnet: once signed in, finish any paid-but-unconfirmed energy pack and show the active pet's server balance.
+  const activeId = pet?.id ?? null;
+  const activeToken = pet?.token?.tokenId ?? null;
+  useEffect(() => {
+    if (!usesLedger || signedIn !== true || !activeId || activeToken === null) return;
+    let live = true;
+    (async () => {
+      await retryPendingClaims();
+      const energy = await fetchEnergy(activeToken);
+      if (!live) return;
+      if (energy === "signed_out") {
+        setSignedIn(false);
+        return;
+      }
+      setLedgerDown(energy === null);
+      if (typeof energy === "number") {
+        const next = await mirrorEnergy(activeId, energy);
+        if (next && live) setPet(next);
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [signedIn, activeId, activeToken]);
 
   // Keep ?id=&tab= in the URL in step with what is shown (switch, tab, release, unknown id on load).
   useEffect(() => {
@@ -227,6 +273,9 @@ export default function PetView() {
         <p className="mint-demo">{mintPage.demo}</p>
       </header>
 
+      {usesLedger && signedIn === false ? <EnergySignIn onSignedIn={() => setSignedIn(true)} unavailable={ledgerDown} /> : null}
+      {usesLedger && signedIn === true && ledgerDown ? <p className="mint-note">{petPage.signIn.unavailable}</p> : null}
+
       <div className="pet-hatch-row">
         <PetSwitcher pets={pets} activeId={pet.id} hrefOf={(other) => urlFor(other, tab)} onSelect={select} />
         <Link className="button button-secondary pet-hatch-another" href="/mint">
@@ -274,7 +323,7 @@ export default function PetView() {
                 />
               ),
               feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={isOnChain ? null : account.balance} now={now} onBought={onBought} notice={notice} />,
-              chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} />,
+              chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} onSignedOut={() => setSignedIn(false)} />,
             }}
           />
         </div>

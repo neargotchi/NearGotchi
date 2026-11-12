@@ -301,6 +301,16 @@ export const walletGate = {
 
 /** /pet (docs/DEVLOG.md §5). Demo only: balance is always "demo", chat is local. */
 export const petPage = {
+  /** Mainnet sign-in (task 081, app/pet/energy-sign-in.tsx): energy = near ai credits, kept by the server. */
+  signIn: {
+    title: "sign to prove it's you",
+    body: "energy is near ai credits and lives on our server, so we need to know the pets are yours. one signature in your wallet: no transaction, no cost.",
+    button: "sign in with wallet",
+    busy: "waiting for your wallet…",
+    cancelled: "signing was cancelled. nothing happened.",
+    failed: "the signature couldn't be checked. try again.",
+    unavailable: "the energy service is down right now. chat and energy packs wait; everything else works.",
+  },
   metaTitle: "my gotchi — NEARGOTCHI",
   empty: "no pet yet.",
   emptyLink: "hatch your gotchi",
@@ -462,6 +472,8 @@ export const petPage = {
     note: "snacks fill hunger. energy is for talking.",
     noteDemo: "demo $NEARGotchi · nothing real is spent",
     noteChain: isMainnet ? "paid in real near. unaudited, real funds." : "paid in testnet near",
+    /** mainnet energy pack while the server waits for the chain (task 081) */
+    confirming: "confirming payment…",
     refill: "refill demo balance",
     refillDone: "refilled to 100 demo $NEARGotchi. still not real.",
     refillFull: "balance is already 100.",
@@ -495,6 +507,10 @@ export const petPage = {
       out_of_stock: "{snack} is sold out. back in {time}.",
       cancelled: "cancelled in the wallet. nothing was spent.",
       failed: "couldn't confirm the payment. check your wallet before you try again: if it went through, it is applied the next time you open this page.",
+      /** mainnet energy pack (task 081): no session yet — nothing was paid */
+      signin: "sign in first (top of this page) so the energy can go to {name}. nothing was paid.",
+      /** mainnet energy pack: paid, the server is still confirming it on chain */
+      confirming: "payment sent. the energy arrives once it's confirmed on chain; this page keeps checking.",
     },
   },
   /** Drop-1 token card (app/pet/token-card.tsx). Rarity only, never value. */
@@ -515,6 +531,10 @@ export const petPage = {
     noteMock: "demo mode (mock answers)",
     thinking: "{name} is thinking…",
     aiError: "the signal dropped. nothing was spent, try again.",
+    /** mainnet (task 081): the site's daily near ai budget is used up; nothing was spent */
+    resting: "ai is resting, try tomorrow. nothing was spent.",
+    /** mainnet (task 081): no / expired sign-in */
+    signedOut: "sign in first (top of this page): it proves the pet is yours. no transaction, no cost.",
     label: "message",
     placeholder: "say something to {name}",
     hint: "each message uses 4 energy. food is not touched.",

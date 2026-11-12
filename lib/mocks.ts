@@ -1,7 +1,7 @@
 // Single mocks module (PLAN.md §4): the only place for demo pets, items, balances,
 // chat replies and simulation rules. All values here are demonstration data.
 
-import { STORAGE_NS, isOnChain } from "./chain";
+import { STORAGE_NS, isMainnet, isOnChain } from "./chain";
 import type { AiAnswer, AiRequest } from "./chat-client";
 import { claimRandomToken, ensureMinted, findToken, getOwnedTokens, type Drop1Token } from "./drop1";
 import { DEMO_ACCOUNT_ID, absorbBalance, connectedAccountId, subscribeAccount } from "./wallet";
@@ -722,7 +722,8 @@ export type ChatMessage = {
   at: string;
 };
 
-export type ChatKind = "reply" | "hungry" | "no_energy" | "ai_error";
+/** resting / signed_out: mainnet only (task 081): the daily NEAR AI budget is used up / the session expired. */
+export type ChatKind = "reply" | "hungry" | "no_energy" | "ai_error" | "resting" | "signed_out";
 
 export const CHAT_STORAGE_KEY = `neargotchi-chat${STORAGE_NS}`;
 
@@ -887,7 +888,16 @@ export async function chatWithPet(
   let reply: ChatMessage;
   let kind: ChatKind;
   let source: "ai" | "mock" = "mock";
-  if (levelOf(pet.energy) < PET_RULES.chatEnergy) {
+  // Mainnet (task 081): energy is NEAR AI credits on the server ledger. The server checks and takes it; this browser
+  // never spends it and only mirrors the balance each answer carries (a local edit can't buy a single message).
+  const ledger = isMainnet;
+  const mirror = (energy: number | undefined) => {
+    if (ledger && typeof energy === "number") {
+      const next = { ...pet, energy: clampLevel(energy) };
+      pet = { ...next, mood: baseMood(next) };
+    }
+  };
+  if (!ledger && levelOf(pet.energy) < PET_RULES.chatEnergy) {
     // Not enough energy: nothing is spent, the UI links to the energy pack.
     reply = chatMessage("note", "no_energy", now);
     kind = "no_energy";
@@ -900,11 +910,19 @@ export async function chatWithPet(
           stats: { hunger: levelOf(pet.hunger), energy: levelOf(pet.energy), mood },
           history: log.filter((m): m is ChatMessage & { from: "you" | "pet" } => m.from !== "note").slice(-8).map((m) => ({ from: m.from, text: m.text })),
           message: clean,
+          ...(ledger && pet.token ? { tokenId: pet.token.tokenId } : {}),
         })
       : { status: "no_key" };
+    if (answer.status !== "no_key" && answer.status !== "signed_out") mirror(answer.energy);
     if (answer.status === "ok") {
       reply = chatMessage("pet", answer.text, now);
       source = "ai";
+    } else if (answer.status === "no_energy") {
+      reply = chatMessage("note", "no_energy", now);
+      kind = "no_energy";
+    } else if (answer.status === "resting" || answer.status === "signed_out") {
+      reply = chatMessage("note", answer.status, now);
+      kind = answer.status;
     } else if (answer.status === "error") {
       // The AI failed: a friendly note, and the energy stays.
       reply = chatMessage("note", "ai_error", now);
@@ -915,15 +933,29 @@ export async function chatWithPet(
       reply = chatMessage("pet", pickReply(pet, clean, sent), now);
     }
   }
-  if (kind !== "no_energy" && kind !== "ai_error") {
-    // every answered message (also the hungry line) costs energy; food is not touched
-    const spent = { ...pet, energy: clampLevel(pet.energy - PET_RULES.chatEnergy), hunger: clampLevel(pet.hunger + PET_RULES.chatHunger) };
+  if (kind !== "no_energy" && kind !== "ai_error" && kind !== "resting" && kind !== "signed_out") {
+    // every answered message (also the hungry line) costs energy; food is not touched. On mainnet the server already
+    // took the energy (or, for a scripted answer without NEAR AI, none): only the hunger part applies here.
+    const spent = { ...pet, energy: ledger ? pet.energy : clampLevel(pet.energy - PET_RULES.chatEnergy), hunger: clampLevel(pet.hunger + PET_RULES.chatHunger) };
     pet = { ...spent, mood: baseMood(spent) };
   }
   pet = { ...pet, stats: { ...pet.stats, messages: pet.stats.messages + 1 } };
   const messages = [...log, mine, reply].slice(-PET_RULES.chatMax);
   writeChatLog(pet.id, messages);
   return { pet: savePet(pet), messages, reply, kind, source };
+}
+
+/**
+ * Mainnet (task 081): writes the server ledger's balance into the stored pet so every view shows it. Display only:
+ * the energy is spent and credited on the server; a value edited in localStorage is overwritten on the next read.
+ */
+export async function mirrorEnergy(id: string, energy: number): Promise<DemoPet | null> {
+  const current = await getPet(id);
+  if (!current || !Number.isFinite(energy)) return null;
+  const pet = simulatePet(current, Date.now());
+  if (pet.energy === clampLevel(energy)) return current;
+  const next = { ...pet, energy: clampLevel(energy) };
+  return savePet({ ...next, mood: baseMood(next) });
 }
 
 /** Other tabs' chat changes (storage event). */

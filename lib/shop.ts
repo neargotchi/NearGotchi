@@ -3,11 +3,13 @@
 // Payment: demo = $NEARGotchi from the demo wallet; NEXT_PUBLIC_CHAIN=testnet / mainnet = a NEAR transfer (test NEAR /
 // real NEAR) to the team treasury, and the effect is applied only after the transaction is confirmed (popup wallets:
 // right away; redirect wallets: resumePurchase() on return, task 080: amount ≥ price, block not older than the purchase).
-// The effect itself (hunger / energy) is browser state, like the whole pet: the payment is checked, the game is not.
+// Hunger is browser state, like the whole pet: the payment is checked, the game is not. Energy on MAINNET is NEAR AI
+// credits on the server ledger (task 081): the pack is credited by /api/energy/claim, never here.
 // Async on purpose: the UI only calls the functions below.
 
-import { STORAGE_NS, TREASURY_ACCOUNT, isOnChain, nearToYocto, rpc, txStatus, type TxOutcome } from "./chain";
-import { baseMood, getPet, levelOf, simulatePet, updatePet, type DemoPet } from "./mocks";
+import { STORAGE_NS, TREASURY_ACCOUNT, isMainnet, isOnChain, nearToYocto, rpc, txStatus, type TxOutcome } from "./chain";
+import { claimEnergy, sessionAccount } from "./energy-client";
+import { baseMood, getPet, levelOf, mirrorEnergy, simulatePet, updatePet, type DemoPet } from "./mocks";
 import { WalletError, connectedAccountId, spend } from "./wallet";
 
 export const snackIds = ["cookie", "berries", "noodles", "candy"] as const;
@@ -63,7 +65,8 @@ export type ShopItem = {
   nextAt: number | null;
 };
 
-export type BuyResult = "fed" | "charged" | "full" | "broke" | "out_of_stock" | "cancelled" | "failed";
+/** signin / confirming: mainnet energy pack only (task 081): sign in first / paid, the server is still confirming. */
+export type BuyResult = "fed" | "charged" | "full" | "broke" | "out_of_stock" | "cancelled" | "failed" | "signin" | "confirming";
 
 export class ShopError extends Error {
   constructor(public readonly code: "no_pet" | "unknown_snack") {
@@ -233,8 +236,25 @@ function takeStock(owner: string, snack: Snack, now: number) {
   writeStore({ v: 1, accounts: { ...store.accounts, [owner]: slots } });
 }
 
-/** Testnet: sends the NEAR transfer. "paid" only when a confirmed successful outcome came back in this tab. */
-async function payNear(owner: string, item: ItemId, petId: string): Promise<"paid" | "cancelled" | "failed"> {
+/** Mainnet energy pack (task 081): the server ledger credits it, never this browser. */
+const ledgerPack = (item: ItemId) => isMainnet && item === ENERGY_PACK.id;
+
+/**
+ * Mainnet energy pack after a confirmed payment: the server checks the transaction on chain and credits +50 once
+ * (idempotent per hash); the stored pet only mirrors the balance it answers with.
+ */
+async function claimPack(pet: DemoPet, hash: string, onConfirming?: () => void): Promise<{ pet: DemoPet; result: BuyResult }> {
+  if (!pet.token) return { pet, result: "failed" };
+  const claim = await claimEnergy(hash, pet.token.tokenId, onConfirming);
+  if (claim.status === "credited" || claim.status === "already_credited") {
+    return { pet: (await mirrorEnergy(pet.id, claim.energy)) ?? pet, result: "charged" };
+  }
+  if (claim.status === "signed_out") return { pet, result: "signin" };
+  return { pet, result: claim.status === "unconfirmed" ? "confirming" : "failed" };
+}
+
+/** On chain: sends the NEAR transfer. "paid" (+ hash) only when a confirmed successful outcome came back in this tab. */
+async function payNear(owner: string, item: ItemId, petId: string): Promise<{ result: "paid" | "cancelled" | "failed"; hash?: string }> {
   const { getNear } = await import("./near");
   const { actionCreators } = await import("@near-wallet-selector/core");
   const { selector } = await getNear();
@@ -248,13 +268,13 @@ async function payNear(owner: string, item: ItemId, petId: string): Promise<"pai
     })) as TxOutcome | void;
     writeJson(PENDING_KEY, null);
     const status = outcome && typeof outcome.status === "object" ? outcome.status : null;
-    if (!status || status.Failure) return "failed";
+    if (!status || status.Failure) return { result: "failed" };
     const hash = outcome?.transaction?.hash;
     if (hash) writeJson(USED_KEY, [...readJson<string[]>(USED_KEY, []), hash].slice(-50));
-    return "paid";
+    return { result: "paid", hash };
   } catch (error) {
     writeJson(PENDING_KEY, null);
-    return /reject|denied|cancel|closed|declin/i.test(String((error as Error)?.message ?? error)) ? "cancelled" : "failed";
+    return { result: /reject|denied|cancel|closed|declin/i.test(String((error as Error)?.message ?? error)) ? "cancelled" : "failed" };
   }
 }
 
@@ -263,7 +283,7 @@ async function payNear(owner: string, item: ItemId, petId: string): Promise<"pai
  * out of stock, nothing to do (snack at hunger 0 / pack at 100 energy), payment (demo balance or testnet NEAR).
  * Snacks count stats.snacks; star candy keeps the pet happy for 60s.
  */
-export async function buyItem(petId: string, itemId: ItemId): Promise<{ pet: DemoPet; result: BuyResult }> {
+export async function buyItem(petId: string, itemId: ItemId, onConfirming?: () => void): Promise<{ pet: DemoPet; result: BuyResult }> {
   if (!isItemId(itemId)) throw new ShopError("unknown_snack");
   const snack = itemId === ENERGY_PACK.id ? null : findSnack(itemId);
   const owner = connectedAccountId();
@@ -277,9 +297,17 @@ export async function buyItem(petId: string, itemId: ItemId): Promise<{ pet: Dem
   if (slot && slot.stock <= 0) return keep("out_of_stock");
   const nothingToDo = snack ? levelOf(pet.hunger) <= 0 : levelOf(pet.energy) >= 100;
   if (nothingToDo) return keep("full");
+  if (ledgerPack(itemId)) {
+    // sign in BEFORE paying: the claim needs the session, and a payment nobody can claim helps no one
+    if ((await sessionAccount()) !== owner) return keep("signin");
+    const paid = await payNear(owner, itemId, pet.id);
+    if (paid.result !== "paid") return keep(paid.result);
+    if (!paid.hash) return keep("confirming");
+    return claimPack(await updatePet(pet, pet.id), paid.hash, onConfirming);
+  }
   if (isOnChain) {
     const paid = await payNear(owner, itemId, pet.id);
-    if (paid !== "paid") return keep(paid);
+    if (paid.result !== "paid") return keep(paid.result);
   } else {
     try {
       await spend(demoPriceOf(itemId));
@@ -313,6 +341,11 @@ export async function resumePurchase(): Promise<{ pet: DemoPet; result: BuyResul
   if (!current) return null;
   const keep = async (result: BuyResult) => ({ pet: current, result, item: pending.item });
   if (failed || !hash) return keep("cancelled");
+  if (ledgerPack(pending.item)) {
+    // mainnet energy pack: the server verifies the payment itself (idempotent per hash)
+    const claimed = await claimPack(current, hash);
+    return { ...claimed, item: pending.item };
+  }
   const used = readJson<string[]>(USED_KEY, []);
   if (used.includes(hash)) return null;
   try {

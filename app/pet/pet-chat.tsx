@@ -21,6 +21,8 @@ type PetChatProps = {
   onPet: (pet: DemoPet) => void;
   /** A real reply was revealed → happy for 3s. */
   onReply: () => void;
+  /** Mainnet (task 081): the server said the session is gone — show the sign-in again. */
+  onSignedOut?: () => void;
 };
 
 const typingDelay = (reply: ChatMessage) => {
@@ -32,7 +34,7 @@ const typingDelay = (reply: ChatMessage) => {
  * Local chat: your message shows at once; the reply (already stored) is revealed after a short
  * pixel "typing…" delay. One reply at a time, one message queued behind it.
  */
-export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) {
+export default function PetChat({ name, onShop, onPet, onReply, onSignedOut }: PetChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typing, setTyping] = useState(false);
   /** The pet is waiting for NEAR AI (the energy is spent only once the answer is in). */
@@ -45,8 +47,8 @@ export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) 
   const busy = useRef(false);
   const queued = useRef<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const callbacks = useRef({ onPet, onReply });
-  callbacks.current = { onPet, onReply };
+  const callbacks = useRef({ onPet, onReply, onSignedOut });
+  callbacks.current = { onPet, onReply, onSignedOut };
 
   useEffect(() => {
     let live = true;
@@ -81,8 +83,10 @@ export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) 
     }
     setThinking(false);
     callbacks.current.onPet(result.pet);
-    if (result.kind !== "no_energy" && result.kind !== "ai_error") setAiOn(result.source === "ai");
-    if (result.source === "ai" || result.kind === "ai_error" || result.kind === "no_energy") {
+    if (result.kind === "signed_out") callbacks.current.onSignedOut?.();
+    const note = result.kind === "no_energy" || result.kind === "ai_error" || result.kind === "resting" || result.kind === "signed_out";
+    if (!note) setAiOn(result.source === "ai");
+    if (result.source === "ai" || note) {
       // the wait already happened: show the answer at once
       setMessages(result.messages);
       if (result.kind === "reply" || result.kind === "hungry") callbacks.current.onReply();
@@ -137,6 +141,10 @@ export default function PetChat({ name, onShop, onPet, onReply }: PetChatProps) 
             <p key={message.id} className="pet-msg is-note">
               {message.text === "ai_error" ? (
                 petPage.chat.aiError
+              ) : message.text === "resting" ? (
+                petPage.chat.resting
+              ) : message.text === "signed_out" ? (
+                petPage.chat.signedOut
               ) : (
                 <>
                   {fill(petPage.chat.noEnergy, { name })}{" "}

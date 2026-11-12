@@ -88,7 +88,8 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
     if (busy.current || reason) return;
     busy.current = true;
     try {
-      const { pet: next, result } = await buyItem(pet.id, id);
+      // mainnet energy pack (task 081): the server confirms the payment on chain before the energy arrives
+      const { pet: next, result } = await buyItem(pet.id, id, () => setMessage(petPage.shop.confirming));
       const snack = id === ENERGY_PACK.id ? petPage.shop.pack.alt : snackLabels[id];
       const key = result === "full" && id === ENERGY_PACK.id ? "fullEnergy" : result;
       const text = fill(petPage.shop.result[key], {
@@ -99,7 +100,7 @@ export default function TabFeed({ pet, shown, balance, now, onBought, notice = n
         time: clock(timeLeft),
       });
       setMessage(text);
-      if (result === "cancelled" || result === "failed") toast(text, "error");
+      if (result === "cancelled" || result === "failed" || result === "signin") toast(text, "error");
       onBought(next, result, id);
       setItems(await getShop());
     } finally {
