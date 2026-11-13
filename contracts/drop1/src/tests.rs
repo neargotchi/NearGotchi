@@ -508,3 +508,131 @@ fn team_account_is_paid_by_distribute_and_changeable() {
     c.distribute();
     assert_eq!(c.accrued().team, U128(0));
 }
+
+// ---------- task 102 (audit A-01): gas gate against selecting the draw by gas ----------
+
+use near_sdk::Gas;
+use std::panic::{catch_unwind, AssertUnwindSafe};
+
+fn with_gas(predecessor: AccountId, deposit: NearToken, block: u64, seed: u8, tgas: u64) -> VMContextBuilder {
+    let mut b = context(predecessor, deposit, block, seed);
+    b.prepaid_gas(Gas::from_tgas(tgas));
+    b
+}
+
+/// After a panic the mock VM is spent (every later host call fails): a fresh, roomy context to inspect the state.
+fn inspect_env() {
+    testing_env!(context(owner(), NearToken::from_yoctonear(0), 50, 1).build());
+}
+
+fn panic_text(result: std::thread::Result<impl Sized>) -> String {
+    let err = match result {
+        Ok(_) => panic!("expected a panic"),
+        Err(e) => e,
+    };
+    err.downcast_ref::<String>().cloned().or_else(|| err.downcast_ref::<&str>().map(|s| s.to_string())).unwrap_or_default()
+}
+
+/// The state that matters for a reveal, to prove a rejected call changed nothing.
+fn snapshot(c: &Contract) -> (u16, u16, u64, u32, Option<Ticket>) {
+    (c.minted, c.pending, c.next_ticket, c.pool.len(), c.tickets.get(&0).cloned())
+}
+
+#[test]
+fn mint_below_gas_floor_is_rejected_before_any_state_change() {
+    let mut c = ready();
+    let before = snapshot(&c);
+    let (team, rpt, credited) = (c.accrued.team.0, c.reward_per_token, c.accrued.holders_credited.0);
+    testing_env!(with_gas(accounts(3), PRICE, 10, 7, 34).build());
+    let text = panic_text(catch_unwind(AssertUnwindSafe(|| c.nft_mint())));
+    assert!(text.contains("attach more gas"), "{text}");
+    inspect_env();
+    assert_eq!(snapshot(&c), before);
+    assert_eq!((c.accrued.team.0, c.reward_per_token, c.accrued.holders_credited.0), (team, rpt, credited));
+    assert_eq!(c.minted_by.get(&accounts(3)), None);
+    // exactly at the floor it works
+    testing_env!(with_gas(accounts(3), PRICE, 10, 7, 35).build());
+    let _ = c.nft_mint();
+    assert_eq!(c.pending, 1);
+    inspect_env(); // the contract flushes its collections when dropped: not under a 35 Tgas mock
+}
+
+#[test]
+fn reveal_with_too_little_gas_leaves_the_ticket_untouched_and_then_works() {
+    let mut c = ready();
+    testing_env!(context(accounts(3), PRICE, 10, 7).build());
+    let _ = c.nft_mint();
+    let before = snapshot(&c);
+    let ticket = c.tickets.get(&0).cloned().unwrap();
+    // public fallback and the callback, both with 17 Tgas: rejected before the draw
+    testing_env!(with_gas(accounts(4), NearToken::from_yoctonear(0), 11, 8, 17).build());
+    let text = panic_text(catch_unwind(AssertUnwindSafe(|| c.reveal(0))));
+    assert!(text.contains("attach more gas"), "{text}");
+    inspect_env();
+    testing_env!(with_gas(contract_id(), NearToken::from_yoctonear(0), 11, 8, 17).build());
+    let text = panic_text(catch_unwind(AssertUnwindSafe(|| c.on_reveal(0))));
+    assert!(text.contains("attach more gas"), "{text}");
+    inspect_env();
+    assert_eq!(snapshot(&c), before, "nothing moved");
+    assert_eq!(c.tickets.get(&0).cloned(), Some(ticket.clone()));
+    assert_eq!(c.pool.len(), TOTAL as u32, "the pool is intact");
+    // the same ticket with enough gas draws normally
+    testing_env!(with_gas(accounts(4), NearToken::from_yoctonear(0), 11, 8, 30).build());
+    let token = c.reveal(0);
+    assert_eq!(token.owner_id, ticket.buyer);
+    assert_eq!((c.minted, c.pending), (1, 0));
+    inspect_env();
+}
+
+#[test]
+fn gate_does_not_depend_on_the_token_that_would_be_drawn() {
+    // the same too-small gas is rejected for every seed, i.e. for every possible draw
+    let mut c = ready();
+    testing_env!(context(accounts(3), PRICE, 10, 1).build());
+    let _ = c.nft_mint();
+    let before = snapshot(&c);
+    for seed in 0..=255u8 {
+        testing_env!(with_gas(accounts(4), NearToken::from_yoctonear(0), 11, seed, 12).build());
+        assert!(catch_unwind(AssertUnwindSafe(|| c.reveal(0))).is_err(), "seed {seed}");
+        inspect_env();
+        assert_eq!(snapshot(&c), before, "seed {seed}");
+    }
+}
+
+#[test]
+fn all_300_reveals_fit_far_below_the_floor() {
+    // Host-side gas of one reveal for each of the 300 catalog entries, in the unit-test VM (storage + hashing costs;
+    // wasm instruction costs are not in this number, tests/sandbox.rs asserts the real per-receipt burn).
+    let mut c = ready();
+    let mut worst = Gas::from_gas(0);
+    for n in 0..TOTAL as u64 {
+        testing_env!(context(accounts(3), PRICE, 10 + 2 * n, 1).build());
+        let _ = c.nft_mint();
+        testing_env!(with_gas(contract_id(), NearToken::from_yoctonear(0), 11 + 2 * n, (n % 251) as u8, 300).build());
+        let used_before = env::used_gas();
+        let _ = c.on_reveal(n);
+        let spent = env::used_gas().saturating_sub(used_before);
+        if spent > worst {
+            worst = spent;
+        }
+    }
+    println!("worst host-side gas of a reveal over 300 draws: {} Ggas (floor {} Ggas)", worst.as_gas() / 1_000_000_000, GAS_REVEAL_MIN.as_gas() / 1_000_000_000);
+    assert!(worst.as_gas() * 3 < GAS_REVEAL_MIN.as_gas(), "{worst:?}");
+    assert_eq!(c.minted, TOTAL);
+}
+
+#[test]
+fn floor_constants_are_consistent_with_the_front() {
+    assert!(GAS_MINT_MIN > GAS_REVEAL_MIN);
+    assert_eq!(GAS_MINT_MIN, Gas::from_tgas(35));
+    assert!(GAS_MINT_MIN.as_tgas() * 2 < 100, "the front attaches 100 Tgas (lib/chain.ts MINT_GAS)");
+}
+
+#[test]
+fn reveal_gate_comes_before_the_ticket_lookup() {
+    let mut c = ready();
+    testing_env!(with_gas(accounts(4), NearToken::from_yoctonear(0), 11, 8, 10).build());
+    let text = panic_text(catch_unwind(AssertUnwindSafe(|| c.reveal(999))));
+    assert!(text.contains("attach more gas"), "{text}");
+    inspect_env();
+}

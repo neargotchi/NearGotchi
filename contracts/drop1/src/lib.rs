@@ -39,9 +39,22 @@ pub const PRICE: NearToken = NearToken::from_near(2);
 pub const STORAGE_RESERVE: NearToken = NearToken::from_millinear(10);
 /// Royalty in basis points (NEP-199): 5 %.
 pub const ROYALTY_BPS: u128 = 500;
-/// Gas reserved for the reveal callback; it also gets all gas left over from `nft_mint` (front attaches 100 Tgas).
-/// Too little gas → the callback fails, the ticket stays and `reveal()` finishes it (tested in the sandbox).
-pub const GAS_FOR_REVEAL: Gas = Gas::from_tgas(2);
+/// Minimum gas that must be left when a reveal (`on_reveal` or the public `reveal`) starts, checked BEFORE the ticket is
+/// removed or the token drawn (task 102, audit A-01). Without it a buyer could attach just enough gas for the cheap
+/// outcomes: a draw whose token has bigger metadata ran out of gas, the ticket stayed, and `reveal()` drew again in the
+/// next block with a new seed, so the result was selectable by metadata size. With the gate, an out-of-gas failure can
+/// only happen before the draw, whatever the outcome would have been.
+/// Number: the sandbox suite measured a whole mint + reveal at 6.3–11.7 Tgas (docs/REPORT.md), so the reveal receipt
+/// alone is below 11.7; 11.7 × 1.5 = 17.6, rounded up to 18 Tgas. tests/sandbox.rs asserts that every one of the 300
+/// reveal receipts burns less than this.
+pub const GAS_REVEAL_MIN: Gas = Gas::from_tgas(18);
+/// Gas `nft_mint` itself may need before it schedules the reveal (measured ≈ 2–6 Tgas incl. the receipt creation).
+const GAS_MINT_BODY: Gas = Gas::from_tgas(10);
+/// Margin for the promise creation and the state write after the body.
+const GAS_MINT_MARGIN: Gas = Gas::from_tgas(7);
+/// `nft_mint` is rejected (whole transaction reverted, deposit refunded) below this: the whole chain mint → reveal must
+/// be paid for up front. 35 Tgas; the front attaches 100.
+pub const GAS_MINT_MIN: Gas = Gas::from_tgas(GAS_MINT_BODY.as_tgas() + GAS_REVEAL_MIN.as_tgas() + GAS_MINT_MARGIN.as_tgas());
 
 #[derive(BorshStorageKey)]
 #[near]
@@ -223,6 +236,8 @@ impl Contract {
     /// (a later block). A panic here (paused / sold out / short deposit / over the limit) refunds the deposit.
     #[payable]
     pub fn nft_mint(&mut self) -> Promise {
+        // first line, before any state change: the attached gas must pay for the whole mint → reveal chain
+        require!(env::prepaid_gas() >= GAS_MINT_MIN, "attach more gas: at least 35 Tgas (the site attaches 100)");
         require!(!self.paused, "minting is paused");
         require!(self.catalog_loaded == TOTAL, "catalog not loaded");
         require!(self.minted + self.pending < TOTAL, "sold out");
@@ -248,7 +263,7 @@ impl Contract {
         if !excess.is_zero() {
             Promise::new(buyer).transfer(excess).detach();
         }
-        Self::ext(env::current_account_id()).with_static_gas(GAS_FOR_REVEAL).with_unused_gas_weight(1).on_reveal(ticket_id)
+        Self::ext(env::current_account_id()).with_static_gas(GAS_REVEAL_MIN).with_unused_gas_weight(1).on_reveal(ticket_id)
     }
 
     /// The draw, in a receipt after the mint's block. Private: only the contract schedules it.
@@ -259,12 +274,16 @@ impl Contract {
 
     /// Fallback when `on_reveal` didn't run (e.g. out of gas): anyone may finish a ticket from an earlier block.
     pub fn reveal(&mut self, ticket_id: u64) -> Token {
+        // the gate comes first (also before the ticket lookup): a low-gas call is refused for that reason alone
+        require!(env::prepaid_gas().saturating_sub(env::used_gas()) >= GAS_REVEAL_MIN, "attach more gas: a reveal needs at least 18 Tgas");
         let ticket = self.tickets.get(&ticket_id).unwrap_or_else(|| env::panic_str("no such ticket"));
         require!(env::block_height() > ticket.block_height, "too early");
         self.internal_reveal(ticket_id)
     }
 
     fn internal_reveal(&mut self, ticket_id: u64) -> Token {
+        // gas gate: before the ticket is removed and before the draw (see GAS_REVEAL_MIN)
+        require!(env::prepaid_gas().saturating_sub(env::used_gas()) >= GAS_REVEAL_MIN, "attach more gas: a reveal needs at least 18 Tgas");
         let ticket = self.tickets.remove(&ticket_id).unwrap_or_else(|| env::panic_str("no such ticket"));
         let len = self.pool.len();
         require!(len > 0, "pool is empty");

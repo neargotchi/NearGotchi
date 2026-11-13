@@ -89,45 +89,39 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
     assert!(!out.is_success(), "catalog is owner only");
     owner.call(contract.id(), "unpause").transact().await?.into_result()?;
 
-    // 1. reveal fallback: find an attached gas where nft_mint succeeds but the callback runs out → the ticket stays
-    //    pending → a stranger finishes it with reveal(); every stuck ticket is revealed exactly once
-    let mut stuck = Vec::new();
+    // 1. gas gate (task 102, audit A-01): below the floor nft_mint is rejected with a full refund and no ticket; at or
+    //    above it the reveal always runs in the same mint, so no gas level leaves a pending ticket behind (the old
+    //    "attach just enough gas" window, where the draw ran out for some results, no longer exists)
+    let floor = 35u64;
     let mut probe = Vec::new();
-    // nft_mint burns ~2 Tgas + reserves 2 Tgas for the draw: scan 3.00–4.60 Tgas for the window where the mint
-    // receipt succeeds but the draw runs out of gas
-    for hundredth in (300u64..=460).step_by(5) {
+    for tgas in (5u64..=60).step_by(5).chain([34, 35, 36]) {
         let before: Value = contract.view("drop_status").await?.json()?;
-        let next = before["minted"].as_u64().unwrap() + before["pending"].as_u64().unwrap();
-        let out = buyers[0].call(contract.id(), "nft_mint").deposit(PRICE).gas(Gas::from_gas(hundredth * 10_000_000_000)).transact().await?;
+        let money_before = balance(&buyers[0]).await?;
+        let out = buyers[0].call(contract.id(), "nft_mint").deposit(PRICE).gas(Gas::from_tgas(tgas)).transact().await?;
         let after: Value = contract.view("drop_status").await?.json()?;
-        let receipts: Vec<String> = out
-            .receipt_outcomes()
-            .iter()
-            .map(|o| format!("{:.2}T{}", o.gas_burnt.as_gas() as f64 / 1e12, if o.is_success() { "" } else { "✗" }))
-            .collect();
-        probe.push(format!("{:.2}T → ok {} pending {} [{}]", hundredth as f64 / 100.0, out.is_success(), after["pending"], receipts.join(" ")));
-        if after["pending"].as_u64() > before["pending"].as_u64() {
-            stuck.push(next);
+        let spent = money_before as i128 - balance(&buyers[0]).await? as i128;
+        probe.push(format!("{tgas}T → ok {} pending {} spent {:.4}N", out.is_success(), after["pending"], spent as f64 / 1e24));
+        assert_eq!(after["pending"], json!(0), "no gas level may leave a ticket pending (attached {tgas} Tgas)");
+        if tgas < floor {
+            assert!(!out.is_success(), "{tgas} Tgas must be rejected");
+            assert!(format!("{:?}", out.failures()).contains("attach more gas"), "{tgas} Tgas: {:?}", out.failures());
+            assert_eq!(after["minted"], before["minted"], "{tgas} Tgas: nothing minted");
+            assert!(spent < NearToken::from_millinear(20).as_yoctonear() as i128, "{tgas} Tgas: the 2 NEAR came back, spent {spent}");
+        } else {
+            assert!(out.is_success(), "{tgas} Tgas must work: {:?}", out.failures());
+            assert_eq!(after["minted"].as_u64(), Some(before["minted"].as_u64().unwrap() + 1));
         }
     }
-    println!("gas probe: {}", probe.join(" | "));
-    assert!(!stuck.is_empty(), "no gas level left a pending ticket: {probe:?}");
-    let mut first = Value::Null;
-    for ticket_id in &stuck {
-        let ticket: Value = contract.view("ticket").args_json(json!({ "ticket_id": ticket_id })).await?.json()?;
-        assert_eq!(ticket["buyer"], json!(buyers[0].id()));
-        let out = stranger.call(contract.id(), "reveal").args_json(json!({ "ticket_id": ticket_id })).max_gas().transact().await?;
-        assert!(out.is_success(), "{:?}", out.failures());
-        let token: Value = out.json()?;
-        assert_eq!(token["owner_id"], json!(buyers[0].id()));
-        first = token;
-        let out = stranger.call(contract.id(), "reveal").args_json(json!({ "ticket_id": ticket_id })).max_gas().transact().await?;
-        assert!(!out.is_success(), "a ticket reveals once");
-    }
-    // the probe also minted some tokens normally: collect everything buyer0 owns so far
+    println!("gas gate probe: {}", probe.join(" | "));
+    // the public reveal has the same gate, and it comes first: a low-gas call is refused for the gate's reason, not
+    // because the ticket is missing; with plenty of gas the same ticket id answers "no such ticket" (already revealed)
+    let out = stranger.call(contract.id(), "reveal").args_json(json!({ "ticket_id": 0 })).gas(Gas::from_tgas(10)).transact().await?;
+    assert!(!out.is_success() && format!("{:?}", out.failures()).contains("attach more gas"), "{:?}", out.failures());
+    let out = stranger.call(contract.id(), "reveal").args_json(json!({ "ticket_id": 0 })).max_gas().transact().await?;
+    assert!(!out.is_success() && format!("{:?}", out.failures()).contains("no such ticket"), "{:?}", out.failures());
+    // buyer0 owns what the probe minted
     let early: Vec<Value> = contract.view("nft_tokens_for_owner").args_json(json!({ "account_id": buyers[0].id(), "limit": 50 })).await?.json()?;
-    let _ = first;
-
+    assert_eq!(early.len(), probe.iter().filter(|line| line.contains("ok true")).count());
     // 2. the private callback can't be called from outside
     let out = stranger.call(contract.id(), "on_reveal").args_json(json!({ "ticket_id": 1 })).max_gas().transact().await?;
     assert!(!out.is_success(), "on_reveal must not be callable from outside");
@@ -143,22 +137,31 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
         handles.push(tokio::spawn(async move {
             let mut out_tokens = Vec::new();
             let mut gas = Vec::new();
+            let mut reveal_gas = Vec::new();
             for _ in 0..count {
                 let out = buyer.call(&id, "nft_mint").deposit(PRICE).gas(Gas::from_tgas(100)).transact().await.unwrap();
                 assert!(out.is_success(), "{:?}", out.failures());
                 gas.push(out.total_gas_burnt.as_gas());
+                // every receipt after the nft_mint one: the on_reveal draw (+ zero-gas refunds)
+                reveal_gas.push(out.receipt_outcomes().iter().skip(1).map(|o| o.gas_burnt.as_gas()).max().unwrap_or(0));
                 out_tokens.push(out.json::<Value>().unwrap());
             }
-            (out_tokens, gas)
+            (out_tokens, gas, reveal_gas)
         }));
     }
     let mut tokens = early;
     let mut gas = Vec::new();
+    let mut reveal_gas: Vec<u64> = Vec::new();
     for h in handles {
-        let (t, g) = h.await?;
+        let (t, g, r) = h.await?;
         tokens.extend(t);
         gas.extend(g);
+        reveal_gas.extend(r);
     }
+    // the gate's floor (18 Tgas = 1.5 x the worst reveal) must be far above what any of the 300 draws burns
+    let worst_reveal = reveal_gas.iter().copied().max().unwrap();
+    println!("REVEAL GAS over {} draws: worst {:.2} Tgas (floor 18 Tgas, margin x{:.2})", reveal_gas.len(), worst_reveal as f64 / 1e12, 18e12 / worst_reveal as f64);
+    assert!(worst_reveal as f64 * 1.5 <= 18e12, "a reveal burned {worst_reveal} gas: raise GAS_REVEAL_MIN (lib.rs) to 1.5x this");
     let storage_minted = contract.view_account().await?.storage_usage;
 
     // all 300 unique, metadata equal to metadata/drop1/{id}.json

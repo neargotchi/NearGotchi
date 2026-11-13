@@ -307,3 +307,65 @@ Oczekiwane: klucze ownera **nadal są** (sprawdzenie, że nie skasowano kluczy n
 ---
 
 Dalej: front na mainnet (runbook §12), potem start sprzedaży `unpause` podpisany przez OWNER (runbook §13). Wpis klucza CONTRACT w keychainie jest po J bezużyteczny; można go zostawić albo usunąć w Keychain Access (wpis „near-cli”, konto `drop1.neargochi-dev.near`).
+
+---
+
+## Upgrade drop1 (A-01): bramka gazu przeciw przesiewaniu losowania — PRZYGOTOWANE, NIEWYKONANE
+
+Zadanie 102. Zmiana kodu: `nft_mint` odrzuca < 35 Tgas, `on_reveal` / `reveal` odrzucają < 18 Tgas **przed** losowaniem
+(`contracts/drop1/src/lib.rs`: `GAS_MINT_MIN`, `GAS_REVEAL_MIN`). Układ stanu bez zmian, bez migracji, bez `init`.
+Front (100 Tgas) bez zmian. **Nic z tej sekcji nie zostało wykonane na mainnecie.**
+
+**Kiedy:** dopiero gdy klucz FullAccess konta kontraktu **jeszcze istnieje** (przed krokiem J) i `paused: true`. Po J
+nikt nie może już zmienić kodu: wtedy zostaje stary kod z A-01 na zawsze. Podpisuje CONTRACT (jego klucz jest w keychainie
+near-cli-rs), nie OWNER.
+
+### (a) PRZED: zapisz stan do pliku
+```sh
+export NET=mainnet OWNER=neargochi-dev.near CONTRACT=drop1.neargochi-dev.near TEAM=neargotchiai.near
+```
+```sh
+for m in drop_status nft_total_supply proposed_owner accrued reward_per_token locked_balance owner team provenance nft_metadata; do echo "-- $m"; near contract call-function as-read-only $CONTRACT $m json-args '{}' network-config $NET now 2>&1 | grep -v -E '^$|console command|^\s*near contract'; done | tee /tmp/drop1-before.txt
+```
+```sh
+for id in 195 253 286; do echo "-- nft_token $id"; near contract call-function as-read-only $CONTRACT nft_token json-args "{\"token_id\":\"$id\"}" network-config $NET now 2>&1 | grep -v -E '^$|console command|^\s*near contract'; done | tee -a /tmp/drop1-before.txt
+```
+```sh
+near account view-account-summary $CONTRACT network-config $NET now 2>&1 | tee -a /tmp/drop1-before.txt | grep -i -E "hash|balance|storage"
+```
+Oczekiwane (stan z 2026-11-13): `paused:true`, `minted:3`, `pending:0`, `nft_total_supply "3"`, `proposed_owner null`,
+`owner neargochi-dev.near`, `team neargotchiai.near`, tokeny 195 / 253 / 286, kod `D7z3DKfjddZ6XRRpQUX7BXSMzLn24wHtwFePtCFpArTM`
+(= `b41638a1…`, stary wasm). Jeśli cokolwiek innego: stop.
+
+### (b) Hash nowego wasm (sprawdź przed deployem)
+```sh
+(cd contracts/drop1 && ./build.sh) && shasum -a 256 contracts/drop1/res/neargotchi_drop1.wasm
+```
+Wynik z 2026-11-13 (bieżący kod, `build.sh` bez `--locked`; sprawdź ponownie przed deployem; jeśli kod się zmienił, hash też):
+`a3412e7aa1e1f6df63beb0dd32ce7e2241d6543fcd51cfd7cf1603512d8b003a`, 376 608 B, w base58 (tak widzi go łańcuch) `BzH6tuQv4EDojTH2Fw2utZQKzP7HCGnma1FVL3vanhwf`.
+Stary wasm mainnetu leży lokalnie jako `contracts/drop1/res/neargotchi_drop1-mainnet-b41638a1.wasm` (katalog `res/` jest w `.gitignore`).
+
+### (c) Deploy (WYSYŁA transakcję; zamień `send` na `display`, żeby tylko podpisać)
+```sh
+near contract deploy $CONTRACT use-file contracts/drop1/res/neargotchi_drop1.wasm without-init-call network-config $NET sign-with-keychain send
+```
+Bez `init`: wywołanie `new` drugi raz zepsułoby stan. Koszt: gaz ≈ 0,003 NEAR + ok. 0,02 NEAR więcej blokady na storage (większy wasm).
+
+### (d) PO: te same widoki muszą dać te same wartości
+```sh
+for m in drop_status nft_total_supply proposed_owner accrued reward_per_token locked_balance owner team provenance nft_metadata; do echo "-- $m"; near contract call-function as-read-only $CONTRACT $m json-args '{}' network-config $NET now 2>&1 | grep -v -E '^$|console command|^\s*near contract'; done > /tmp/drop1-after.txt; for id in 195 253 286; do echo "-- nft_token $id"; near contract call-function as-read-only $CONTRACT nft_token json-args "{\"token_id\":\"$id\"}" network-config $NET now 2>&1 | grep -v -E '^$|console command|^\s*near contract'; done >> /tmp/drop1-after.txt; diff /tmp/drop1-before.txt /tmp/drop1-after.txt
+```
+Różnić się może **tylko** `locked_balance` (rośnie o koszt storage większego wasm, na ng67: +0,002 NEAR) i kod w `view-account-summary`.
+`drop_status` nadal `paused:true`. Nie rób `unpause`.
+
+Sprawdź też bramkę (bez wydawania 2 NEAR: kontrakt jest zapauzowany, więc `nft_mint` i tak by się cofnął, ale bramka gazu odpowiada pierwsza):
+```sh
+near contract call-function as-transaction $CONTRACT nft_mint json-args '{}' prepaid-gas '20.0 Tgas' attached-deposit '2 NEAR' sign-as $OWNER network-config $NET sign-with-keychain send
+```
+Oczekiwane: `attach more gas: at least 35 Tgas`; saldo OWNER spada tylko o gaz.
+
+### (e) Hash z kodu i gdzie go wpisać
+- Odtworzenie: `cd contracts/drop1 && ./build.sh && shasum -a 256 res/neargotchi_drop1.wasm`, zestaw z `code_hash` z RPC (base58 sha256 pliku).
+- **Dopiero po Twoim potwierdzeniu, że deploy się odbył** wpisz nowy hash jako wdrożony w: `README.md` (sekcja kontraktu / "How it works"),
+  `docs/MAINNET-RUNBOOK.md` (rekord deployu), `docs/CONTRACT-SETUP.md` oraz zaktualizuj w `lib/copy.ts` FAQ tylko to, co wtedy będzie prawdą
+  (klucz kontraktu i `freeze_metadata` to osobne kroki F / J; patrz audyt A-02). Do tej pory w dokumentach mainnetowy kod to `b41638a1…`.
