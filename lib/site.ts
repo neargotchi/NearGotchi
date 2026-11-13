@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-/** The one place for the public URL (switch to https://neargotchi.com later). */
-export const SITE_URL = "https://neargochi.vercel.app";
+/** The one place for the public URL; NEXT_PUBLIC_SITE_URL overrides it for other deployments. */
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://neargotchi.com").replace(/\/+$/, "");
 export const SITE_NAME = "NEARGOTCHI";
 /** Default meta description. */
 export const SITE_DESCRIPTION = "hatch one of 300 pixel pets. feed it, play with it, talk to it. on near.";

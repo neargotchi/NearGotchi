@@ -32,7 +32,7 @@ export type Snack = {
 const MIN = 60000;
 
 /** NEAR prices (one place, task 059): test NEAR on testnet, **real NEAR on mainnet** (paid to the team treasury). */
-export const NEAR_PRICES = { cookie: "0.04", berries: "0.08", noodles: "0.15", candy: "0.25", energy: "0.4" } as const;
+export const NEAR_PRICES = { cookie: "0.01", berries: "0.03", noodles: "0.05", candy: "0.1", energy: "0.2" } as const;
 
 /** The energy pack: +50 energy, no limit. Demo price in $NEARGotchi. */
 export const ENERGY_PACK = { id: "energy", price: 25, energy: 50 } as const;

@@ -205,6 +205,8 @@ export const navHref = (href: string) => (href.startsWith("/") ? href : `/${href
 
 export type SocialLink = { label: string; url: string | null };
 
+const showFooterLinksOnMainnet = false;
+
 export const footer = {
   disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value. unofficial fan project, not affiliated with or endorsed by NEAR.",
   // No analytics. Browser: localStorage (pets, shop stock). Mainnet only: energy + sign-in on the server (HttpOnly session
@@ -216,11 +218,13 @@ export const footer = {
       : "no analytics. your demo wallet and pets live only in this browser.",
   copyright: "© 2026 neargotchi",
   builtOn: "built on near: nft contract + near ai cloud",
-  /** External links shown on every build (demo, testnet, mainnet). */
-  links: [
-    { label: "github", url: "https://github.com/neargotchi/NearGotchi" },
-    { label: "testnet demo", url: "https://neargochi-demo.vercel.app" },
-  ] as { label: string; url: string }[],
+  /** External footer links; hidden on the mainnet build unless the flag is on. */
+  links: (isMainnet && !showFooterLinksOnMainnet
+    ? []
+    : [
+        { label: "github", url: "https://github.com/neargotchi/NearGotchi" },
+        { label: "testnet demo", url: "https://neargochi-demo.vercel.app" },
+      ]) as { label: string; url: string }[],
   /** listed addresses (task 080): text only, no claims. Links go to the mainnet explorer. */
   addresses: [
     { label: "drop 1 contract (near mainnet)", account: "drop1.neargochi-dev.near" },
@@ -301,8 +305,8 @@ export const mintPage = {
     play: "play with {name}",
     share: "share on x",
     shareNewTab: "(opens x in a new tab)",
-    /** x.com/intent/tweet text (PLANNER REVIEW 037): no @handle until the X account is confirmed. */
-    shareText: "i hatched {token}, a {tier} {species}. one of {count} {tier} {pet}s in neargotchi drop 1 ("+(isOnChain ? NET : "demo")+").",
+    /** x.com/intent/tweet text; the token picture comes from the card of the linked /nft/{id} page. */
+    shareText: "i hatched this nft on neargotchi.com, check it out! @neargotchiAI",
   },
   nameHint: "2–12 characters. letters, numbers, spaces, - and _. empty keeps {pet}.",
   errors: {
@@ -604,7 +608,7 @@ export const petPage = {
 
 /** Public token page /nft/[id] (app/nft/[id]/page.tsx). Rarity only, never value. */
 export const nftPage = {
-  metaTitle: "{token} — NEARGOTCHI",
+  metaTitle: "NEARGOTCHI #{id}",
   imageAlt: "{token}: a {tier} {species} from neargotchi drop 1, on its tier colour.",
   sub: isOnChain ? `one of {total} gotchis in drop 1, an nft on near ${NET}.` : "one of {total} gotchis in drop 1. a demo token: it lives in this site, not on chain yet.",
   cta: "hatch your own",

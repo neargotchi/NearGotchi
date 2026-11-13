@@ -39,12 +39,12 @@ If sign-in fails, the banner shows a small secret-free code of the failing step 
 given back, model not called) → NEAR AI → on error / timeout / empty answer the 4 come back (`INCRBY`). Message ≤ 300
 chars, history ≤ 8 messages (trimmed). Nothing is logged (no keys, no message text).
 
-**Energy pack (0.4 NEAR → +50):**
+**Energy pack (0.2 NEAR → +50):**
 1. The client checks the session **before** paying (no session → "sign in first", nothing paid).
-2. The wallet sends 0.4 NEAR to the treasury `neargotchiai.near` (same transfer as before).
+2. The wallet sends 0.2 NEAR to the treasury `neargotchiai.near` (same transfer as before).
 3. `POST /api/energy/claim {tx_hash, token_id}` → session + ownership → the server fetches the transaction (final)
    **as sent by the session account**, and requires: no `Failure`; signer = session account; receiver = treasury;
-   sum of `Transfer` deposits ≥ 0.4 NEAR (BigInt); block ≤ 24 h old (and not from the future). Then **one atomic
+   sum of `Transfer` deposits ≥ 0.2 NEAR (BigInt); block ≤ 24 h old (and not from the future). Then **one atomic
    script** marks the hash (`SET NX`, 3 days) and adds +50; a repeat or a parallel duplicate gets
    `already_credited` and no second credit. Not final yet → 409 `pending`: the client says "confirming payment…" and
    retries (12 × 3 s), and keeps an unconfirmed claim for a day to retry on the next /pet load.

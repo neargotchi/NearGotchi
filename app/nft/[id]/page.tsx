@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const species = findPet(token.petId)?.species ?? "";
   return pageMeta({
     path: `/nft/${token.tokenId}`,
-    title: fill(nftPage.metaTitle, { token: token.name }),
+    title: fill(nftPage.metaTitle, { id: String(token.tokenId) }),
     description: description(token.tokenId),
     // 1200×630 card from scripts/build_og.py (summary_large_image on X).
     image: {

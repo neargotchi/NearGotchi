@@ -652,10 +652,10 @@ export function subscribePet(callback: (pet: DemoPet | null) => void): () => voi
 
 export const PET_RULES = {
   /**
-   * Hunger rises 0.6 per minute (task 099: was 0.9; task 064: was 3): 0 → 100 in ~167 min, "hungry" (70) after
-   * ~117 min, starving (90, no games) after ~150 min. Never above 100. The ONLY place this rate lives.
+   * Hunger rises 0.3 per minute: 0 → 100 in ~333 min, "hungry" (70) after ~233 min, starving (90, no games)
+   * after ~300 min. Never above 100. The ONLY place this rate lives.
    */
-  hungerPerMin: 0.6,
+  hungerPerMin: 0.3,
   hungryAt: 70,
   /**
    * Economy (task 059, owner decisions 2026-11-09): energy never changes with time or games. It is spent ONLY

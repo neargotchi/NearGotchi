@@ -419,6 +419,48 @@ body { background: var(--page); }
 .hero .drop-progress-bar > span { background: color-mix(in srgb, var(--accent) 22%, transparent); }
 .hero .drop-progress-bar > .is-on { background: var(--accent); }
 .hero .drop-progress-label { white-space: normal; text-wrap: balance; }
+/* Counter frame: the same stepped pixel corners as the buttons (the ::before / ::after pair above);
+   the 2px that the old border took is added to the padding so the box keeps its size. */
+.pixel-ui .drop-progress.drop-progress {
+  --frame-fill: var(--scene-color);
+  --frame-line: var(--scene-border);
+  --corner: 8px;
+  --pixel-step: 3px;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: calc(round(calc(10px * var(--ui-scale, 1)), 1px) + 2px) calc(round(calc(12px * var(--ui-scale, 1)), 1px) + 2px);
+}
+.pixel-ui .drop-progress.drop-progress::before,
+.pixel-ui .drop-progress.drop-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--frame-line);
+  clip-path: polygon(var(--corner) 0,calc(100% - var(--corner)) 0,
+    calc(100% - var(--corner)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--pixel-step),
+    calc(100% - var(--pixel-step)) var(--corner),100% var(--corner),
+    100% calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--corner)),
+    calc(100% - var(--pixel-step)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) calc(100% - var(--pixel-step)),
+    calc(100% - var(--corner)) 100%,var(--corner) 100%,
+    var(--corner) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--pixel-step)),
+    var(--pixel-step) calc(100% - var(--corner)),0 calc(100% - var(--corner)),
+    0 var(--corner),var(--pixel-step) var(--corner),
+    var(--pixel-step) var(--pixel-step),var(--corner) var(--pixel-step));
+}
+.pixel-ui .drop-progress.drop-progress::after {
+  inset: 2px;
+  z-index: -1;
+  background: var(--frame-fill);
+}
 .hero-scroll {
   position: absolute;
   left: 0;
