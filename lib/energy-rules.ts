@@ -8,8 +8,8 @@ export const CHAT_COST = 4;
 /** One energy pack (ENERGY_PACK.energy in lib/shop.ts). */
 export const PACK_ENERGY = 50;
 /** Energy pack price in NEAR (NEAR_PRICES.energy in lib/shop.ts) and in yoctoNEAR. */
-export const PACK_PRICE_NEAR = "0.5";
-export const PACK_PRICE_YOCTO = "500000000000000000000000";
+export const PACK_PRICE_NEAR = "0.4";
+export const PACK_PRICE_YOCTO = "400000000000000000000000";
 
 /** NEP-413 sign-in: what the wallet shows and signs (no transaction, no cost). */
 export const SIGN_IN_MESSAGE = "sign in to neargotchi. this proves you own the account: no transaction, no cost.";

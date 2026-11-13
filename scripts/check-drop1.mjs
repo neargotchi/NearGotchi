@@ -322,18 +322,19 @@ await test("mintPet saves the drawn token; rename; update keeps it; release keep
   await assert.rejects(mocks.renamePet("scout"), (e) => e.code === "no_pet");
 });
 
-await test("hunger tempo (task 064): +0.9/min, 0 → 100 in ~111 min, hungry (70) after ~78 min; energy does not move (task 059)", async () => {
+await test("hunger tempo (task 099): +0.6/min, 0 → 100 in ~167 min, hungry (70) after ~117 min; energy does not move (task 059)", async () => {
   const start = Date.parse("2026-11-02T10:00:00.000Z");
   const pet = { ...basePet(4), hunger: 20, energy: 100, lastUpdated: new Date(start).toISOString() };
-  assert.equal(mocks.PET_RULES.hungerPerMin, 0.9);
+  assert.equal(mocks.PET_RULES.hungerPerMin, 0.6);
   const later = mocks.simulatePet(pet, start + 10 * 60000);
-  assert.equal(later.hunger, 29);
+  assert.equal(later.hunger, 26);
   const fresh = { ...pet, hunger: 0 };
   const at = (min) => mocks.simulatePet(fresh, start + min * 60000);
-  assert.equal(at(77).mood, "normal");
-  assert.equal(at(79).mood, "hungry", "hungry after ~78 min");
-  assert.ok(at(100).hunger < 100 && at(100).hunger >= 89, "starving (≥ 90, no games) only after ~100 min");
-  assert.equal(at(112).hunger, 100, "0 → 100 in ~111 min");
+  assert.equal(at(115).mood, "normal");
+  assert.equal(at(117).mood, "hungry", "hungry after ~117 min");
+  assert.ok(at(148).hunger < 89, "not starving before ~150 min");
+  assert.ok(at(150).hunger < 100 && at(150).hunger >= 89, "starving (≥ 90, no games) only after ~150 min");
+  assert.equal(at(168).hunger, 100, "0 → 100 in ~167 min");
   assert.equal(later.energy, 100, "energy is constant over time");
   assert.equal(later.mood, "normal");
 });
@@ -480,7 +481,7 @@ await test("shop: broke and full cost nothing; star candy makes happy; corrupt s
   const candy = await shop.buyItem(pet.id, "candy");
   assert.equal(candy.result, "fed");
   assert.equal(candy.pet.energy, 50);
-  assert.ok(Date.parse(candy.pet.happyUntil) > Date.now() + 50000);
+  assert.ok(Date.parse(candy.pet.happyUntil) > Date.now() + 140000, "star candy: happy for 150 s (task 099)");
   store.set(SKEY, "nope");
   assert.equal((await stockOf("candy")).stock, 1);
 });
@@ -503,25 +504,29 @@ await test("shop (task 059): energy pack = +50 energy only (capped, no stock); s
   const cash = account().balance;
   assert.equal((await shop.buyItem(pet.id, "energy")).result, "full", "full energy refuses");
   assert.equal(account().balance, cash, "and costs nothing");
-  assert.equal(shop.NEAR_PRICES.energy, "0.5");
+  assert.deepEqual(shop.NEAR_PRICES, { cookie: "0.04", berries: "0.08", noodles: "0.15", candy: "0.25", energy: "0.4" }, "task 099 prices");
   await assert.rejects(shop.buyItem("nobody", "cookie"), (e) => e.code === "no_pet");
 });
 await test("payment check (task 080): amount >= price from Transfer deposits, signer, treasury, success, block not older than the purchase", async () => {
   const yocto = (near) => (BigInt(Math.round(near * 1000)) * 10n ** 21n).toString();
   const tx = (over = {}) => ({
     status: { SuccessValue: "" },
-    transaction: { signer_id: "buyer.near", receiver_id: "team.near", actions: [{ Transfer: { deposit: yocto(0.05) } }] },
+    transaction: { signer_id: "buyer.near", receiver_id: "team.near", actions: [{ Transfer: { deposit: yocto(0.04) } }] },
     ...over,
   });
   const pays = (t, item = "cookie", blockMs, since) => shop.paysFor(t, "buyer.near", "team.near", item, blockMs, since);
   assert.equal(shop.transferredYocto([{ Transfer: { deposit: "5" } }, { Transfer: { deposit: "7" } }, { FunctionCall: { deposit: "100" } }, null]), 12n);
   assert.equal(shop.transferredYocto(undefined), 0n);
   assert.equal(pays(tx()), true, "exact price");
-  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ Transfer: { deposit: yocto(0.06) } }] } })), true, "overpay is fine");
-  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ Transfer: { deposit: yocto(0.049) } }] } })), false, "underpay");
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ Transfer: { deposit: yocto(0.05) } }] } })), true, "overpay is fine (the old 0.05 cookie price still pays)");
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ Transfer: { deposit: yocto(0.039) } }] } })), false, "underpay");
   // the old check matched a substring of the actions JSON: 0.005 NEAR digits inside an unrelated number must not count
-  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ FunctionCall: { gas: yocto(0.05), deposit: "0" } }] } })), false, "no Transfer = no payment");
-  assert.equal(pays(tx(), "energy"), false, "0.05 does not pay the 0.5 energy pack");
+  assert.equal(pays(tx({ transaction: { ...tx().transaction, actions: [{ FunctionCall: { gas: yocto(0.04), deposit: "0" } }] } })), false, "no Transfer = no payment");
+  assert.equal(pays(tx(), "energy"), false, "0.04 does not pay the 0.4 energy pack");
+  const energyTx = (near) => tx({ transaction: { ...tx().transaction, actions: [{ Transfer: { deposit: yocto(near) } }] } });
+  assert.equal(pays(energyTx(0.4), "energy"), true, "0.4 pays the energy pack (task 099)");
+  assert.equal(pays(energyTx(0.5), "energy"), true, "the old 0.5 transfer still pays it (sum >= price)");
+  assert.equal(pays(energyTx(0.399), "energy"), false, "below 0.4 does not");
   assert.equal(pays(tx({ transaction: { ...tx().transaction, signer_id: "other.near" } })), false, "someone else's payment");
   assert.equal(pays(tx({ transaction: { ...tx().transaction, receiver_id: "team.testnet" } })), false, "wrong receiver");
   assert.equal(shop.paysFor(tx(), "buyer.near", "", "cookie"), false, "empty treasury never matches");
@@ -536,8 +541,8 @@ await test("payment check (task 080): amount >= price from Transfer deposits, si
 
 console.log("games");
 const games = await import("../lib/games.ts");
-await test("games (task 049): canPlay hungry ≥ 90 > ok (energy never blocks); finishGame +10 hunger, happy 60 s, games++, best", async () => {
-  assert.deepEqual(games.GAME_RULES, { hungerCost: 10, blockedAt: 90, happyMs: 60000 });
+await test("games (task 049): canPlay hungry ≥ 90 > ok (energy never blocks); finishGame +10 hunger, happy 150 s (task 099), games++, best", async () => {
+  assert.deepEqual(games.GAME_RULES, { hungerCost: 10, blockedAt: 90, happyMs: 150000 });
   assert.deepEqual([...games.gameIds], ["snack", "fetch", "hideseek"], "simon is gone, fetch and hide & seek are in");
   assert.equal(games.canPlay({ hunger: 20, energy: 80 }), "ok");
   assert.equal(games.canPlay({ hunger: 75, energy: 80 }), "ok", "a merely hungry pet still plays");
@@ -549,7 +554,7 @@ await test("games (task 049): canPlay hungry ≥ 90 > ok (energy never blocks); 
   await mocks.updatePet({ hunger: 20, energy: 80 }, pet.id);
   const a = await games.finishGame(pet.id, "snack", 5);
   assert.ok(Math.abs(a.pet.hunger - 30) < 0.1, String(a.pet.hunger));
-  assert.ok(Date.parse(a.pet.happyUntil) > Date.now() + 55000);
+  assert.ok(Date.parse(a.pet.happyUntil) > Date.now() + 145000);
   assert.equal(a.pet.stats.games, 1);
   assert.equal(a.pet.stats.best.snack, 5);
   assert.equal(a.newBest, true);

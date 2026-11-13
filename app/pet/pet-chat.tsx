@@ -20,7 +20,7 @@ type PetChatProps = {
   onShop: () => void;
   /** The pet after a message (energy spent). */
   onPet: (pet: DemoPet) => void;
-  /** A real reply was revealed → happy for 3s. */
+  /** A real reply was revealed → happy for 8s. */
   onReply: () => void;
   /** Mainnet (task 081): the server said the session is gone — show the sign-in again. */
   onSignedOut?: () => void;

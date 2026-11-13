@@ -9,8 +9,8 @@ export const GAME_RULES = {
   hungerCost: 10,
   /** only a starving pet (hunger ≥ 90) can't start a game (task 049: was the "hungry" mood at 70) */
   blockedAt: 90,
-  /** happy sprite for 60 s after a game */
-  happyMs: 60000,
+  /** happy sprite for 150 s after a game (task 099: was 60 s) */
+  happyMs: 150000,
 } as const;
 
 export const gameIds = ["snack", "fetch", "hideseek"] as const;
@@ -32,7 +32,7 @@ export class GameError extends Error {
 }
 
 /**
- * A game ended with `score` (a whole number ≥ 0): hunger +10, happy for 60 s, stats.games++ and the best
+ * A game ended with `score` (a whole number ≥ 0): hunger +10, happy for 150 s, stats.games++ and the best
  * score of that game. Returns the saved pet and whether the score is a new best.
  */
 export async function finishGame(

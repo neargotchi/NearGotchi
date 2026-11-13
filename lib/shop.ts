@@ -32,7 +32,7 @@ export type Snack = {
 const MIN = 60000;
 
 /** NEAR prices (one place, task 059): test NEAR on testnet, **real NEAR on mainnet** (paid to the team treasury). */
-export const NEAR_PRICES = { cookie: "0.05", berries: "0.1", noodles: "0.2", candy: "0.3", energy: "0.5" } as const;
+export const NEAR_PRICES = { cookie: "0.04", berries: "0.08", noodles: "0.15", candy: "0.25", energy: "0.4" } as const;
 
 /** The energy pack: +50 energy, no limit. Demo price in $NEARGotchi. */
 export const ENERGY_PACK = { id: "energy", price: 25, energy: 50 } as const;
@@ -46,7 +46,7 @@ export const snacks: Snack[] = [
   { id: "cookie", price: 2, hunger: 10, max: null, restockMs: null, happyMs: 0 },
   { id: "berries", price: 5, hunger: 25, max: 3, restockMs: 1 * MIN, happyMs: 0 },
   { id: "noodles", price: 10, hunger: 50, max: 2, restockMs: 3 * MIN, happyMs: 0 },
-  { id: "candy", price: 20, hunger: 20, max: 1, restockMs: 10 * MIN, happyMs: 60000 },
+  { id: "candy", price: 20, hunger: 20, max: 1, restockMs: 10 * MIN, happyMs: 150000 },
 ];
 
 export const findSnack = (id: unknown) => snacks.find((snack) => snack.id === id) ?? null;
@@ -281,7 +281,7 @@ async function payNear(owner: string, item: ItemId, petId: string): Promise<{ re
 /**
  * Buys one snack (and feeds it right away) or the energy pack for one of the account's pets. Checks in order:
  * out of stock, nothing to do (snack at hunger 0 / pack at 100 energy), payment (demo balance or testnet NEAR).
- * Snacks count stats.snacks; star candy keeps the pet happy for 60s.
+ * Snacks count stats.snacks; star candy keeps the pet happy for 150 s.
  */
 export async function buyItem(petId: string, itemId: ItemId, onConfirming?: () => void): Promise<{ pet: DemoPet; result: BuyResult }> {
   if (!isItemId(itemId)) throw new ShopError("unknown_snack");

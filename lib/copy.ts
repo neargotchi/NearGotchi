@@ -152,7 +152,7 @@ export const faq: { header: string; items: FaqItem[] } = {
     {
       question: "is this live?",
       answer: isMainnet
-        ? "yes, on near mainnet, with real near. the contract is unaudited: only spend what you can afford to lose. snacks are paid in real near; games and chat state live in your browser."
+        ? "yes, on near mainnet, with real near. snacks are paid in real near; games and chat state live in your browser."
         : "it's a testnet demo. the mint is real on near testnet; snacks, games and chat are still mocks in your browser.",
     },
   ],
@@ -384,7 +384,7 @@ export const petPage = {
   games: {
     title: "games",
     soon: "soon",
-    cost: "every finished game: +10 hunger, happy for 1 min. stop early and it's free.",
+    cost: "every finished game: +10 hunger, happy for 2.5 min. stop early and it's free.",
     best: "best",
     noScore: "—",
     play: "play",
@@ -526,7 +526,7 @@ export const petPage = {
       buy: "buy energy",
       alt: "energy pack",
     },
-    happy: "happy for 1 min",
+    happy: "happy for 2.5 min",
     stock: "{n} of {max} left",
     unlimited: "always in stock",
     restock: "+1 in {time}",

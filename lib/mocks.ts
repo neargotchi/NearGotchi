@@ -652,10 +652,10 @@ export function subscribePet(callback: (pet: DemoPet | null) => void): () => voi
 
 export const PET_RULES = {
   /**
-   * Hunger rises 0.9 per minute (task 064: was 3): 0 → 100 in ~111 min, "hungry" (70) after ~78 min, starving (90,
-   * no games) after ~100 min. Never above 100. The ONLY place this rate lives.
+   * Hunger rises 0.6 per minute (task 099: was 0.9; task 064: was 3): 0 → 100 in ~167 min, "hungry" (70) after
+   * ~117 min, starving (90, no games) after ~150 min. Never above 100. The ONLY place this rate lives.
    */
-  hungerPerMin: 0.9,
+  hungerPerMin: 0.6,
   hungryAt: 70,
   /**
    * Economy (task 059, owner decisions 2026-11-09): energy never changes with time or games. It is spent ONLY
@@ -665,7 +665,8 @@ export const PET_RULES = {
   chatEnergy: 4,
   /** Chat no longer uses food. */
   chatHunger: 0,
-  happyMs: 3000,
+  /** UI happy timer after a tap or a chat reply (task 099: was 3000). */
+  happyMs: 8000,
   chatMax: 30,
   messageMax: 140,
 } as const;
@@ -690,7 +691,7 @@ export function moodOf(pet: Pick<DemoPet, "hunger" | "energy"> & { mood?: Mood }
 }
 
 /**
- * Pure: hunger from lastUpdated to now (also covers a closed tab): +3/min, max 100. Energy is untouched (task 059).
+ * Pure: hunger from lastUpdated to now (also covers a closed tab): +PET_RULES.hungerPerMin/min, max 100. Energy is untouched (task 059).
  * A clock that moved backwards changes nothing.
  */
 export function simulatePet(pet: DemoPet, now: number): DemoPet {

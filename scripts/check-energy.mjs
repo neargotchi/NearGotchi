@@ -230,7 +230,7 @@ await test("one payment can't be claimed for two tokens (or by two accounts)", a
 await test("rejected payments: too little, wrong receiver, someone else's tx, failed tx, older than 24 h, from the future", async () => {
   const d = deps();
   const claim = (hash) => S.handleClaim(session(), { tx_hash: hash, token_id: 5 }, d);
-  assert.equal((await claim(pay(10, { deposit: "499999999999999999999999" }))).body.error, "not_a_payment");
+  assert.equal((await claim(pay(10, { deposit: "399999999999999999999999" }))).body.error, "not_a_payment");
   assert.equal((await claim(pay(11, { receiver: "neargotchi-team-ng57.testnet" }))).body.error, "not_a_payment");
   assert.equal((await claim(pay(12, { signer: OTHER }))).body.error, "pending", "the server looks the tx up as sent by the session account: not found");
   assert.equal((await claim(pay(13, { status: { Failure: { ActionError: {} } } }))).body.error, "not_a_payment");
@@ -244,7 +244,8 @@ await test("accepted: overpay, a payment split over two Transfer actions; unknow
   const d = deps();
   const claim = (hash) => S.handleClaim(session(), { tx_hash: hash, token_id: 5 }, d);
   assert.equal((await claim(pay(20, { deposit: "600000000000000000000000" }))).body.energy, 150);
-  assert.equal((await claim(pay(21, { actions: [{ Transfer: { deposit: "250000000000000000000000" } }, { Transfer: { deposit: "250000000000000000000000" } }] }))).body.energy, 200);
+  assert.equal((await claim(pay(21, { actions: [{ Transfer: { deposit: "200000000000000000000000" } }, { Transfer: { deposit: "200000000000000000000000" } }] }))).body.energy, 200);
+  assert.equal((await claim(pay(22, { deposit: "500000000000000000000000" }))).body.energy, 250, "the old 0.5 NEAR transfer still pays the 0.4 pack (task 099)");
   const res = await claim(fakeHash(99));
   assert.deepEqual([res.status, res.body.error], [409, "pending"]);
 });
@@ -400,6 +401,7 @@ await test("shared numbers match the client (pack price / size, chat cost, start
   const mocks = await import("../lib/mocks.ts");
   assert.equal(rules.PACK_PRICE_YOCTO, chainLib.nearToYocto(shop.NEAR_PRICES.energy));
   assert.equal(rules.PACK_PRICE_NEAR, shop.NEAR_PRICES.energy);
+  assert.deepEqual([rules.PACK_PRICE_NEAR, rules.PACK_PRICE_YOCTO], ["0.4", "400000000000000000000000"], "task 099 pack price");
   assert.equal(rules.PACK_ENERGY, shop.ENERGY_PACK.energy);
   assert.equal(rules.CHAT_COST, mocks.PET_RULES.chatEnergy);
   assert.equal(rules.ENERGY_START, 100);
