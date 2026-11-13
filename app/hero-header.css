@@ -1,7 +1,7 @@
 /* GUI redesign: header + hero (reference: newheader.png / newheadermobile.png).
    Loaded after globals.css (app/layout.tsx) and reuses its component classes. Scene backgrounds:
-   public/hero/dark*.png (sky, clouds, the cloud band on the horizon; scripts/build_hero_scene.py)
-   + the CSS floor below the horizon (app/hero-floor.tsx, tasks 095/096). Header switches to the burger at ≤1279px
+   public/hero/dark*.png (sky, clouds, hills; built by scripts/build_hero_scene.py) + the CSS floor
+   below the horizon (app/hero-floor.tsx, task 095). Header switches to the burger at ≤1279px
    (same breakpoint as app/mobile-menu.tsx), the hero to the portrait scene at ≤768px. */
 :root {
   --scene-color: #0a0a0a;
@@ -280,9 +280,13 @@ body { background: var(--page); }
     var(--hero-h) - 72px - var(--horizon) * var(--scene-h));
   /* Visible grid below the horizon; the scroll cue sits on this line. */
   --grid-zone: calc(var(--hero-h) - var(--scene-y) - var(--horizon) * var(--scene-h));
-  /* Floor (app/hero-floor.tsx): the horizon in hero coordinates and one ride cycle. */
+  /* Floor (task 095, app/hero-floor.tsx): the artwork's floor height (= eye height under the horizon) is the
+     unit of the CSS grid; the horizon in hero coordinates; one grid tile; one ride cycle. */
+  --fh: calc((1 - var(--horizon)) * var(--scene-h));
   --horizon-y: calc(var(--scene-y) + var(--horizon) * var(--scene-h));
-  --floor-cycle: 2.4s;
+  /* Whole pixels: line k sits at k tiles, so after one cycle it lands exactly where line k−1 started. */
+  --floor-tile: round(calc(var(--fh) * .625), 1px);
+  --floor-cycle: 2.5s;
   min-height: calc(100vh - var(--header-height));
   min-height: var(--hero-h);
   background-color: var(--scene-color);
@@ -452,29 +456,11 @@ body { background: var(--page); }
 }
 @keyframes scroll-cue { 50% { transform: translateY(5px); } }
 
-/* ---------- Hero floor (tasks 095, 096; app/hero-floor.tsx) ----------
-   One plane tilted back in a real CSS 3D perspective: the grid lines lie ON it, so the perspective alone makes
-   them run together and crowd towards the horizon. The plane's pivot sits --floor-perspective / tan(tilt) under
-   the horizon, which puts the vanishing line of the tilted plane exactly on the horizon (the rows converge on it
-   and the vertical lines meet at its centre). The plane reaches --floor-far px beyond the pivot: far enough to
-   pass under the fade, so its edge is never seen.
-   Riding forward: the plane slides towards the viewer by exactly one cell per cycle (transform only, on the
-   compositor; the vertical lines slide along themselves, so only the rows move) and the loop is seamless.
-   A fade over the plane hides the far rows near the horizon completely (thin far lines alias and flicker).
-   Everything scales with the visible floor height F (= --grid-zone): perspective .95 F and tilt 50°, so the
-   pivot is .8 F under the horizon; a cell is .55 F (whole px, so one cycle = exactly one cell); rows .07 F,
-   columns .045 F on the plane. At 1920×1080 (F ≈ 157): cells ~86px wide and ~55px deep at the pivot, rows
-   ~7px there and ≥ 3px wherever the fade lets them show. */
-.hero-shell > .hero {
-  --floor-perspective: calc(var(--grid-zone) * .95);
-  --floor-tilt: 50deg;
-  --floor-pivot: calc(var(--floor-perspective) / tan(var(--floor-tilt)));
-  --floor-cell: round(calc(var(--grid-zone) * .55), 1px);
-  --floor-row: max(6px, round(calc(var(--grid-zone) * .07), 1px));
-  --floor-col: max(6px, round(calc(var(--grid-zone) * .045), 1px));
-  --floor-far: calc(var(--floor-perspective) * 6);
-  --floor-near: calc(var(--floor-perspective) * .6);
-}
+/* ---------- Hero floor (task 095, app/hero-floor.tsx) ----------
+   Below the horizon of the scene PNG: rays to the vanishing point (static SVG) and cross lines on a plane laid
+   flat in a CSS perspective (eye on the horizon, --fh above the plane at the artwork's bottom edge). The plane
+   moves towards the viewer by exactly one tile per cycle (transform only, linear), so the loop has no seam.
+   Fog: the strip just under the horizon is masked out; the farthest line is born there. */
 .hero-floor {
   position: absolute;
   z-index: -1;
@@ -484,58 +470,59 @@ body { background: var(--page); }
   bottom: 0;
   overflow: hidden;
   pointer-events: none;
-  background: linear-gradient(color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--fh) * .11), #000 calc(var(--fh) * .26));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--fh) * .11), #000 calc(var(--fh) * .26));
+}
+.hero-floor-rays {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(var(--fh) * 12);
+  height: var(--fh);
+  transform: translateX(-50%);
+  fill: var(--accent);
+}
+.hero-floor-depth {
+  position: absolute;
+  inset: 0;
+  perspective: calc(var(--fh) * 1.7);
+  perspective-origin: 50% 0;
 }
 .hero-floor-plane {
   position: absolute;
-  top: calc(var(--floor-pivot) - var(--floor-far));
-  left: -225%;
-  /* wide enough to fill the screen where the fade clears */
-  width: 550%;
-  height: calc(var(--floor-far) + var(--floor-near));
-  transform-origin: 50% var(--floor-far);
-  transform: perspective(var(--floor-perspective)) rotateX(var(--floor-tilt)) translateY(0);
-  /* One cell = a row on top + a column in the middle; the tile is centred, so a column runs to the vanishing point. */
-  background-image:
-    linear-gradient(var(--accent) 0 var(--floor-row), transparent 0),
-    linear-gradient(to right, transparent calc(50% - var(--floor-col) / 2), var(--accent) 0 calc(50% + var(--floor-col) / 2), transparent 0);
-  background-size: 100% var(--floor-cell), var(--floor-cell) 100%;
-  background-position: 0 0, 50% 0;
-  animation: floor-drive var(--floor-cycle) linear infinite;
-  will-change: transform;
+  top: var(--fh);
+  left: 50%;
+  transform-style: preserve-3d;
+  transform: rotateX(90deg);
+  animation: floor-ride var(--floor-cycle) linear infinite;
 }
-@keyframes floor-drive {
-  from { transform: perspective(var(--floor-perspective)) rotateX(var(--floor-tilt)) translateY(0); }
-  to { transform: perspective(var(--floor-perspective)) rotateX(var(--floor-tilt)) translateY(var(--floor-cell)); }
-}
-.hero-floor-fade {
+/* Line i lies i tiles away; it is as wide as the viewport at that depth (perspective 1.7 floor heights). */
+.hero-floor-plane > i {
+  --half: calc(var(--fh) * 5.4 * (1 + var(--i) * .3677));
   position: absolute;
-  inset: 0;
-  /* Opaque over the first quarter, still .9 at 35 %: the far rows (thinner than 3px, they alias and flicker)
-     never show. */
-  background: linear-gradient(var(--scene-color) 0 25%, rgb(10 10 10 / .9) 35%, rgb(10 10 10 / .45) 50%, transparent 68%);
+  top: calc(var(--floor-tile) * var(--i) * -1);
+  left: calc(var(--half) * -1);
+  width: calc(var(--half) * 2);
+  height: calc(var(--fh) * .05);
+  background: var(--accent);
+  transform: translateZ(0);
 }
-/* The far sides: rows and columns there crowd into a dotted moiré where the fade above is only partial, so the
-   corners under the horizon are darkened too (a side gradient, masked to fade out downwards). */
-.hero-floor-fade::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, var(--scene-color), transparent 38% 62%, var(--scene-color));
-  -webkit-mask-image: linear-gradient(#000 0 40%, transparent 78%);
-  mask-image: linear-gradient(#000 0 40%, transparent 78%);
+@keyframes floor-ride {
+  from { transform: rotateX(90deg) translateY(0); }
+  to { transform: rotateX(90deg) translateY(var(--floor-tile)); }
 }
-/* Horizon: a 3px line in the accent with a soft glow. */
+/* Horizon: a crisp line in the accent with a soft glow above and below it. */
 .hero-horizon {
   position: absolute;
   z-index: -1;
   left: 0;
   right: 0;
-  top: calc(var(--horizon-y) - 1px);
-  height: 3px;
+  top: calc(var(--horizon-y) - var(--fh) * .14);
+  height: calc(var(--fh) * .28);
   pointer-events: none;
-  background: var(--accent);
-  box-shadow: 0 0 18px 4px color-mix(in srgb, var(--accent) 45%, transparent);
+  background:
+    linear-gradient(var(--accent), var(--accent)) center / 100% max(2px, calc(var(--fh) * .016)) no-repeat,
+    linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 20%, transparent) 50%, transparent);
 }
 .pets-section { border-top-color: var(--scene-border); }
 
@@ -644,7 +631,7 @@ body { background: var(--page); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hero-scroll { animation: none; }
-  .hero-floor-plane { animation: none; will-change: auto; }
+  .hero-floor-plane { animation: none; }
   .pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) { transition: none; }
 }
 
