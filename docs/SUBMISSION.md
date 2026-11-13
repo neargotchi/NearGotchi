@@ -26,7 +26,7 @@ Project name: NEARGOTCHI. Mainnet payout account: `neargotchiai.near` (the contr
 - Holder rewards on testnet: 2nd mint `7edZwRA1d5dSCQ6KFJNhFuLowScrzLgjPkaS8VfR16iF` → token #198's owner claims 0.995 NEAR `4T7Ck242PEM3rczLrY94fghnprTwNDegVgeiax7hNBDj`
 - Older testnet contract (33/33/34, no holder rewards): `neargotchi-drop1-ng57.testnet` · https://testnet.nearblocks.io/address/neargotchi-drop1-ng57.testnet
 - Test mint (admin account, token #83): `9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB` · https://testnet.nearblocks.io/txns/9YizpnEU8jo5NY1tnhiozrTeTnTMQtvTteAmNm2ugtMB
-- Mint from the website (`nft_mint`, 2 NEAR, token #10, account `buyer1.testnet`): `D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7` · https://testnet.nearblocks.io/txns/D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7
+- Mint from the website (`nft_mint`, 2 NEAR, token #10): `D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7` · https://testnet.nearblocks.io/txns/D5NRFD7v9pwDmw2Kmg21QtAgf3CRrZ5R1hehEiYnBnf7
 
 ## Description (paste into the form, English, 1628 characters; the form allows 20–2000)
 NEARGOTCHI is an AI Tamagotchi on NEAR. You hatch a pixel pet, feed it, play mini-games with it and talk to it. Production is NEAR mainnet; judges can use the demo/testnet build or run it locally (no real money). The chain stays out of the way until you mint or buy.
