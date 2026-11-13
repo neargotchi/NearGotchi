@@ -129,7 +129,7 @@ export const faq: { header: string; items: FaqItem[] } = {
     {
       id: FAIR_HATCH_ID,
       question: "is the hatch fair?",
-      answer: "you can check it yourself. you pay, the contract stores a ticket, and a later block draws your gotchi from the pool that is left, using the chain's random seed. you can't pick it and neither can we. every hatch is a public transaction on nearblocks. the pictures and metadata are pinned by content hash (ipfs cid) and each token's media hash is on chain. two honest limits: the contract has not been audited, and near's random seed comes from block producers, so no on-chain randomness is perfect.",
+      answer: "the draw happens on chain, inside the contract, from the seed of a later block. the code is public, so anyone can read how it works.",
       // mainnet only, address from env (NEXT_PUBLIC_DROP1_CONTRACT)
       link: isMainnet && DROP1_CONTRACT ? { label: "verify on nearblocks", href: `${EXPLORER_URL}/address/${DROP1_CONTRACT}` } : undefined,
     },
