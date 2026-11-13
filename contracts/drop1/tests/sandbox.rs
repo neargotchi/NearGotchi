@@ -196,8 +196,8 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
     assert!(!out.is_success());
     println!("301st mint failure: {:?}", out.failures().iter().map(|f| { let d = format!("{f:?}"); d[d.find("status").unwrap_or(0)..].to_string() }).collect::<Vec<_>>());
     assert!(format!("{:?}", out.failures()).contains("sold out"), "{:?}", out.failures());
-    let spent = before - balance(&buyers[2]).await?;
-    assert!(spent < NearToken::from_millinear(10).as_yoctonear(), "spent {spent} yocto");
+    let spent = before as i128 - balance(&buyers[2]).await? as i128; // signed: late gas refunds from earlier mints can raise the balance
+    assert!(spent < NearToken::from_millinear(10).as_yoctonear() as i128, "301st mint: spent {spent} yocto, the 2 NEAR deposit should have come back");
 
     // 5. money: team half + holders' half (÷ earlier tokens) account for every yocto paid in; distribute pays the team
     let net = NearToken::from_millinear(1990).as_yoctonear() * 300;
@@ -209,7 +209,7 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
     let tb = balance(&team).await?;
     let out = stranger.call(contract.id(), "distribute").max_gas().transact().await?;
     assert!(out.is_success(), "{:?}", out.failures());
-    assert_eq!(balance(&team).await? - tb, team_due);
+    assert_eq!(balance(&team).await? as i128 - tb as i128, team_due as i128, "team payout");
     let accrued: Value = contract.view("accrued").await?.json()?;
     assert_eq!(accrued["team"], json!("0"));
     // every holder claims all their tokens: payouts == credited, a second claim pays 0, a stranger can't claim
@@ -239,7 +239,7 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
     let out = owner.call(contract.id(), "withdraw_surplus").args_json(json!({ "amount": NearToken::from_near(1000).as_yoctonear().to_string() })).transact().await?;
     assert!(!out.is_success());
     let locked: String = contract.view("locked_balance").await?.json()?;
-    let free = contract.view_account().await?.balance.as_yoctonear() - locked.parse::<u128>()?;
+    let free = contract.view_account().await?.balance.as_yoctonear().saturating_sub(locked.parse::<u128>()?);
     let ob = balance(&owner).await?;
     let out = owner.call(contract.id(), "withdraw_surplus").args_json(json!({ "amount": free.to_string() })).transact().await?;
     assert!(out.is_success(), "{:?}", out.failures());
@@ -255,8 +255,8 @@ async fn drop1_end_to_end() -> anyhow::Result<()> {
         wasm.len(),
         storage_code,
         storage_init,
-        storage_catalog - storage_init,
-        (storage_catalog - storage_init) / TOTAL as u64,
+        storage_catalog as i64 - storage_init as i64,
+        (storage_catalog as i64 - storage_init as i64) / TOTAL as i64,
         storage_minted,
         (storage_minted as i64 - storage_catalog as i64) / TOTAL as i64,
         catalog_gas.iter().map(|g| (g * 10.0).round() / 10.0).collect::<Vec<_>>(),
@@ -360,7 +360,7 @@ async fn holder_rewards_limit_and_transfer() -> anyhow::Result<()> {
     let credited: u128 = accrued["holders_credited"].as_str().unwrap().parse()?;
     let claimed: u128 = accrued["holders_claimed"].as_str().unwrap().parse()?;
     let locked: String = contract.view("locked_balance").await?.json()?;
-    assert!(locked.parse::<u128>()? >= credited - claimed);
+    assert!(locked.parse::<u128>()? as i128 >= credited as i128 - claimed as i128);
     let out = owner.call(contract.id(), "withdraw_surplus").args_json(json!({ "amount": contract.view_account().await?.balance.as_yoctonear().to_string() })).transact().await?;
     assert!(!out.is_success(), "can't withdraw rewards, team share, storage or the reserve of unminted tokens");
     Ok(())
