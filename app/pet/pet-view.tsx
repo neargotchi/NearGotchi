@@ -49,7 +49,7 @@ export default function PetView() {
   const { ready: walletReady, account } = useWallet();
   /** Mainnet (task 081): is this browser signed in (NEP-413 session) as the connected account? null = checking. */
   const [signedIn, setSignedIn] = useState<boolean | null>(usesLedger ? null : true);
-  /** task 088: the sign-in popup was closed with ✕ (reopened by "sign in" in a note). */
+  /** task 088: the sign-in popup was closed with ✕ (reopened by "sign in" in a note, task 100: and by the chat). */
   const [signInOpen, setSignInOpen] = useState(true);
   // Only offered after a "sign in first" answer (chat: the server, shop: no session for this owner),
   // so the session is known to be missing: same as the chat's onSignedOut, then show the popup.
@@ -173,6 +173,14 @@ export default function PetView() {
       live = false;
     };
   }, [signedIn, activeId, activeToken]);
+
+  // Task 100: mainnet, wallet connected, no session: the chat is locked and the popup comes back whenever the chat
+  // tab is entered, even after a ✕ (on load it is open anyway: signInOpen starts true).
+  const needsSignIn = usesLedger && signedIn === false;
+  const showTab = (next: PetTab) => {
+    setTab(next);
+    if (next === "chat" && needsSignIn) setSignInOpen(true);
+  };
 
   // Keep ?id=&tab= in the URL in step with what is shown (switch, tab, release, unknown id on load).
   useEffect(() => {
@@ -303,7 +311,7 @@ export default function PetView() {
         <div className="pet-side">
           <PetTabs
             tab={tab}
-            onTab={setTab}
+            onTab={showTab}
             label={fill(petPage.tabs.label, { name: pet.name })}
             panels={{
               stats: (
@@ -324,7 +332,7 @@ export default function PetView() {
                   pet={pet}
                   shown={shown}
                   active={tab === "games"}
-                  onTab={setTab}
+                  onTab={showTab}
                   onFinished={(next) => {
                     setPet(next);
                     setHop((value) => value + 1);
@@ -333,7 +341,7 @@ export default function PetView() {
                 />
               ),
               feed: <TabFeed key={pet.id} pet={pet} shown={shown} balance={isOnChain ? null : account.balance} now={now} onBought={onBought} notice={notice} onSignIn={openSignIn} />,
-              chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} onSignedOut={() => setSignedIn(false)} onSignIn={openSignIn} />,
+              chat: <PetChat key={pet.id} name={pet.name} onShop={() => setTab("feed")} onPet={setPet} onReply={makeHappy} onSignedOut={() => setSignedIn(false)} onSignIn={openSignIn} locked={needsSignIn} onLocked={() => setSignInOpen(true)} popupOver={needsSignIn && signInOpen && tab === "chat"} />,
             }}
           />
         </div>

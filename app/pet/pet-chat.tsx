@@ -26,6 +26,26 @@ type PetChatProps = {
   onSignedOut?: () => void;
   /** task 088: "sign in" in the signed-out note reopens the sign-in popup. */
   onSignIn?: () => void;
+  /**
+   * Task 100 (mainnet, wallet connected, no session): the field and "send" are locked (nothing can be typed or
+   * lost); a focus or click on either asks for the sign-in popup. A draft typed before stays and unlocks with it.
+   */
+  locked?: boolean;
+  onLocked?: () => void;
+  /** Task 100: the sign-in popup is open and the chat tab is the one shown: keep the form above the popup. */
+  popupOver?: boolean;
+};
+
+/** Task 100: scroll the chat form (field + send) up if the fixed sign-in popup covers it. */
+const keepAbovePopup = (field: HTMLElement | null) => {
+  requestAnimationFrame(() => {
+    const popup = document.querySelector(".energy-signin");
+    if (!field || !popup) return;
+    const a = field.getBoundingClientRect();
+    const b = popup.getBoundingClientRect();
+    const overlaps = a.right > b.left && a.left < b.right && a.bottom > b.top - 12;
+    if (overlaps) window.scrollBy({ top: a.bottom - (b.top - 12) });
+  });
 };
 
 const typingDelay = (reply: ChatMessage) => {
@@ -37,7 +57,7 @@ const typingDelay = (reply: ChatMessage) => {
  * Local chat: your message shows at once; the reply (already stored) is revealed after a short
  * pixel "typing…" delay. One reply at a time, one message queued behind it.
  */
-export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onSignIn }: PetChatProps) {
+export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onSignIn, locked = false, onLocked, popupOver = false }: PetChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typing, setTyping] = useState(false);
   /** The pet is waiting for NEAR AI (the energy is spent only once the answer is in). */
@@ -47,6 +67,7 @@ export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onS
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const busy = useRef(false);
   const queued = useRef<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -112,8 +133,24 @@ export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onS
     }, typingDelay(result.reply));
   };
 
+  // Task 100: when the popup opens over the shown chat (on load, on entering the tab, after a click), the form
+  // (field + send) is scrolled up above it.
+  useEffect(() => {
+    if (popupOver) keepAbovePopup(formRef.current);
+  }, [popupOver]);
+
+  const askSignIn = () => {
+    if (!locked) return;
+    onLocked?.();
+    keepAbovePopup(formRef.current);
+  };
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (locked) {
+      askSignIn();
+      return;
+    }
     const text = draft.trim();
     if (!text) {
       setError(petPage.chat.blank);
@@ -178,7 +215,7 @@ export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onS
           </p>
         ) : null}
       </div>
-      <form className="pet-chat-form" noValidate onSubmit={submit}>
+      <form ref={formRef} className={locked ? "pet-chat-form is-locked" : "pet-chat-form"} noValidate onSubmit={submit}>
         <label className="visually-hidden" htmlFor="pet-message">
           {petPage.chat.label}
         </label>
@@ -188,8 +225,13 @@ export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onS
           type="text"
           autoComplete="off"
           maxLength={PET_RULES.messageMax * 2}
-          placeholder={fill(petPage.chat.placeholder, { name })}
+          placeholder={locked ? petPage.chat.placeholderSignIn : fill(petPage.chat.placeholder, { name })}
           value={draft}
+          // locked: read-only, not disabled, so a focus / click still reaches it and reopens the popup
+          readOnly={locked}
+          aria-disabled={locked ? true : undefined}
+          onFocus={askSignIn}
+          onClick={askSignIn}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? "pet-message-hint pet-message-error" : "pet-message-hint"}
           onChange={(event) => {
@@ -197,7 +239,7 @@ export default function PetChat({ name, onShop, onPet, onReply, onSignedOut, onS
             if (error) setError(null);
           }}
         />
-        <button type="submit" className="button button-primary">
+        <button type="submit" className="button button-primary" aria-disabled={locked ? true : undefined}>
           {petPage.chat.send}
         </button>
       </form>

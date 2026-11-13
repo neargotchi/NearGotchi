@@ -332,6 +332,13 @@
 @media (max-width: 768px) {
   .energy-signin { right: 12px; left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: auto; }
 }
+/* Task 100: room under the page for the open popup (0 when it is closed), so the chat form can always be
+   scrolled above it (app/pet/pet-chat.tsx keepAbovePopup). */
+.pet-shell { padding-bottom: var(--energy-signin-space, 0px); }
+/* Task 100: chat locked until the sign-in (mainnet, no session): read-only field, dashed and dimmed. The button
+   uses the shared aria-disabled look (hero-header.css). */
+.pet-chat-form.is-locked .mint-input { cursor: not-allowed; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--scene-ink) 35%, transparent); }
+.pet-chat-form.is-locked .mint-input:focus-visible { box-shadow: inset 0 0 0 4px var(--accent); }
 
 /* Task 088 point 9: touch devices and narrow screens get no motion on buttons — no hover / press
    translate, no transitions, no glow or pulse on links and buttons. A tap still reads at once:

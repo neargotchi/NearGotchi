@@ -578,6 +578,8 @@ export const petPage = {
     signedOut: "sign in first: it proves the pet is yours. no transaction, no cost.",
     label: "message",
     placeholder: "say something to {name}",
+    /** mainnet, wallet connected, no sign-in yet (task 100): the field is locked until the popup's signature */
+    placeholderSignIn: "sign in first (bottom right) to chat",
     hint: "each message uses 4 energy. food is not touched.",
     send: "send",
     typing: "{name} is typing…",
