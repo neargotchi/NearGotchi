@@ -135,7 +135,7 @@ Without the key the chat falls back to scripted answers and says "demo mode (moc
 ## Hackathon window, AI assistance, libraries
 
 - **Window:** all code in this repository was written during the hackathon window (first commit 2026-11-05); there is no pre-hackathon baseline.
-  Full commit list: https://github.com/neargotchi/NearGochi/commits/main. A tag `hackathon-submission` will point at the submitted commit.
+  Full commit list: https://github.com/neargotchi/NearGotchi/commits/main. A tag `hackathon-submission` will point at the submitted commit.
 - **AI assistance:** the code (front end, server routes, contract, tests, docs) was written with Claude Code (Anthropic); commits carry a
   `Co-Authored-By: Claude` trailer. The in-game chat runs on NEAR AI Cloud (Claude Haiku 5.5, GLM fallback). Pet art: the base pet sheets,
   accessories and backgrounds are in `assets-raw/`; the 300 NFT images are composed from them by `scripts/compose_drop1.py`

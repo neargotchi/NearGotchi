@@ -218,7 +218,7 @@ export const footer = {
   builtOn: "built on near: nft contract + near ai cloud",
   /** External links shown on every build (demo, testnet, mainnet). */
   links: [
-    { label: "github", url: "https://github.com/neargotchi/NearGochi" },
+    { label: "github", url: "https://github.com/neargotchi/NearGotchi" },
     { label: "testnet demo", url: "https://neargochi-demo.vercel.app" },
   ] as { label: string; url: string }[],
   /** listed addresses (task 080): text only, no claims. Links go to the mainnet explorer. */
