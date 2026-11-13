@@ -154,6 +154,10 @@ export const faq: { header: string; items: FaqItem[] } = {
         ? "yes, on near mainnet, with real near. snacks are paid in real near; pets, games and shop stock live in your browser; energy and sign-in live on our server."
         : "it's a testnet demo. the mint is real on near testnet; snacks, games and chat are still mocks in your browser.",
     },
+    {
+      question: "will there be battles?",
+      answer: "we'd like to build them. no date, no promise.",
+    },
   ],
 };
 
@@ -212,6 +216,11 @@ export const footer = {
       : "no analytics. your demo wallet and pets live only in this browser.",
   copyright: "© 2026 neargotchi",
   builtOn: "built on near: nft contract + near ai cloud",
+  /** External links shown on every build (demo, testnet, mainnet). */
+  links: [
+    { label: "github", url: "https://github.com/neargotchi/NearGochi" },
+    { label: "testnet demo", url: "https://neargochi-demo.vercel.app" },
+  ] as { label: string; url: string }[],
   /** listed addresses (task 080): text only, no claims. Links go to the mainnet explorer. */
   addresses: [
     { label: "drop 1 contract (near mainnet)", account: "drop1.neargochi-dev.near" },

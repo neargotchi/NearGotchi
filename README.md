@@ -34,12 +34,25 @@ Every hatch pays 2 NEAR. 0.01 NEAR stays in the contract for the token's storage
 
 Example: hatch #2 pays 0.995 NEAR to token #1; hatch #3 pays 0.4975 NEAR to each of tokens #1 and #2.
 
+## Roadmap (ideas, not promises)
+
+- Pet battles: friendly duels using a pet's stats and tier.
+- Pet arena: a place where pets meet and compete.
+
+No dates, and none of this is part of the current drop. The drop is 300 tokens, fixed in the contract.
+
 ## Quick start for judges (no real money)
 
-Everything below uses **testnet** (free test NEAR from a faucet, no value) or the offline demo mode. Nothing here touches mainnet.
-You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 test NEAR.
+Everything below uses the offline demo mode or **testnet** (free test NEAR from a faucet, no value). Nothing here touches mainnet.
 
-**A. Hosted demo build:** open https://neargochi-demo.vercel.app/mint.
+**Variant 1: no wallet, offline demo (fastest).** One command, no chain, no wallet, no account:
+`npm ci && NEXT_PUBLIC_CHAIN=demo npm run dev`, then open http://localhost:3000/mint and click **hatch**: the egg cracks and shows a random pet;
+then open /pet to feed it, play and chat (scripted answers). Everything is a localStorage mock in your browser.
+Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mocked), `cd contracts/drop1 && cargo test --lib` (contract).
+
+**Variant 2: testnet with a wallet.** You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 test NEAR.
+
+**A. Hosted demo build (testnet):** open https://neargochi-demo.vercel.app/mint.
 **B. Locally, 3 steps:**
 1. `npm install && cp .env.example .env.local`
 2. in `.env.local` set `NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`,
@@ -52,9 +65,6 @@ Then (same steps on A and B; expected result after each):
 3. **hatch** (2 test NEAR + gas), approve in the wallet: the egg cracks and shows the pet the contract drew, with its tier; the counter goes up by one.
 4. /pet, feed tab, **buy & feed** a snack (small test NEAR payment): hunger drops.
 5. /pet, chat tab: the pet answers ("powered by near ai"); each answered message costs 4 energy; the energy pack in the feed tab refills it.
-
-**No wallet at all:** leave `NEXT_PUBLIC_CHAIN` unset (or `demo`): the site runs fully offline on a localStorage mock, no chain.
-Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mocked), `cd contracts/drop1 && cargo test --lib` (contract).
 
 | | On-chain (NEAR mainnet / testnet) | Off-chain (your browser) |
 |---|---|---|
