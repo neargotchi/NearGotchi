@@ -121,8 +121,12 @@ export function absorbBalance(balance: number) {
   });
 }
 
-/** Testnet: aligns the stored record with the wallet-selector session (also after a redirect wallet returns). */
-async function syncChain(): Promise<DemoAccount | null> {
+/**
+ * Testnet: aligns the stored record with the wallet-selector session (also after a redirect wallet returns).
+ * Task 101: an account the visitor disconnected here stays disconnected even if the selector still holds its session
+ * (Meteor's sign-out popup closed or failed): that session is stale, not a connect. `adopt` = a sign-in just happened.
+ */
+async function syncChain(adopt = false): Promise<DemoAccount | null> {
   const { getNear, activeAccountId } = await import("./near");
   const { selector } = await getNear();
   const accountId = activeAccountId(selector);
@@ -132,7 +136,10 @@ async function syncChain(): Promise<DemoAccount | null> {
     return null;
   }
   const now = new Date().toISOString();
-  if (record && record.accountId === accountId) return record.connected ? record : save({ ...record, connected: true, connectedAt: now });
+  if (record && record.accountId === accountId) {
+    if (record.connected) return record;
+    return adopt ? save({ ...record, connected: true, connectedAt: now }) : null;
+  }
   return save({ v: 1, accountId, connected: true, connectedAt: now, balance: WALLET_RULES.startBalance });
 }
 
@@ -149,16 +156,55 @@ export async function getAccount(): Promise<DemoAccount | null> {
   return record?.connected ? record : null;
 }
 
-/** Opens the wallet modal and resolves once an account signed in. Throws WalletError("cancelled") if closed. */
-async function connectChain(): Promise<DemoAccount> {
-  const { getNear } = await import("./near");
+/** Task 101: set right before the reload that drops a stale wallet session; the header then reopens the modal once. */
+const REOPEN_KEY = "neargotchi-wallet-reopen";
+
+/** True once after that reload (the flag is taken before anything else runs, so it can never loop). */
+export function takeReopen(): boolean {
+  if (!isOnChain || !inBrowser()) return false;
+  try {
+    const flag = window.sessionStorage.getItem(REOPEN_KEY);
+    window.sessionStorage.removeItem(REOPEN_KEY);
+    return flag === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** false when the flag can't be stored (then no reload: the modal opens in this page instead). */
+function reloadForConnect(): boolean {
+  try {
+    window.sessionStorage.setItem(REOPEN_KEY, "1");
+  } catch {
+    return false;
+  }
+  window.location.reload();
+  return true;
+}
+
+/**
+ * Opens the wallet modal and resolves once an account signed in. Throws WalletError("cancelled") if closed.
+ * Task 101: the modal is only ever shown with no wallet session left in the selector, so a sign-in can't make the
+ * selector sign another wallet out (lib/near.ts guardSignOut is the second line). A stale session (the visitor
+ * disconnected, the wallet kept it) is dropped locally and the page reloads once, which resets the selector; the
+ * modal then opens by itself (takeReopen in app/wallet-menu.tsx). `afterReset`: that second run, never reloads again.
+ */
+async function connectChain(afterReset = false): Promise<DemoAccount> {
+  const { getNear, activeAccountId, clearLocalSession } = await import("./near");
   const { selector, modal } = await getNear();
-  const existing = await syncChain();
-  if (existing) return existing;
+  if (activeAccountId(selector)) {
+    const existing = await syncChain();
+    if (existing) return existing;
+    clearLocalSession();
+    if (!afterReset && reloadForConnect()) return new Promise<DemoAccount>(() => {});
+  } else {
+    // no session in the selector: leftovers of an old one (e.g. Meteor's own record) go too, locally
+    clearLocalSession();
+  }
   return new Promise<DemoAccount>((resolve, reject) => {
     const offIn = selector.on("signedIn", () => {
       cleanup();
-      syncChain().then((account) => (account ? resolve(account) : reject(new WalletError("cancelled"))), reject);
+      syncChain(true).then((account) => (account ? resolve(account) : reject(new WalletError("cancelled"))), reject);
     });
     const offHide = modal.on("onHide", () => {
       // the sign-in event can follow the hide event; give it a moment
@@ -179,8 +225,8 @@ async function connectChain(): Promise<DemoAccount> {
  * Demo: reuses this browser's demo account (balance and pets come back) or creates it with 100.
  * Testnet: real wallet sign-in (throws WalletError("cancelled") when the modal is closed).
  */
-export async function connect(): Promise<DemoAccount> {
-  if (isOnChain) return connectChain();
+export async function connect({ afterReset = false }: { afterReset?: boolean } = {}): Promise<DemoAccount> {
+  if (isOnChain) return connectChain(afterReset);
   const record = readRecord();
   const now = new Date().toISOString();
   return save(
@@ -194,11 +240,19 @@ export async function connect(): Promise<DemoAccount> {
 export async function disconnect(): Promise<void> {
   if (isOnChain) {
     try {
-      const { getNear } = await import("./near");
+      const { getNear, signOutOnPurpose } = await import("./near");
       const { selector } = await getNear();
-      if (selector.isSignedIn()) await (await selector.wallet()).signOut();
+      // the one intended wallet sign-out (Meteor: its "Sign Out Request" popup)
+      if (selector.isSignedIn()) await signOutOnPurpose(selector);
     } catch {
-      // already signed out
+      // already signed out, or the wallet's popup was closed / failed
+    }
+    // Task 101: whatever the wallet answered, nothing of the session stays in this browser's storage, so the next
+    // connect starts clean (a selector that still holds it in memory is reset by connect's reload).
+    try {
+      (await import("./near")).clearLocalSession();
+    } catch {
+      // wallet library unavailable: nothing was stored by it
     }
   }
   const record = readRecord();

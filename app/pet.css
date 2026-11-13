@@ -295,6 +295,11 @@
 /* Task 088: mainnet sign-in as a fixed popup (app/pet/energy-sign-in.tsx): bottom-right card,
    ~360px, pixel frame in the accent, above the page content (header 20, game modal 15) but under
    the toasts (120). Phones: the bottom edge, full width minus the margins. */
+/* Task 101: the card lives inside the /pet section, which is its own stacking context (isolation), so its z-index
+   alone left it under the footer (later in the page) once scrolled to the end. While the card is open the section is
+   lifted like a running game (z-index 15): above the footer, still under the sticky header (20), the burger panel and
+   the toasts. The card sits at the bottom, so the header never overlaps it. */
+.pet-shell .mint-section:has(.energy-signin) { z-index: 15; }
 .energy-signin {
   position: fixed;
   right: 20px;
@@ -333,8 +338,9 @@
   .energy-signin { right: 12px; left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: auto; }
 }
 /* Task 100: room under the page for the open popup (0 when it is closed), so the chat form can always be
-   scrolled above it (app/pet/pet-chat.tsx keepAbovePopup). */
-.pet-shell { padding-bottom: var(--energy-signin-space, 0px); }
+   scrolled above it (app/pet/pet-chat.tsx keepAbovePopup). Task 101: under the footer, so at the very end of the
+   page the footer too is scrolled clear of the card. */
+body:has(.energy-signin) { padding-bottom: var(--energy-signin-space, 0px); }
 /* Task 100: chat locked until the sign-in (mainnet, no session): read-only field, dashed and dimmed. The button
    uses the shared aria-disabled look (hero-header.css). */
 .pet-chat-form.is-locked .mint-input { cursor: not-allowed; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--scene-ink) 35%, transparent); }

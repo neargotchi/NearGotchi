@@ -7,7 +7,7 @@ import { toast } from "../lib/toast";
 
 import { fill, header } from "../lib/copy";
 import { useWallet } from "../lib/use-wallet";
-import { DEMO_ACCOUNT_ID, connect, disconnect } from "../lib/wallet";
+import { DEMO_ACCOUNT_ID, connect, disconnect, takeReopen } from "../lib/wallet";
 
 /**
  * Header + burger wallet (docs/DEVLOG.md §2). Disconnected: "connect wallet · demo" connects the
@@ -63,6 +63,16 @@ export default function WalletMenu({ variant = "header" }: { variant?: "header" 
       // wallet modal closed without signing in
     }
   };
+
+  // Task 101: a connect that had to drop a stale wallet session reloaded the page; the header reopens the modal once.
+  useEffect(() => {
+    if (variant !== "header" || !takeReopen()) return;
+    connect({ afterReset: true })
+      .then((next) => toast(fill(header.wallet.connected, { account: next.accountId })))
+      .catch(() => {
+        // wallet modal closed without signing in
+      });
+  }, [variant]);
 
   const onDisconnect = async () => {
     await disconnect();
