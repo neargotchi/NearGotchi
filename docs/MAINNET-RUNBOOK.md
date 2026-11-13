@@ -7,7 +7,7 @@ of near-cli-rs on your own computer.
 
 Contract: `contracts/drop1`. Split: **50 % team / 50 % holder rewards** (per mint: 2 NEAR − 0.01 NEAR storage reserve =
 1.99 NEAR → 0.995 team, 0.995 to the tokens minted before this payment, equally; first mint and rounding dust → team).
-Limit **5 mints per account** (set in `new`). Review: `docs/REPORT.md` → DONE: 067. No Ledger (owner decision, task 069):
+Limit **5 mints per account** (set in `new`). Review: `docs/DEVLOG.md`. No Ledger (owner decision, task 069):
 a fresh project account with its seed phrase on paper; ownership can move to a Ledger later (optional step L).
 
 ## Mainnet record (2026-11-12, done by the owner)

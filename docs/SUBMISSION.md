@@ -4,7 +4,6 @@ Nothing here has been sent or published. The owner does every step after their o
 
 ## Placeholders to fill in (not invented)
 Left on purpose, to be filled by the owner. Nothing else in this file or in the README is a placeholder.
-- [ ] `{{MAINNET_URL}}` (production site, mainnet build)
 - [ ] `{{DEMO_URL}}` (demo / testnet build for judges, no real money)
 - [ ] `{{X_POST_URL}}` (after the post is published)
 - [ ] `{{OTHER_CHAIN_DISCLOSURE}}`, `{{OTHER_PROJECTS_DISCLOSURE}}` (README, hackathon questions Q-002 / Q-015: text comes from the owner)
@@ -18,7 +17,7 @@ Project name: NEARGOTCHI. Mainnet payout account: `neargotchiai.near` (the contr
 - nfts
 
 ## Links
-- Production (NEAR mainnet, real NEAR): {{MAINNET_URL}}
+- Production (NEAR mainnet, real NEAR): https://neargotchi.com
 - Demo / testnet build for judges (no real money): {{DEMO_URL}}
 - Repo: https://github.com/neargotchi/NearGochi (visibility = owner's decision)
 - Contract (NEAR mainnet): `drop1.neargochi-dev.near` · https://nearblocks.io/address/drop1.neargochi-dev.near (deploy record: `docs/MAINNET-RUNBOOK.md`)
@@ -55,7 +54,7 @@ Recorded on the demo / testnet build ({{DEMO_URL}}): no real money.
 8. **1:20–1:25 Outro.** Demo URL and repo.
 
 ## Pre-submission checklist
-- [ ] Decision: repo public (owner). The code has no keys (see the grep in the REPORT).
+- [ ] Decision: repo public (owner). The code has no keys (secret scan of the tree and the whole history: see `docs/DEVLOG.md`).
 - [ ] README has "Quick start for judges", the on/off-chain table, the contract and the mint hash (deployed wasm sha256 `a3412e7aa1e1f6df63beb0dd32ce7e2241d6543fcd51cfd7cf1603512d8b003a`)
 - [ ] LICENSE (MIT) is in the repo
 - [ ] Vercel env: production `NEXT_PUBLIC_CHAIN=mainnet` + `NEXT_PUBLIC_DROP1_CONTRACT` + `NEXT_PUBLIC_TREASURY` + `SESSION_SECRET` + Upstash vars; demo build `NEXT_PUBLIC_CHAIN=testnet`; `NEAR_AI_API_KEY` server-side only, no NEXT_PUBLIC_ (docs/DEPLOY.md)
