@@ -709,7 +709,7 @@ export async function tickPet(id?: string): Promise<DemoPet | null> {
   return current ? savePet(simulatePet(current, Date.now())) : null;
 }
 
-// ---------- Chat (deterministic local replies; "demo · near ai soon") ----------
+// ---------- Chat (deterministic local replies; demo mode) ----------
 
 export type ChatMessage = {
   id: string;

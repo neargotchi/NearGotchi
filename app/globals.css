@@ -436,19 +436,6 @@ h1 {
   letter-spacing: -0.015em;
 }
 
-.step-card-soon { color: var(--text-muted); }
-.step-card-soon .step-sprite-wrap { background: var(--locked-box); }
-.step-card-soon .step-sprite { filter: grayscale(1); opacity: 0.45; }
-.step-card-soon .step-number { border-color: var(--text-muted); color: var(--text-muted); background: var(--locked-box); }
-
-.step-soon {
-  margin-left: auto;
-  padding: round(calc(6px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px);
-  border: round(calc(2px * var(--ui-scale)), 1px) solid var(--text-muted);
-  font-size: 0.6875rem;
-  line-height: 1;
-}
-
 .wardrobe-section {
   position: relative;
   isolation: isolate;
@@ -1748,8 +1735,6 @@ main > section[class] { background: transparent; }
 }
 .game-best strong { margin-left: round(calc(6px * var(--ui-scale)), 1px); font-weight: 400; }
 .game-rules { margin: 0; font-size: 1rem; font-weight: 500; line-height: 1.45; }
-.game-card.is-soon { border-style: dashed; box-shadow: none; }
-.game-card.is-soon .game-rules { color: var(--text-muted); }
 
 /* Game console (catch the snack; class names from the removed simon game): the egg device in small —
    cream body, NEAR green frame, LCD, pixel-octagon buttons (same shape as the device's). A lit pad turns cream. */
@@ -1937,16 +1922,6 @@ main > section[class] { background: transparent; }
 .pet-rename-row { display: flex; gap: round(calc(14px * var(--ui-scale)), 1px); margin-top: round(calc(12px * var(--ui-scale)), 1px); }
 .pet-rename .mint-input { width: auto; min-width: 0; flex: 1 1 auto; }
 .pet-rename-done { min-height: 1.45em; margin: round(calc(8px * var(--ui-scale)), 1px) 0 0; font-size: 1rem; font-weight: 500; line-height: 1.45; }
-
-.pet-soon-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: round(calc(12px * var(--ui-scale)), 1px); }
-.pet-soon-tag {
-  padding: round(calc(6px * var(--ui-scale)), 1px) round(calc(8px * var(--ui-scale)), 1px);
-  border: round(calc(2px * var(--ui-scale)), 1px) dashed var(--line);
-  color: var(--text-muted);
-  font-family: var(--font-pixel), monospace;
-  font-size: 0.625rem;
-  line-height: 1;
-}
 
 .mint-reveal {
   display: grid;
@@ -2936,7 +2911,7 @@ main > section[class] { background: transparent; }
 .pet-thumb { width: round(calc(76px * var(--ui-scale)), 1px); gap: round(calc(4px * var(--ui-scale)), 1px); padding: round(calc(5px * var(--ui-scale)), 1px) round(calc(5px * var(--ui-scale)), 1px) round(calc(6px * var(--ui-scale)), 1px); }
 .pet-thumb-art { width: round(calc(52px * var(--ui-scale)), 1px); height: round(calc(52px * var(--ui-scale)), 1px); }
 
-/* Games tab: catch the snack beside its rules on a wide card; 2 "soon" cards under it. */
+/* Games tab: catch the snack beside its rules on a wide card. */
 .pet-games-tab { gap: round(calc(18px * var(--ui-scale)), 1px); }
 .pet-games-tab .pet-result { min-height: round(calc(24px * var(--ui-scale)), 1px); margin: round(calc(-6px * var(--ui-scale)), 1px) 0; }
 .pet-games-tab .pet-result p { margin: 0; }
@@ -2956,9 +2931,6 @@ main > section[class] { background: transparent; }
 .catch .simon-device { grid-template-columns: minmax(0, 1fr); max-width: 100%; }
 .catch-screen { aspect-ratio: auto; max-width: 100%; min-width: 0; }
 .catch-canvas { height: auto; max-width: 100%; aspect-ratio: 4 / 3; }
-.game-soon-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(round(calc(220px * var(--ui-scale)), 1px), 1fr)); gap: round(calc(18px * var(--ui-scale)), 1px); margin: 0; padding: 0; list-style: none; }
-.game-soon-list .game-card { gap: round(calc(10px * var(--ui-scale)), 1px); padding: round(calc(18px * var(--ui-scale)), 1px); }
-.game-soon-list .game-rules { font-size: 0.9375rem; }
 
 /* Landing "meet your gotchi" games tile: catch the snack mid-round (static). */
 .gotchi-catch { position: relative; aspect-ratio: 4 / 3; overflow: hidden; }
@@ -2989,7 +2961,6 @@ main > section[class] { background: transparent; }
   .pet-hatch-row { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 14px; margin: 20px 0 0; }
   .pet-hatch-another { width: 100%; min-height: 56px; }
   .pet-head .mint-demo { justify-self: start; margin: 0; white-space: normal; }
-  .game-soon-list { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Header at 1366–1535 with the wallet connected: the wide wallet chip pushed the centered nav into the

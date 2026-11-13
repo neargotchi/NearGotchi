@@ -60,10 +60,10 @@ One `<section class="mint-section">` under the header. Grid ON, sparkles page-wi
 ```
 1920  [h1 hatch your gotchi ✦ ][mascot nightshade + bubble]      [demo · no real mint, no wallet]
       sub line
-      1. pick your pet   [card][card][card][soon][soon][soon]       (6-col, like pets-list)
+      1. pick your pet   [card][card][card]                            (3 cards, like pets-list)
       2. name it         [ name input 480px ][ mint · demo ]        (one row; error under input)
       hatch: the form area swaps in place for a 640px LCD stage (egg 320px, centered), same section
-1280  same, cards 3×2 (existing ≤1280 rule); name + mint stay one row
+1280  same, cards 3-up (existing ≤1280 rule); name + mint stay one row
 375   h1 (mobile title size) / mascot row / demo pill / sub
       cards: horizontal snap row, next card peeking (existing mobile rule)
       name input 100% / error / mint 100% × 56px

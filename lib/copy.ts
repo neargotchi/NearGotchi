@@ -8,10 +8,9 @@ export type HowItWorksStep = {
   title: string;
   body: string;
   sprite: { src: string; width: number; height: number; alt: string };
-  soon?: boolean;
 };
 
-/** Hero (app/page.tsx). Demo now, near next: no live near ai promise, no dressing up. */
+/** Hero (app/page.tsx). */
 export const hero = {
   subtitle: "your ai companion on near",
   lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "demo now, near next."),
@@ -386,7 +385,6 @@ export const petPage = {
   /** Games tab (app/pet/tab-games.tsx, lib/games.ts). */
   games: {
     title: "games",
-    soon: "soon",
     cost: "every finished game: +10 hunger, happy for 2.5 min. stop early and it's free.",
     best: "best",
     noScore: "—",
@@ -568,7 +566,7 @@ export const petPage = {
   },
   chat: {
     title: "talk",
-    note: isOnChain ? "powered by near ai" : "demo · near ai soon",
+    note: isOnChain ? "powered by near ai" : "demo mode",
     noteAi: "powered by near ai",
     noteMock: "demo mode (mock answers)",
     /** on-chain builds (task 087), above the chat log */
