@@ -1,6 +1,7 @@
 /* GUI redesign: header + hero (reference: newheader.png / newheadermobile.png).
-   Loaded after globals.css (app/layout.tsx) and reuses its component classes; the four scene
-   backgrounds in public/hero/ are used unchanged. Header switches to the burger at ≤1279px
+   Loaded after globals.css (app/layout.tsx) and reuses its component classes. Scene backgrounds:
+   public/hero/dark*.png (sky, clouds, hills; built by scripts/build_hero_scene.py) + the CSS floor
+   below the horizon (app/hero-floor.tsx, task 095). Header switches to the burger at ≤1279px
    (same breakpoint as app/mobile-menu.tsx), the hero to the portrait scene at ≤768px. */
 :root {
   --scene-color: #0a0a0a;
@@ -279,6 +280,13 @@ body { background: var(--page); }
     var(--hero-h) - 72px - var(--horizon) * var(--scene-h));
   /* Visible grid below the horizon; the scroll cue sits on this line. */
   --grid-zone: calc(var(--hero-h) - var(--scene-y) - var(--horizon) * var(--scene-h));
+  /* Floor (task 095, app/hero-floor.tsx): the artwork's floor height (= eye height under the horizon) is the
+     unit of the CSS grid; the horizon in hero coordinates; one grid tile; one ride cycle. */
+  --fh: calc((1 - var(--horizon)) * var(--scene-h));
+  --horizon-y: calc(var(--scene-y) + var(--horizon) * var(--scene-h));
+  /* Whole pixels: line k sits at k tiles, so after one cycle it lands exactly where line k−1 started. */
+  --floor-tile: round(calc(var(--fh) * .625), 1px);
+  --floor-cycle: 2.5s;
   min-height: calc(100vh - var(--header-height));
   min-height: var(--hero-h);
   background-color: var(--scene-color);
@@ -287,8 +295,11 @@ body { background: var(--page); }
   background-size: auto var(--scene-h);
   background-position-x: center;
   background-position-y: var(--scene-y);
+  /* Pixel art: the scene is scaled without smoothing; the page content keeps normal image scaling. */
+  image-rendering: pixelated;
   color: var(--scene-ink);
 }
+.hero-shell > .hero > * { image-rendering: auto; }
 .hero-content {
   box-sizing: border-box;
   width: min(1100px, calc(100% - 40px));
@@ -444,6 +455,75 @@ body { background: var(--page); }
   margin-top: -6px;
 }
 @keyframes scroll-cue { 50% { transform: translateY(5px); } }
+
+/* ---------- Hero floor (task 095, app/hero-floor.tsx) ----------
+   Below the horizon of the scene PNG: rays to the vanishing point (static SVG) and cross lines on a plane laid
+   flat in a CSS perspective (eye on the horizon, --fh above the plane at the artwork's bottom edge). The plane
+   moves towards the viewer by exactly one tile per cycle (transform only, linear), so the loop has no seam.
+   Fog: the strip just under the horizon is masked out; the farthest line is born there. */
+.hero-floor {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  top: var(--horizon-y);
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--fh) * .11), #000 calc(var(--fh) * .26));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--fh) * .11), #000 calc(var(--fh) * .26));
+}
+.hero-floor-rays {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(var(--fh) * 12);
+  height: var(--fh);
+  transform: translateX(-50%);
+  fill: var(--accent);
+}
+.hero-floor-depth {
+  position: absolute;
+  inset: 0;
+  perspective: calc(var(--fh) * 1.7);
+  perspective-origin: 50% 0;
+}
+.hero-floor-plane {
+  position: absolute;
+  top: var(--fh);
+  left: 50%;
+  transform-style: preserve-3d;
+  transform: rotateX(90deg);
+  animation: floor-ride var(--floor-cycle) linear infinite;
+}
+/* Line i lies i tiles away; it is as wide as the viewport at that depth (perspective 1.7 floor heights). */
+.hero-floor-plane > i {
+  --half: calc(var(--fh) * 5.4 * (1 + var(--i) * .3677));
+  position: absolute;
+  top: calc(var(--floor-tile) * var(--i) * -1);
+  left: calc(var(--half) * -1);
+  width: calc(var(--half) * 2);
+  height: calc(var(--fh) * .05);
+  background: var(--accent);
+  transform: translateZ(0);
+}
+@keyframes floor-ride {
+  from { transform: rotateX(90deg) translateY(0); }
+  to { transform: rotateX(90deg) translateY(var(--floor-tile)); }
+}
+/* Horizon: a crisp line in the accent with a soft glow above and below it. */
+.hero-horizon {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  top: calc(var(--horizon-y) - var(--fh) * .14);
+  height: calc(var(--fh) * .28);
+  pointer-events: none;
+  background:
+    linear-gradient(var(--accent), var(--accent)) center / 100% max(2px, calc(var(--fh) * .016)) no-repeat,
+    linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 20%, transparent) 50%, transparent);
+}
 .pets-section { border-top-color: var(--scene-border); }
 
 @media (min-width: 769px) and (max-width: 1200px) {
@@ -551,6 +631,7 @@ body { background: var(--page); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hero-scroll { animation: none; }
+  .hero-floor-plane { animation: none; }
   .pixel-ui :is(.button, .menu-button, .social-x, .nft-lightbox-close, .pet-tab) { transition: none; }
 }
 
