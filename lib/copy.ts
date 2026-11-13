@@ -152,7 +152,7 @@ export const faq: { header: string; items: FaqItem[] } = {
     {
       question: "is this live?",
       answer: isMainnet
-        ? "yes, on near mainnet, with real near. snacks are paid in real near; games and chat state live in your browser."
+        ? "yes, on near mainnet, with real near. snacks are paid in real near; pets, games and shop stock live in your browser; energy and sign-in live on our server."
         : "it's a testnet demo. the mint is real on near testnet; snacks, games and chat are still mocks in your browser.",
     },
   ],
@@ -203,11 +203,14 @@ export const navHref = (href: string) => (href.startsWith("/") ? href : `/${href
 export type SocialLink = { label: string; url: string | null };
 
 export const footer = {
-  disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value.",
-  // No cookies, no analytics: only functional localStorage (demo pet, chat).
-  privacy: isOnChain
-    ? `no tracking. game state (hunger, energy, chat) lives only in this browser; ownership is on near ${NET}.`
-    : "no tracking. your demo wallet and pets live only in this browser.",
+  disclaimer: "not financial advice. $NEARGotchi is a memecoin with no promise of value. unofficial fan project, not affiliated with or endorsed by NEAR.",
+  // No analytics. Browser: localStorage (pets, shop stock). Mainnet only: energy + sign-in on the server (HttpOnly session
+  // cookie, account id), chat text goes to NEAR AI Cloud.
+  privacy: isMainnet
+    ? "no analytics. pets and shop stock live in your browser; energy and sign-in live on our server, tied to your wallet account id. chat messages go to near ai cloud."
+    : isOnChain
+      ? `no analytics. pets, shop stock and energy live in this browser; ownership is on near ${NET}.`
+      : "no analytics. your demo wallet and pets live only in this browser.",
   copyright: "© 2026 neargotchi",
   builtOn: "built on near: nft contract + near ai cloud",
   /** listed addresses (task 080): text only, no claims. Links go to the mainnet explorer. */
