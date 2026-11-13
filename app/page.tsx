@@ -13,7 +13,6 @@ import DropSection from "./drop-section";
 import CoinSection from "./coin-section";
 import MeetYourGotchi from "./meet-your-gotchi";
 import Wordmark from "./wordmark";
-import HeroFloor from "./hero-floor";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
@@ -24,10 +23,8 @@ export const metadata: Metadata = pageMeta({
 export default function Home() {
   return (
     <main className="hero-shell">
-      {/* Pixel scene (public/hero/*.png, scripts/build_hero_scene.py) behind a centred column: app/hero-header.css. */}
+      {/* Pixel scene (public/hero/*.png) behind a centred column: app/hero-header.css. */}
       <section id="home" className="hero" aria-labelledby="hero-title">
-        {/* Animated grid floor below the scene's horizon (task 095). */}
-        <HeroFloor />
         {/* Twinkling pixel stars in the sky on both sides of the title and the egg. */}
         <Sparkles
           count={8}
