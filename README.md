@@ -1,12 +1,15 @@
 # NEARGOTCHI
 
-An AI pet on NEAR. Hatch one of 300 pixel gotchis (common / rare / epic / legendary) for 2 NEAR, name it, feed it, play with it.
-Built for the NEAR hackathon (deadline 2026-11-14).
+An AI pet on NEAR. Hatch one of 300 pixel gotchis (common / rare / epic / legendary) for 2 NEAR, name it, feed it, play with it, talk to it.
+The pet is an NFT, and owning the token is what lets you open that pet, its chat and its rewards. Built for the NEAR hackathon
+(deadline 2026-11-14; tracks: games, nfts). Unofficial fan project, not affiliated with or endorsed by NEAR.
 
-**Real funds warning:** drop 1 goes live on NEAR **mainnet** (real NEAR). The contract is **not audited**. Only spend what
-you can afford to lose. To look around without real money, see [Try it without real funds](#try-it-without-real-funds).
+**Real funds warning:** drop 1 goes live on NEAR **mainnet** (real NEAR). The contract is **not audited**. Only spend what you
+can afford to lose. Minting on mainnet can be paused by the owner (`drop_status` shows `paused`). To look around without real
+money, see [Quick start for judges](#quick-start-for-judges-no-real-money).
 
-- Live site: https://neargochi.vercel.app (production = the mainnet build; a free build for looking around: [Try it without real funds](#try-it-without-real-funds))
+- Production (NEAR mainnet, real NEAR): {{MAINNET_URL}}
+- Demo / testnet build for judges (no real money): {{DEMO_URL}}
 - Drop 1 NFT contract (mainnet): [`drop1.neargochi-dev.near`](https://nearblocks.io/address/drop1.neargochi-dev.near) (owner `neargochi-dev.near`, team `neargotchiai.near`; test mint, token #195: [`9JEEHWBk…`](https://nearblocks.io/txns/9JEEHWBkgMtmcSYk15jUkyCAG8bTovZuzF2Rz2TduBcZ); deploy record in `docs/MAINNET-RUNBOOK.md`)
 - $NEARGotchi token (mainnet): [`neargotchi.nearlytrade.near`](https://nearblocks.io/address/neargotchi.nearlytrade.near)
 - Drop 1 NFT contract (testnet, current contract with holder rewards): [`neargotchi-drop1-ng67.testnet`](https://testnet.nearblocks.io/address/neargotchi-drop1-ng67.testnet)
@@ -31,25 +34,27 @@ Every hatch pays 2 NEAR. 0.01 NEAR stays in the contract for the token's storage
 
 Example: hatch #2 pays 0.995 NEAR to token #1; hatch #3 pays 0.4975 NEAR to each of tokens #1 and #2.
 
-## Try it without real funds
+## Quick start for judges (no real money)
 
-**Demo mode** (no wallet, no chain, everything in the browser): `npm install`, `npm run dev`, open http://localhost:3000.
+Everything below uses **testnet** (free test NEAR from a faucet, no value) or the offline demo mode. Nothing here touches mainnet.
+You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 test NEAR.
 
-**Testnet mode** (real wallet, free testnet NEAR, the same contract code as mainnet):
-1. `npm install` and `cp .env.example .env.local`
-2. in `.env.local`: `NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`,
-   `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet` (and `NEAR_AI_API_KEY` for real chat answers)
-3. `npm run dev`, then follow the steps below on http://localhost:3000. Testnet NEAR is free from a faucet and has no value.
+**A. Hosted demo build:** open {{DEMO_URL}}/mint.
+**B. Locally, 3 steps:**
+1. `npm install && cp .env.example .env.local`
+2. in `.env.local` set `NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`,
+   `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet` (optional: `NEAR_AI_API_KEY=<key>` for real chat answers; without it the chat is scripted)
+3. `npm run dev` and open http://localhost:3000/mint
 
-## Quick start (testnet mode)
+Then (same steps on A and B; expected result after each):
+1. /mint shows the live counter "x / 300 hatched" read from the contract.
+2. **connect wallet** and sign in: the header shows your account id.
+3. **hatch** (2 test NEAR + gas), approve in the wallet: the egg cracks and shows the pet the contract drew, with its tier; the counter goes up by one.
+4. /pet, feed tab, **buy & feed** a snack (small test NEAR payment): hunger drops.
+5. /pet, chat tab: the pet answers ("powered by near ai"); each answered message costs 4 energy; the energy pack in the feed tab refills it.
 
-You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 testnet NEAR (free from a testnet faucet, no value).
-
-1. Open https://neargochi.vercel.app/mint → you see the live counter from the contract, "x / 300 hatched".
-2. Click **connect wallet** and sign in → the header shows your real account id.
-3. Click **hatch** (2 NEAR + gas) and approve in the wallet → the egg cracks and shows the pet the contract drew for you, with its tier. The counter goes up by one.
-4. Open **/pet** → feed tab → **buy & feed** a snack (small testnet NEAR payment, approve in the wallet) → the pet eats and its hunger drops.
-5. Open the **chat** tab and talk to it → answers come from NEAR AI ("powered by near ai"), each answered message costs 4 energy. The **energy pack** in the feed tab refills it.
+**No wallet at all:** leave `NEXT_PUBLIC_CHAIN` unset (or `demo`): the site runs fully offline on a localStorage mock, no chain.
+Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mocked), `cd contracts/drop1 && cargo test --lib` (contract).
 
 | | On-chain (NEAR mainnet / testnet) | Off-chain (your browser) |
 |---|---|---|
@@ -61,28 +66,21 @@ You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 testn
 | Mini-games (catch the snack, fetch, hide & seek) | | yes |
 | Chat answers | | NEAR AI Cloud API (Claude Haiku 5.5, GLM fallback) via a server route |
 
-## Run it locally
-
-1. `npm install`
-2. `cp .env.example .env.local`, then set `NEXT_PUBLIC_CHAIN=testnet` (and `NEAR_AI_API_KEY` for real chat answers, see "NEAR AI";
-   for the holder-rewards contract also the two ng67 accounts from "Try it without real funds")
-3. `npm run dev` and open http://localhost:3000/mint, then follow steps 1–5 above on localhost.
-
-Without `NEXT_PUBLIC_CHAIN` (or with `=demo`) the site runs fully offline on a localStorage mock: no wallet, no chain.
-Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mocked), `cd contracts/drop1 && cargo test --lib` (contract).
-
 ## How it works
 
 - **Contract** (`contracts/drop1`, Rust, near-sdk 5): NEP-171/177/178/181/297 + 5% royalty. `nft_mint` takes 2 NEAR and issues a ticket; a
   self-callback in a later block draws a random token from the pool of 300 (public `reveal(ticket)` is the fallback). Proceeds:
   50% team (`distribute()`), 50% holder rewards (reward per token, `claim_rewards`), see above. Mainnet limit: 5 mints per account.
   34 unit tests + a near-workspaces sandbox suite (300 mints, sold out, fallback, rewards, claims, transfer, limit) run in GitHub
-  Actions. No upgrade method. On 2026-11-12 the mainnet contract account still holds its deploy key; the runbook deletes it
+  Actions. No upgrade method. Gas gate against selecting the draw by attached gas (task 102): `nft_mint` needs at least 35 Tgas, a
+  reveal at least 18 Tgas, checked before the draw. The deployed mainnet wasm has sha256 `{{MAINNET_WASM_HASH}}`; "the code on chain
+  is the code in this repo" holds as of the deployed version listed in `docs/MAINNET-COMMANDS.md` (rebuild with `contracts/drop1/build.sh`
+  and compare). On 2026-11-12 the mainnet contract account still holds its deploy key; the runbook deletes it
   before the sale opens (step 11), after which nobody can change the code. Details: `docs/MAINNET-RUNBOOK.md`,
   `docs/CONTRACT-SETUP.md`, money-path review in `docs/REPORT.md` (DONE: 067).
 - **Mainnet mode:** `NEXT_PUBLIC_CHAIN=mainnet` + `NEXT_PUBLIC_DROP1_CONTRACT` + `NEXT_PUBLIC_TREASURY` (no defaults). The mint page
   shows the real-NEAR price on the hatch button and under it; no extra confirmation besides the wallet. The "not audited"
-  notice lives in the FAQ ("is this live?", "is the hatch fair?") and in this README, not on the purchase path.
+  notice lives in this README, not on the site or on the purchase path (since task 103 the FAQ no longer says it).
 - **RPC:** all chain reads (counter, owned tokens, rewards, tx status after a wallet redirect) go through a fallback list of
   free public endpoints without API keys (FastNear, dRPC, ZAN, Intear; `rpc.*.near.org` is deprecated and answers 429): each
   request tries the endpoints in turn (starting with the last one that worked), then backs off and repeats; the counter keeps
@@ -122,10 +120,29 @@ Without the key the chat falls back to scripted answers and says "demo mode (moc
 
 ## Honest notes
 
-- The git history starts on 2026-11-05: the site, art and demo game pre-date the contract and wallet work (tasks 057-058).
-  [USER: list of own libraries or "none"]
 - No audit. The money paths were reviewed by us (findings and what was not checked: `docs/REPORT.md`, DONE: 067), which is not an audit.
   Mainnet means real NEAR; only spend what you can afford to lose.
+- On NEAR, the random seed comes from block producers, so on-chain randomness is not perfect.
+
+## Hackathon window, AI assistance, libraries
+
+- **Window:** all code in this repository was written during the hackathon window (first commit 2026-11-05); there is no pre-hackathon baseline.
+  Full commit list: https://github.com/neargotchi/NearGochi/commits/main. A tag `hackathon-submission` will point at the submitted commit.
+- **AI assistance:** the code (front end, server routes, contract, tests, docs) was written with Claude Code (Anthropic); commits carry a
+  `Co-Authored-By: Claude` trailer. The in-game chat runs on NEAR AI Cloud (Claude Haiku 5.5, GLM fallback). Pet art: the base pet sheets,
+  accessories and backgrounds are in `assets-raw/`; the 300 NFT images are composed from them by `scripts/compose_drop1.py`
+  (Pillow + numpy, deterministic). How the base sheets were created: {{ART_TOOLS_DISCLOSURE}}
+- **Libraries (all of them):** npm, from `package.json`: next, react, react-dom, tailwindcss, @tailwindcss/postcss,
+  @near-wallet-selector/core, /modal-ui, /my-near-wallet, /meteor-wallet; dev: typescript, eslint, eslint-config-next, @types/node,
+  @types/react, @types/react-dom. Check scripts also import `@near-js/crypto` and `@near-js/signers` (installed through the wallet
+  selector). Rust, from `contracts/drop1/Cargo.toml`: near-sdk 5, near-contract-standards 5; tests: near-workspaces, tokio,
+  serde_json, anyhow, reqwest. Python scripts (`scripts/requirements.txt`): Pillow, numpy. Fonts: Press Start 2P and Space Grotesk
+  (SIL OFL, via `next/font/google`). No template or boilerplate beyond the default Next.js project config files (tsconfig, eslint,
+  postcss) generated by the Next.js tooling. No third-party game or NFT code was copied in.
+- **Existing products on other chains:** {{OTHER_CHAIN_DISCLOSURE}}
+- **Other projects by the author:** {{OTHER_PROJECTS_DISCLOSURE}}
+- **Placeholders left for the owner:** `{{MAINNET_URL}}`, `{{DEMO_URL}}`, `{{X_POST_URL}}`, `{{MAINNET_WASM_HASH}}`,
+  `{{OTHER_CHAIN_DISCLOSURE}}`, `{{OTHER_PROJECTS_DISCLOSURE}}`, `{{ART_TOOLS_DISCLOSURE}}`. This list is removed before submission.
 
 ## Deploy
 
