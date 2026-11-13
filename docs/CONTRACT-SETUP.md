@@ -1,6 +1,6 @@
 # Contract setup — drop 1 NFT on NEAR testnet (task 057)
 
-Code: `contracts/drop1` (Rust, near-sdk 5.30.1 + near-contract-standards 5.30.1). Mainnet deploy record and runbook: docs/MAINNET-RUNBOOK.md.
+Code: `contracts/drop1` (Rust, near-sdk 5.30.1 + near-contract-standards 5.30.1). Mainnet deploy record and runbook: docs/MAINNET-RUNBOOK.md. Deployed mainnet wasm (2026-11-13, tx `EdZ7iKo2DPPy6psJLh6n3sD3H5iS7zisWmuEAXBtzbvA`): sha256 `a3412e7aa1e1f6df63beb0dd32ce7e2241d6543fcd51cfd7cf1603512d8b003a`, base58 `BzH6tuQv4EDojTH2Fw2utZQKzP7HCGnma1FVL3vanhwf`.
 
 ## Testnet ng67 (current code: 50 % team / 50 % holder rewards, task 067)
 | role | account |

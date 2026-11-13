@@ -7,7 +7,6 @@ Left on purpose, to be filled by the owner. Nothing else in this file or in the 
 - [ ] `{{MAINNET_URL}}` (production site, mainnet build)
 - [ ] `{{DEMO_URL}}` (demo / testnet build for judges, no real money)
 - [ ] `{{X_POST_URL}}` (after the post is published)
-- [ ] `{{MAINNET_WASM_HASH}}` (sha256 of the contract deployed on mainnet, after the upgrade in docs/MAINNET-COMMANDS.md)
 - [ ] `{{OTHER_CHAIN_DISCLOSURE}}`, `{{OTHER_PROJECTS_DISCLOSURE}}` (README, hackathon questions Q-002 / Q-015: text comes from the owner)
 - [ ] `{{ART_TOOLS_DISCLOSURE}}` (README: how the pet art was made; the repo does not record the tool, so it is not guessed here)
 
@@ -57,7 +56,7 @@ Recorded on the demo / testnet build ({{DEMO_URL}}): no real money.
 
 ## Pre-submission checklist
 - [ ] Decision: repo public (owner). The code has no keys (see the grep in the REPORT).
-- [ ] README has "Quick start for judges", the on/off-chain table, the contract and the mint hash (deployed-wasm hash after the upgrade: `{{MAINNET_WASM_HASH}}`)
+- [ ] README has "Quick start for judges", the on/off-chain table, the contract and the mint hash (deployed wasm sha256 `a3412e7aa1e1f6df63beb0dd32ce7e2241d6543fcd51cfd7cf1603512d8b003a`)
 - [ ] LICENSE (MIT) is in the repo
 - [ ] Vercel env: production `NEXT_PUBLIC_CHAIN=mainnet` + `NEXT_PUBLIC_DROP1_CONTRACT` + `NEXT_PUBLIC_TREASURY` + `SESSION_SECRET` + Upstash vars; demo build `NEXT_PUBLIC_CHAIN=testnet`; `NEAR_AI_API_KEY` server-side only, no NEXT_PUBLIC_ (docs/DEPLOY.md)
 - [x] Live check on the deployed site: hatch from the website done (hash above); shop purchases and NEAR AI chat were checked live by the owner

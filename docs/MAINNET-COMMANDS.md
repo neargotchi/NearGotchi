@@ -310,11 +310,11 @@ Dalej: front na mainnet (runbook §12), potem start sprzedaży `unpause` podpisa
 
 ---
 
-## Upgrade drop1 (A-01): bramka gazu przeciw przesiewaniu losowania — PRZYGOTOWANE, NIEWYKONANE
+## Upgrade drop1 (A-01): bramka gazu przeciw przesiewaniu losowania — WYKONANE 2026-11-13 (tx `EdZ7iKo2DPPy6psJLh6n3sD3H5iS7zisWmuEAXBtzbvA`)
 
 Zadanie 102. Zmiana kodu: `nft_mint` odrzuca < 35 Tgas, `on_reveal` / `reveal` odrzucają < 18 Tgas **przed** losowaniem
 (`contracts/drop1/src/lib.rs`: `GAS_MINT_MIN`, `GAS_REVEAL_MIN`). Układ stanu bez zmian, bez migracji, bez `init`.
-Front (100 Tgas) bez zmian. **Nic z tej sekcji nie zostało wykonane na mainnecie.**
+Front (100 Tgas) bez zmian. **Wykonane 2026-11-13 przez właściciela:** deploy tx `EdZ7iKo2DPPy6psJLh6n3sD3H5iS7zisWmuEAXBtzbvA`; kod na łańcuchu sha256 `a3412e7aa1e1f6df63beb0dd32ce7e2241d6543fcd51cfd7cf1603512d8b003a` (base58 `BzH6tuQv4EDojTH2Fw2utZQKzP7HCGnma1FVL3vanhwf`), poprzedni `b41638a1…` (`D7z3DKfj…`). Po deployu: `minted 3`, `pending 0`, `paused true`; `nft_mint` z 20 Tgas odrzucony, tx `3qRTNkns78pJTtmk9VLcRAHpyiHySUgaW8LJBXFhrAme`. Klucz FullAccess konta kontraktu nadal istnieje (kroki F i J niewykonane).
 
 **Kiedy:** dopiero gdy klucz FullAccess konta kontraktu **jeszcze istnieje** (przed krokiem J) i `paused: true`. Po J
 nikt nie może już zmienić kodu: wtedy zostaje stary kod z A-01 na zawsze. Podpisuje CONTRACT (jego klucz jest w keychainie

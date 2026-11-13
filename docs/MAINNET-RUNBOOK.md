@@ -12,8 +12,7 @@ a fresh project account with its seed phrase on paper; ownership can move to a L
 
 ## Mainnet record (2026-11-12, done by the owner)
 
-Accounts: OWNER `neargochi-dev.near`, CONTRACT **`drop1.neargochi-dev.near`**, TEAM `neargotchiai.near`. Code hash on chain
-`D7z3DKfjddZ6XRRpQUX7BXSMzLn24wHtwFePtCFpArTM` = local `contracts/drop1/res/neargotchi_drop1.wasm` (sha256 `b41638a1…eb634`,
+Accounts: OWNER `neargochi-dev.near`, CONTRACT **`drop1.neargochi-dev.near`**, TEAM `neargotchiai.near`. Code hash on chain since the A-01 gas-gate upgrade (2026-11-13, tx `EdZ7iKo2DPPy6psJLh6n3sD3H5iS7zisWmuEAXBtzbvA`): `BzH6tuQv4EDojTH2Fw2utZQKzP7HCGnma1FVL3vanhwf` = sha256 `a3412e7aa1e1f6df63beb0dd32ce7e2241d6543fcd51cfd7cf1603512d8b003a` = local `contracts/drop1/res/neargotchi_drop1.wasm` built from this repo (`cargo test --lib` 40/40). Before that upgrade (deploy record below): `D7z3DKfjddZ6XRRpQUX7BXSMzLn24wHtwFePtCFpArTM` = local `contracts/drop1/res/neargotchi_drop1.wasm` (sha256 `b41638a1…eb634`,
 `cargo test --lib` 34/34). Letters = `docs/MAINNET-COMMANDS.md`; tx ids on https://nearblocks.io/txns/<id>.
 
 | step | what | signer | tx | result |
