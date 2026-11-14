@@ -45,7 +45,7 @@ two Vercel projects built from the same commit of `main`:
 | project | URL | purpose | Production env (names = values) |
 |---|---|---|---|
 | `neargochi` (existing) | https://neargochi.vercel.app | the launch: real NEAR | `NEXT_PUBLIC_CHAIN=mainnet`, `NEXT_PUBLIC_DROP1_CONTRACT=drop1.neargochi-dev.near`, `NEXT_PUBLIC_TREASURY=neargotchiai.near`, `NEAR_AI_API_KEY` (server only), **energy ledger (task 081): Upstash Redis vars (from the integration), `SESSION_SECRET`, optional `DAILY_CHAT_CAP`** — see below; optional `NEXT_PUBLIC_RPC_URL`, `NEAR_AI_MODEL` |
-| `neargochi-demo` (new) | https://neargochi-demo.vercel.app | judges, without real funds | **testnet (recommended):** `NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`, `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet`, `NEAR_AI_API_KEY` (optional; without it the chat answers from a script) — **or demo (no wallet at all):** `NEXT_PUBLIC_CHAIN=demo` only |
+| `neargochi-demo` (new) | https://neargochi-demo.vercel.app | judges, wallet-free | `NEXT_PUBLIC_CHAIN=demo` (no other variables). The testnet build (`NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`, `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet`) is a local option, see the README |
 
 A mainnet build refuses to sign if the contract or treasury is missing or ends in `.testnet` (`lib/chain.ts` CONFIG_ERROR).
 
@@ -55,9 +55,9 @@ npx vercel@latest login
 mkdir -p ~/neargochi-demo-link && cd ~/neargochi-demo-link
 npx vercel@latest project add neargochi-demo
 npx vercel@latest link --yes --project neargochi-demo
-npx vercel@latest env add NEXT_PUBLIC_CHAIN production                 # testnet   (or: demo)
-npx vercel@latest env add NEXT_PUBLIC_DROP1_CONTRACT production        # neargotchi-drop1-ng67.testnet  (testnet only)
-npx vercel@latest env add NEXT_PUBLIC_TREASURY production              # neargotchi-team-ng67.testnet   (testnet only)
+npx vercel@latest env add NEXT_PUBLIC_CHAIN production                 # demo
+npx vercel@latest env add NEXT_PUBLIC_DROP1_CONTRACT production        # neargotchi-drop1-ng67.testnet  (local testnet build only, skip for the hosted demo)
+npx vercel@latest env add NEXT_PUBLIC_TREASURY production              # neargotchi-team-ng67.testnet   (local testnet build only, skip for the hosted demo)
 npx vercel@latest env add NEAR_AI_API_KEY production                   # optional, typed at the prompt, never in a file
 mkdir -p ~/Desktop/neargochi/.vercel-demo && cp .vercel/project.json ~/Desktop/neargochi/.vercel-demo/project.json
 ```

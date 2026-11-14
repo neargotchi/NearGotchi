@@ -7,7 +7,7 @@ Built for the NEAR HACKATHON (tracks: games, nfts). Unofficial fan project, not 
 | Links | |
 |---|---|
 | Live site (mainnet, real NEAR) | https://neargotchi.com |
-| Demo (testnet, no real money) | https://neargochi-demo.vercel.app |
+| Demo (no wallet, no real money, runs in your browser) | https://neargochi-demo.vercel.app |
 | Drop 1 contract (mainnet) | [`drop1.neargochi-dev.near`](https://nearblocks.io/address/drop1.neargochi-dev.near) |
 | GitHub tag | `hackathon-submission` |
 
@@ -70,21 +70,18 @@ No dates, and none of this is part of the current drop. The drop is 300 tokens, 
 
 Everything below uses the offline demo mode or **testnet** (free test NEAR from a faucet, no value). Nothing here touches mainnet.
 
-**Variant 1: no wallet, offline demo (fastest).** One command, no chain, no wallet, no account:
+**Variant 1: no wallet, offline demo (fastest).** Hosted: open https://neargochi-demo.vercel.app/mint and click **hatch** (offline mock, no wallet, nothing on chain). Or locally, one command, no chain, no wallet, no account:
 `npm ci && NEXT_PUBLIC_CHAIN=demo npm run dev`, then open http://localhost:3000/mint and click **hatch**: the egg cracks and shows a random pet;
 then open /pet to feed it, play and chat (scripted answers). Everything is a localStorage mock in your browser.
 Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mocked), `cd contracts/drop1 && cargo test --lib` (contract).
 
-**Variant 2: testnet with a wallet.** You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 test NEAR.
-
-**A. Hosted demo build (testnet):** open https://neargochi-demo.vercel.app/mint.
-**B. Locally, 3 steps:**
+**Variant 2: testnet with a wallet (local only).** You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 test NEAR. The testnet build runs locally; the on-chain proofs are in "Contracts and transactions" below. 3 steps:
 1. `npm install && cp .env.example .env.local`
 2. in `.env.local` set `NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`,
    `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet` (optional: `NEAR_AI_API_KEY=<key>` for real chat answers; without it the chat is scripted)
 3. `npm run dev` and open http://localhost:3000/mint
 
-Then (same steps on A and B; expected result after each):
+Then (expected result after each):
 1. /mint shows the live counter "x / 300 hatched" read from the contract.
 2. **connect wallet** and sign in: the header shows your account id.
 3. **hatch** (2 test NEAR + gas), approve in the wallet: the egg cracks and shows the pet the contract drew, with its tier; the counter goes up by one.

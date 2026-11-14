@@ -13,7 +13,7 @@ export type HowItWorksStep = {
 /** Hero (app/page.tsx). */
 export const hero = {
   subtitle: "your ai companion on near",
-  lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "demo now, near next."),
+  lede: "hatch one of 300 gotchis. feed it, play with it, talk to it. " + (isOnChain ? `live on near ${NET}.` : "no wallet needed: this demo runs in your browser, nothing is on chain."),
   learnMore: "learn more",
   /** Chevron under the buttons → #pets (label for screen readers only). */
   scroll: "explore the pets",
@@ -45,7 +45,7 @@ export const howItWorks = {
       title: "talk",
       body: isOnChain
         ? "every message uses energy. an energy pack refills it. replies come from near ai."
-        : "every message uses energy. an energy pack refills it. near ai comes next; the demo answers on its own.",
+        : "every message uses energy. an energy pack refills it. in the demo the pet answers from a script; on mainnet it runs on near ai.",
       sprite: { src: "/pets/pet3/happy.png", width: 489, height: 431, alt: "" },
     },
   ] as HowItWorksStep[],
@@ -111,7 +111,7 @@ export const coin = {
 /** One FAQ entry. `id` = anchor on the home page; `link` is appended to the answer. */
 export type FaqItem = { question: string; answer: string; id?: string; link?: { label: string; href: string } };
 
-/** Anchor of "is the hatch fair?" (linked from /mint, task 087). */
+/** Anchor of "is the hatch fair?" (linked from /mint). */
 export const FAIR_HATCH_ID = "fair-hatch";
 
 export const faq: { header: string; items: FaqItem[] } = {
@@ -152,7 +152,9 @@ export const faq: { header: string; items: FaqItem[] } = {
       question: "is this live?",
       answer: isMainnet
         ? "yes, on near mainnet, with real near. snacks are paid in real near; pets, games and shop stock live in your browser; energy and sign-in live on our server."
-        : "it's a testnet demo. the mint is real on near testnet; snacks, games and chat are still mocks in your browser.",
+        : isOnChain
+          ? "it's a testnet build. the mint is real on near testnet; snacks, games and chat are still mocks in your browser."
+          : "this is an offline demo: nothing is on chain, hatches and pets live in your browser.",
     },
     {
       question: "will there be battles?",
@@ -223,9 +225,9 @@ export const footer = {
     ? []
     : [
         { label: "github", url: "https://github.com/neargotchi/NearGotchi" },
-        { label: "testnet demo", url: "https://neargochi-demo.vercel.app" },
+        { label: "demo", url: "https://neargochi-demo.vercel.app" },
       ]) as { label: string; url: string }[],
-  /** listed addresses (task 080): text only, no claims. Links go to the mainnet explorer. */
+  /** listed addresses: text only, no claims. Links go to the mainnet explorer. */
   addresses: [
     { label: "drop 1 contract (near mainnet)", account: "drop1.neargochi-dev.near" },
     { label: "$NEARGotchi token", account: "neargotchi.nearlytrade.near" },
@@ -263,7 +265,7 @@ export const petGallery = {
 };
 
 /**
- * /mint (docs/PLAN-MINT.md §5, random hatch since task 036: docs/DEVLOG.md §2).
+ * /mint (docs/PLAN-MINT.md §5, random hatch: docs/DEVLOG.md §2).
  * Demo only: no real mint, no wallet. Rarity only, never value (checked by scripts/check-drop1.mjs).
  */
 export const mintPage = {
@@ -284,7 +286,7 @@ export const mintPage = {
       ? "2 real near. the contract picks the pet, not you. common, rare, epic or legendary."
       : "2 near on testnet. the contract picks the pet, not you. common, rare, epic or legendary.",
     waitingWallet: "confirm in your wallet…",
-    /** under the hatch button (task 087); `link` goes to the faq answer */
+    /** under the hatch button; `link` goes to the faq answer */
     draw: { text: "how the draw works: the contract draws after payment, nobody picks.", link: "details in the faq" },
     errors: {
       paused: "hatching is paused right now. try again soon.",
@@ -348,7 +350,7 @@ export const walletGate = {
 
 /** /pet (docs/DEVLOG.md §5). Demo only: balance is always "demo", chat is local. */
 export const petPage = {
-  /** Mainnet sign-in (task 081, app/pet/energy-sign-in.tsx): energy = near ai credits, kept by the server. */
+  /** Mainnet sign-in (app/pet/energy-sign-in.tsx): energy = near ai credits, kept by the server. */
   signIn: {
     title: "sign to prove it's you",
     body: "energy is near ai credits and lives on our server, so we need to know the pets are yours. one signature in your wallet: no transaction, no cost.",
@@ -357,7 +359,7 @@ export const petPage = {
     cancelled: "signing was cancelled. nothing happened.",
     failed: "the signature couldn't be checked. try again.",
     unavailable: "the energy service is down right now. chat and energy packs wait; everything else works.",
-    /** task 088: the popup's close button (screen readers) and the action in "sign in first" notes */
+    /** the popup's close button (screen readers) and the action in "sign in first" notes */
     close: "close",
     action: "sign in",
   },
@@ -521,7 +523,7 @@ export const petPage = {
     note: "snacks fill hunger. energy is for talking.",
     noteDemo: "demo $NEARGotchi · nothing real is spent",
     noteChain: isMainnet ? "paid in real near." : "paid in testnet near",
-    /** mainnet energy pack while the server waits for the chain (task 081) */
+    /** mainnet energy pack while the server waits for the chain */
     confirming: "confirming payment…",
     refill: "refill demo balance",
     refillDone: "refilled to 100 demo $NEARGotchi. still not real.",
@@ -533,7 +535,7 @@ export const petPage = {
     pack: {
       title: "energy pack",
       body: "fuel for talking. each message uses 4 energy.",
-      /** on-chain builds (task 087): what energy is */
+      /** on-chain builds: what energy is */
       ai: "energy = near ai credits. the chat runs on near ai cloud.",
       /** mainnet only: the pack is paid in real near */
       aiFunds: "energy packs help pay for the near ai credits behind the chat.",
@@ -560,7 +562,7 @@ export const petPage = {
       out_of_stock: "{snack} is sold out. back in {time}.",
       cancelled: "cancelled in the wallet. nothing was spent.",
       failed: "couldn't confirm the payment. check your wallet before you try again: if it went through, it is applied the next time you open this page.",
-      /** mainnet energy pack (task 081): no session yet — nothing was paid */
+      /** mainnet energy pack: no session yet — nothing was paid */
       signin: "sign in first so the energy can go to {name}. nothing was paid.",
       /** mainnet energy pack: paid, the server is still confirming it on chain */
       confirming: "payment sent. the energy arrives once it's confirmed on chain; this page keeps checking.",
@@ -582,17 +584,17 @@ export const petPage = {
     note: isOnChain ? "powered by near ai" : "demo mode",
     noteAi: "powered by near ai",
     noteMock: "demo mode (mock answers)",
-    /** on-chain builds (task 087), above the chat log */
+    /** on-chain builds, above the chat log */
     credits: "energy = near ai credits. the chat runs on near ai cloud.",
     thinking: "{name} is thinking…",
     aiError: "the signal dropped. nothing was spent, try again.",
-    /** mainnet (task 081): the site's daily near ai budget is used up; nothing was spent */
+    /** mainnet: the site's daily near ai budget is used up; nothing was spent */
     resting: "ai is resting, try tomorrow. nothing was spent.",
-    /** mainnet (task 081): no / expired sign-in */
+    /** mainnet: no / expired sign-in */
     signedOut: "sign in first: it proves the pet is yours. no transaction, no cost.",
     label: "message",
     placeholder: "say something to {name}",
-    /** mainnet, wallet connected, no sign-in yet (task 100): the field is locked until the popup's signature */
+    /** mainnet, wallet connected, no sign-in yet: the field is locked until the popup's signature */
     placeholderSignIn: "sign in first (bottom right) to chat",
     hint: "each message uses 4 energy. food is not touched.",
     send: "send",
@@ -610,7 +612,7 @@ export const petPage = {
 export const nftPage = {
   metaTitle: "NEARGOTCHI #{id}",
   imageAlt: "{token}: a {tier} {species} from neargotchi drop 1, on its tier colour.",
-  sub: isOnChain ? `one of {total} gotchis in drop 1, an nft on near ${NET}.` : "one of {total} gotchis in drop 1. a demo token: it lives in this site, not on chain yet.",
+  sub: isOnChain ? `one of {total} gotchis in drop 1, an nft on near ${NET}.` : "one of {total} gotchis in drop 1. a demo token: it lives in this site, not on chain.",
   cta: "hatch your own",
   pets: "meet the pets",
 };
