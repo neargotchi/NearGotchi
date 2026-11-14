@@ -14,7 +14,7 @@ Built for the NEAR HACKATHON (tracks: games, nfts). Unofficial fan project, not 
 <table>
   <tr>
     <td align="center"><img src="docs/img/hero.png" width="420" alt="NEARGOTCHI home page"><br><sub>home</sub></td>
-    <td align="center"><img src="docs/img/hatch.png" width="420" alt="Result of a hatch: tier, traits, share button"><br><sub>hatch</sub></td>
+    <td align="center"><img src="docs/img/hatch.png" width="300" alt="Result of a hatch: tier, traits, share button"><br><sub>hatch</sub></td>
   </tr>
   <tr>
     <td align="center"><img src="docs/img/pet.png" width="420" alt="The pet device with the feed tab"><br><sub>feed &amp; chat</sub></td>
