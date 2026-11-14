@@ -119,7 +119,7 @@ Then (same steps on A and B; expected result after each):
   40 unit tests + a near-workspaces sandbox suite (300 mints, sold out, fallback, rewards, claims, transfer, limit) run in GitHub
   Actions. Gas gate against selecting the draw by attached gas: `nft_mint` needs at least 35 Tgas, a
   reveal at least 18 Tgas, checked before the draw. The deployed mainnet wasm has sha256 `a3412e7aa1e1f6df63beb0dd32ce7e2241d6543fcd51cfd7cf1603512d8b003a` (base58 `BzH6tuQv4EDojTH2Fw2utZQKzP7HCGnma1FVL3vanhwf`, upgrade tx `EdZ7iKo2DPPy6psJLh6n3sD3H5iS7zisWmuEAXBtzbvA`, 2026-11-13); the code on chain is the code in this repo as of that deployed version (rebuild with `contracts/drop1/build.sh` and compare the sha256). The contract has no upgrade method, but its account still holds a full-access key (used for the 2026-11-13 gas-gate update), so whoever holds that key can still replace the code. Deleting that key is a separate, irreversible step that has not been done. Details: `docs/MAINNET-RUNBOOK.md`,
-  `docs/CONTRACT-SETUP.md`, money-path review in `docs/REPORT.md` (DONE: 067).
+  `docs/CONTRACT-SETUP.md`, the review and fixes of the money paths in `docs/DEVLOG.md`.
 - **Mainnet mode:** `NEXT_PUBLIC_CHAIN=mainnet` + `NEXT_PUBLIC_DROP1_CONTRACT` + `NEXT_PUBLIC_TREASURY` (no defaults). The mint page
   shows the real-NEAR price on the hatch button and under it; no extra confirmation besides the wallet.
 - **RPC:** all chain reads (counter, owned tokens, rewards, tx status after a wallet redirect) go through a fallback list of
@@ -137,7 +137,7 @@ Then (same steps on A and B; expected result after each):
   (`https://lavender-known-gorilla-623.mypinata.cloud/ipfs/<CID>/`) for a folder with the 300 original PNGs, and every `media_hash`
   matches (`scripts/ipfs_drop1.py` checks it). Public gateways are not used: ipfs.io / dweb.link stopped serving hotlinks on
   2026-09-21 and the public Pinata gateway rate-limits; `base_uri` stays changeable until a second pin provider is added
-  (`docs/NFT-IMAGES.md`). The testnet contracts use `https://neargochi.vercel.app/drop1-full/`, which serves 512px WebP
+  (`docs/MAINNET-RUNBOOK.md`). The testnet contracts use `https://neargochi.vercel.app/drop1-full/`, which serves 512px WebP
   renders (there the `media_hash` does not match the served bytes).
 
 ## NEAR AI
@@ -161,7 +161,7 @@ Without the key the chat falls back to scripted answers and says "demo mode (moc
 
 ## Honest notes
 
-- No audit. The money paths were reviewed by us (findings and what was not checked: `docs/REPORT.md`, DONE: 067), which is not an audit.
+- No audit. The money paths were reviewed by us (what was reviewed and fixed: `docs/DEVLOG.md`), which is not an audit.
   Mainnet means real NEAR; only spend what you can afford to lose.
 - On NEAR, the random seed comes from block producers, so on-chain randomness is not perfect.
 
