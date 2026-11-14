@@ -43,9 +43,7 @@ export const howItWorks = {
     {
       number: 4,
       title: "talk",
-      body: isOnChain
-        ? "every message uses energy. an energy pack refills it. replies come from near ai."
-        : "every message uses energy. an energy pack refills it. in the demo the pet answers from a script; on mainnet it runs on near ai.",
+      body: "every message uses energy. an energy pack refills it. replies come from near ai.",
       sprite: { src: "/pets/pet3/happy.png", width: 489, height: 431, alt: "" },
     },
   ] as HowItWorksStep[],

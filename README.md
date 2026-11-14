@@ -70,9 +70,9 @@ No dates, and none of this is part of the current drop. The drop is 300 tokens, 
 
 Everything below uses the offline demo mode or **testnet** (free test NEAR from a faucet, no value). Nothing here touches mainnet.
 
-**Variant 1: no wallet, offline demo (fastest).** Hosted: open https://neargochi-demo.vercel.app/mint and click **hatch** (offline mock, no wallet, nothing on chain). Or locally, one command, no chain, no wallet, no account:
+**Variant 1: no wallet, offline demo (fastest).** Hosted: open https://neargochi-demo.vercel.app/mint and click **hatch** (offline mock, no wallet, nothing on chain). The hosted demo's chat runs on NEAR AI Cloud with a shared demo key (12 messages per minute per IP; it can be briefly unavailable). Or locally, one command, no chain, no wallet, no account:
 `npm ci && NEXT_PUBLIC_CHAIN=demo npm run dev`, then open http://localhost:3000/mint and click **hatch**: the egg cracks and shows a random pet;
-then open /pet to feed it, play and chat (scripted answers). Everything is a localStorage mock in your browser.
+then open /pet to feed it, play and chat (locally, without `NEAR_AI_API_KEY`, the chat is scripted). Everything is a localStorage mock in your browser.
 Checks: `npm run check:drop1` (game logic), `npm run check:chat` (chat route, mocked), `cd contracts/drop1 && cargo test --lib` (contract).
 
 **Variant 2: testnet with a wallet (local only).** You need a NEAR **testnet** wallet (MyNearWallet or Meteor) with about 2.5 test NEAR. The testnet build runs locally; the on-chain proofs are in "Contracts and transactions" below. 3 steps:

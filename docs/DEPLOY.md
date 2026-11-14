@@ -45,7 +45,7 @@ two Vercel projects built from the same commit of `main`:
 | project | URL | purpose | Production env (names = values) |
 |---|---|---|---|
 | `neargochi` (existing) | https://neargochi.vercel.app | the launch: real NEAR | `NEXT_PUBLIC_CHAIN=mainnet`, `NEXT_PUBLIC_DROP1_CONTRACT=drop1.neargochi-dev.near`, `NEXT_PUBLIC_TREASURY=neargotchiai.near`, `NEAR_AI_API_KEY` (server only), **energy ledger (task 081): Upstash Redis vars (from the integration), `SESSION_SECRET`, optional `DAILY_CHAT_CAP`** — see below; optional `NEXT_PUBLIC_RPC_URL`, `NEAR_AI_MODEL` |
-| `neargochi-demo` (new) | https://neargochi-demo.vercel.app | judges, wallet-free | `NEXT_PUBLIC_CHAIN=demo` (no other variables). The testnet build (`NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`, `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet`) is a local option, see the README |
+| `neargochi-demo` (new) | https://neargochi-demo.vercel.app | judges, wallet-free | `NEXT_PUBLIC_CHAIN=demo` + optionally `NEAR_AI_API_KEY` (a separate key only for the demo, so it can be revoked without touching mainnet). The testnet build (`NEXT_PUBLIC_CHAIN=testnet`, `NEXT_PUBLIC_DROP1_CONTRACT=neargotchi-drop1-ng67.testnet`, `NEXT_PUBLIC_TREASURY=neargotchi-team-ng67.testnet`) is a local option, see the README |
 
 A mainnet build refuses to sign if the contract or treasury is missing or ends in `.testnet` (`lib/chain.ts` CONFIG_ERROR).
 
